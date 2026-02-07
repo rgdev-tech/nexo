@@ -1,7 +1,8 @@
 import { useSQLiteContext } from "expo-sqlite";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -9,8 +10,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { router } from "expo-router";
-import { getPlaylists } from "@/lib/playlists";
+import { router, useFocusEffect } from "expo-router";
+import { deletePlaylist, getPlaylists } from "@/lib/playlists";
 
 type PlaylistItem = {
   id: number;
@@ -31,15 +32,53 @@ export default function HomeScreen() {
     setPlaylists(rows);
   }, [db]);
 
-  useEffect(() => {
-    load().finally(() => setLoading(false));
-  }, [load]);
+  // Refrescar listas cada vez que la pantalla gana foco (p. ej. al volver de "Añadir lista")
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      load().finally(() => setLoading(false));
+    }, [load])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
   }, [load]);
+
+  const onLongPressPlaylist = useCallback(
+    (item: PlaylistItem) => {
+      Alert.alert(item.name, "¿Qué quieres hacer?", [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Editar",
+          onPress: () => router.push({ pathname: "/playlist/edit/[id]", params: { id: String(item.id) } }),
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Eliminar lista",
+              `¿Eliminar "${item.name}"? Se borrarán todos sus canales.`,
+              [
+                { text: "Cancelar", style: "cancel" },
+                {
+                  text: "Eliminar",
+                  style: "destructive",
+                  onPress: async () => {
+                    await deletePlaylist(db, item.id);
+                    await load();
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]);
+    },
+    [db, load]
+  );
 
   if (loading) {
     return (
@@ -82,6 +121,7 @@ export default function HomeScreen() {
             <Pressable
               style={styles.card}
               onPress={() => router.push({ pathname: "/playlist/[id]", params: { id: item.id } })}
+              onLongPress={() => onLongPressPlaylist(item)}
               android_ripple={{ color: "rgba(255,255,255,0.1)" }}
             >
               <Text style={styles.cardTitle} numberOfLines={1}>

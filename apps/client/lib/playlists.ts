@@ -116,6 +116,23 @@ export async function getPlaylistById(db: SQLiteDatabase, id: number) {
   }>("SELECT id, name, source_url, created_at FROM playlists WHERE id = ?", id);
 }
 
+export async function updatePlaylist(
+  db: SQLiteDatabase,
+  id: number,
+  data: { name?: string; source_url?: string }
+): Promise<void> {
+  if (data.name != null) {
+    await db.runAsync("UPDATE playlists SET name = ? WHERE id = ?", data.name, id);
+  }
+  if (data.source_url != null) {
+    await db.runAsync("UPDATE playlists SET source_url = ? WHERE id = ?", data.source_url, id);
+  }
+}
+
+export async function deletePlaylist(db: SQLiteDatabase, id: number): Promise<void> {
+  await db.runAsync("DELETE FROM playlists WHERE id = ?", id);
+}
+
 export async function getChannelById(db: SQLiteDatabase, id: number) {
   return db.getFirstAsync<{
     id: number;

@@ -45,6 +45,7 @@ export default function AddListScreen() {
         return;
       }
       await savePlaylist(db, displayName, trimmedUrl, parsed);
+      Alert.alert("Lista añadida", `${parsed.channels.length} canales importados.`);
       router.back();
     } catch (e) {
       const message = e instanceof Error ? e.message : "No se pudo cargar la lista.";
