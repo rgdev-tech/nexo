@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build / runtime
+dist/
+.expo/
+*.tsbuildinfo
+
+# Env (Doppler in use)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Turbo
+.turbo/
+
+# Bun
+bun.lockb

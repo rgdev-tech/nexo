@@ -1,0 +1,18 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist --target=bun",
+    "lint": "bun run lint:check",
+    "lint:check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "~5.3.0"
+  }
+}
