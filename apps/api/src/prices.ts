@@ -5,8 +5,9 @@
 import { cacheGet, cacheSet } from "./cache";
 import { rateLimit } from "./rate-limit";
 import { getCryptoPrice, getCryptoPrices } from "./providers/crypto";
-import { getForexRate } from "./providers/forex";
+import { getForexHistory, getForexRate } from "./providers/forex";
 import { getUsdToVes } from "./providers/ves";
+import { getVesHistory } from "./ves-history";
 
 const CACHE_TTL_MS = 60 * 1000; // 1 min
 
@@ -79,6 +80,13 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
     return jsonResponse({ prices: results }, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
   }
 
+  // GET /api/prices/ves/history?days=7 — historial por día (oficial y paralelo)
+  if (pathname === `${prefix}/ves/history` && req.method === "GET") {
+    const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get("days") ?? "7", 10) || 7));
+    const history = getVesHistory(days);
+    return jsonResponse({ history }, { headers: rateLimitHeaders });
+  }
+
   // GET /api/prices/ves — 1 USD = X BS (oficial y paralelo)
   if (pathname === `${prefix}/ves` && req.method === "GET") {
     const cacheKey = "ves:usd";
@@ -103,6 +111,22 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
     }
     cacheSet(cacheKey, result, CACHE_TTL_MS);
     return jsonResponse(result, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
+  }
+
+  // GET /api/prices/forex/history?days=30&from=USD&to=EUR
+  if (pathname === `${prefix}/forex/history` && req.method === "GET") {
+    const days = Math.min(365, Math.max(1, parseInt(url.searchParams.get("days") ?? "30", 10) || 30));
+    const from = url.searchParams.get("from") ?? "USD";
+    const to = url.searchParams.get("to") ?? "EUR";
+    const cacheKey = `forex:history:${from}:${to}:${days}`;
+    const cached = cacheGet<{ history: { date: string; rate: number }[] }>(cacheKey);
+    if (cached) {
+      return jsonResponse(cached, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
+    }
+    const history = await getForexHistory(from, to, days);
+    const payload = { history };
+    cacheSet(cacheKey, payload, 24 * 60 * 60 * 1000); // 24h
+    return jsonResponse(payload, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
   }
 
   // GET /api/prices/forex?from=USD&to=EUR

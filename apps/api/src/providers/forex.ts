@@ -48,3 +48,34 @@ export async function getForexRate(from: string, to: string): Promise<ForexRate 
     return null;
   }
 }
+
+export type ForexHistoryDay = { date: string; rate: number };
+
+/** Historial diario from → to (Frankfurter, hasta 1999). */
+export async function getForexHistory(
+  from: string,
+  to: string,
+  days: number
+): Promise<ForexHistoryDay[]> {
+  const f = from.toUpperCase();
+  const t = to.toUpperCase();
+  if (f === t) return [];
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - Math.min(365, Math.max(1, days)));
+  const startStr = start.toISOString().slice(0, 10);
+  const endStr = end.toISOString().slice(0, 10);
+  const url = `${BASE}/v1/${startStr}..${endStr}?base=${f}&symbols=${t}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { rates?: Record<string, Record<string, number>> };
+  const rates = data.rates;
+  if (!rates || typeof rates !== "object") return [];
+  return Object.entries(rates)
+    .map(([date, row]) => {
+      const rate = row?.[t];
+      return rate != null && !Number.isNaN(rate) ? { date, rate } : null;
+    })
+    .filter((x): x is ForexHistoryDay => x != null)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}

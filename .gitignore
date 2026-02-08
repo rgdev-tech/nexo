@@ -26,3 +26,6 @@ Thumbs.db
 
 # Bun
 bun.lockb
+
+# API data
+apps/api/ves.db
