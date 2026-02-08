@@ -6,6 +6,7 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -21,7 +22,9 @@ type PlaylistItem = {
   channel_count: number;
 };
 
-export default function HomeScreen() {
+const TAB_BAR_OFFSET = 100;
+
+export default function ConfiguracionTab() {
   const db = useSQLiteContext();
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +35,6 @@ export default function HomeScreen() {
     setPlaylists(rows);
   }, [db]);
 
-  // Refrescar listas cada vez que la pantalla gana foco (p. ej. al volver de "Añadir lista")
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
@@ -52,7 +54,8 @@ export default function HomeScreen() {
         { text: "Cancelar", style: "cancel" },
         {
           text: "Editar",
-          onPress: () => router.push({ pathname: "/playlist/edit/[id]", params: { id: String(item.id) } }),
+          onPress: () =>
+            router.push({ pathname: "/playlist/edit/[id]", params: { id: String(item.id) } }),
         },
         {
           text: "Eliminar",
@@ -83,7 +86,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#a78bfa" />
+        <ActivityIndicator size="large" color="#0FA226" />
         <Text style={styles.loadingText}>Cargando listas…</Text>
       </View>
     );
@@ -92,8 +95,8 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Nexo</Text>
-        <Text style={styles.subtitle}>Tus listas IPTV</Text>
+        <Text style={styles.title}>Configuración</Text>
+        <Text style={styles.subtitle}>Listas M3U de películas y series</Text>
       </View>
 
       <Pressable
@@ -101,20 +104,30 @@ export default function HomeScreen() {
         onPress={() => router.push("/add-list")}
         android_ripple={{ color: "rgba(255,255,255,0.2)" }}
       >
-        <Text style={styles.addButtonText}>+ Añadir lista M3U</Text>
+        <Text style={styles.addButtonText}>+ Añadir lista</Text>
       </Pressable>
 
       {playlists.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>Aún no hay listas.</Text>
-          <Text style={styles.emptyHint}>Añade una URL M3U para empezar.</Text>
-        </View>
+        <ScrollView
+          style={styles.scrollEmpty}
+          contentContainerStyle={styles.scrollContentEmpty}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0FA226" />
+          }
+        >
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>Aún no hay listas.</Text>
+            <Text style={styles.emptyHint}>
+              Añade una URL M3U de películas o series para verlas en Inicio.
+            </Text>
+          </View>
+        </ScrollView>
       ) : (
         <FlatList
           data={playlists}
           keyExtractor={(item) => String(item.id)}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a78bfa" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0FA226" />
           }
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
@@ -127,9 +140,7 @@ export default function HomeScreen() {
               <Text style={styles.cardTitle} numberOfLines={1}>
                 {item.name}
               </Text>
-              <Text style={styles.cardMeta}>
-                {item.channel_count} canales
-              </Text>
+              <Text style={styles.cardMeta}>{item.channel_count} canales</Text>
             </Pressable>
           )}
         />
@@ -141,15 +152,15 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f12",
+    backgroundColor: "#0C1117",
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 56,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f0f12",
+    backgroundColor: "#0C1117",
     gap: 12,
   },
   loadingText: {
@@ -160,17 +171,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "700",
+    fontSize: 28,
+    fontWeight: "800",
     color: "#fff",
   },
   subtitle: {
-    fontSize: 16,
-    color: "#71717a",
+    fontSize: 14,
+    color: "#a1a1aa",
     marginTop: 4,
   },
   addButton: {
-    backgroundColor: "#7c3aed",
+    backgroundColor: "#0FA226",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
@@ -182,7 +193,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: TAB_BAR_OFFSET + 24,
+  },
+  scrollEmpty: {
+    flex: 1,
+  },
+  scrollContentEmpty: {
+    flexGrow: 1,
   },
   card: {
     backgroundColor: "#18181b",
@@ -215,5 +232,6 @@ const styles = StyleSheet.create({
   emptyHint: {
     color: "#52525b",
     fontSize: 14,
+    textAlign: "center",
   },
 });

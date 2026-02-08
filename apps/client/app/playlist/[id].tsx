@@ -7,6 +7,7 @@ import {
   Image,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -73,15 +74,23 @@ export default function PlaylistScreen() {
       </View>
 
       {channels.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>No hay canales en esta lista.</Text>
-        </View>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContentEmpty}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0FA226" />
+          }
+        >
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>No hay canales en esta lista.</Text>
+          </View>
+        </ScrollView>
       ) : (
         <FlatList
           data={channels}
           keyExtractor={(item) => String(item.id)}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a78bfa" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0FA226" />
           }
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
@@ -164,6 +173,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 40,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContentEmpty: {
+    flexGrow: 1,
   },
   row: {
     flexDirection: "row",

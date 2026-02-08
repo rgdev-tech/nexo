@@ -65,7 +65,7 @@ export default function AddListScreen() {
           <Text style={styles.backText}>← Atrás</Text>
         </Pressable>
         <Text style={styles.title}>Añadir lista</Text>
-        <Text style={styles.subtitle}>URL de un archivo M3U o M3U8</Text>
+        <Text style={styles.subtitle}>URL M3U de películas o series</Text>
       </View>
 
       <TextInput

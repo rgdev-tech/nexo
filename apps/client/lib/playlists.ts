@@ -130,6 +130,8 @@ export async function updatePlaylist(
 }
 
 export async function deletePlaylist(db: SQLiteDatabase, id: number): Promise<void> {
+  await db.runAsync("DELETE FROM channels WHERE playlist_id = ?", id);
+  await db.runAsync("DELETE FROM groups WHERE playlist_id = ?", id);
   await db.runAsync("DELETE FROM playlists WHERE id = ?", id);
 }
 
@@ -140,4 +142,21 @@ export async function getChannelById(db: SQLiteDatabase, id: number) {
     url: string;
     tvg_logo: string | null;
   }>("SELECT id, name, url, tvg_logo FROM channels WHERE id = ?", id);
+}
+
+/** Canales de todas las playlists, para el hub unificado (solo listas que siguen existiendo) */
+export async function getChannelsFromAllPlaylists(db: SQLiteDatabase) {
+  return db.getAllAsync<{
+    id: number;
+    name: string;
+    url: string;
+    tvg_logo: string | null;
+    group_name: string | null;
+  }>(
+    `SELECT c.id, c.name, c.url, c.tvg_logo, g.name AS group_name
+     FROM channels c
+     INNER JOIN playlists p ON c.playlist_id = p.id
+     LEFT JOIN groups g ON c.group_id = g.id
+     ORDER BY g.name, c.position, c.id`
+  );
 }
