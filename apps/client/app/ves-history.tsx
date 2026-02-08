@@ -12,7 +12,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Svg, { Circle, Line, Polygon, Polyline } from "react-native-svg";
 import { useSettings } from "@/lib/settings";
-import { glass, glassCard, HORIZONTAL } from "@/lib/theme";
+import { getColors, glass, glassCard, HORIZONTAL } from "@/lib/theme";
 
 type HistoryDay = {
   date: string;
@@ -44,6 +44,7 @@ function getValueForTipo(d: HistoryDay, tipo: string): number | undefined {
 
 export default function VesHistoryScreen() {
   const { settings } = useSettings();
+  const colors = getColors(settings.theme);
   const { tipo } = useLocalSearchParams<{ tipo: string }>();
   const isEur = tipo === "oficial_eur" || tipo === "paralelo_eur";
   const isOficial = tipo === "oficial" || tipo === "oficial_eur";
@@ -119,17 +120,17 @@ export default function VesHistoryScreen() {
   const midDate = history.length >= 3 ? history[midIndex]?.date : null;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
           style={styles.backBtn}
         >
-          <Ionicons name="arrow-back" size={24} color="#a1a1aa" />
+          <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
         </Pressable>
-        <Text style={styles.title}>Historial · {label}{isEur ? " · 1 EUR" : ""}</Text>
-        <Text style={styles.subtitle}>{subtitlePrefix} · últimos {days} días</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Historial · {label}{isEur ? " · 1 EUR" : ""}</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitlePrefix} · últimos {days} días</Text>
       </View>
 
       <View style={styles.daysRow}>

@@ -11,15 +11,17 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
-import { BOTTOM_SPACER, glass, glassCard, HORIZONTAL } from "@/lib/theme";
+import { getColors } from "@/lib/theme";
+import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
 const CRYPTO_SUGGESTIONS = ["BTC", "ETH", "SOL", "AVAX", "XRP", "DOGE", "LINK", "DOT"];
 
 export default function AjustesScreen() {
-  const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos } = useSettings();
+  const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos, setTheme } = useSettings();
   const [apiUrlInput, setApiUrlInput] = useState(settings.apiUrl);
   const [cryptoInput, setCryptoInput] = useState("");
+  const colors = getColors(settings.theme);
 
   useEffect(() => {
     setApiUrlInput(settings.apiUrl);
@@ -46,10 +48,10 @@ export default function AjustesScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
-          <Text style={styles.title}>Ajustes</Text>
-          <Text style={styles.subtitle}>API, divisa y cryptos</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Ajustes</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>API, divisa y cryptos</Text>
         </View>
 
       <ScrollView
@@ -59,13 +61,37 @@ export default function AjustesScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Text style={styles.sectionTitle}>URL de la API</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Apariencia</Text>
+        <View style={[styles.themeRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <Pressable
+            onPress={() => setTheme("dark")}
+            style={[styles.themeBtn, settings.theme === "dark" && styles.themeBtnActive]}
+            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+          >
+            <Ionicons name="moon" size={20} color={settings.theme === "dark" ? "#fff" : colors.textSecondary} />
+            <Text style={[styles.themeBtnText, settings.theme === "dark" && styles.themeBtnTextActive, { color: settings.theme === "dark" ? "#fff" : colors.text }]}>
+              Oscuro
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setTheme("light")}
+            style={[styles.themeBtn, settings.theme === "light" && styles.themeBtnActiveLight]}
+            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+          >
+            <Ionicons name="sunny" size={20} color={settings.theme === "light" ? "#fff" : colors.textSecondary} />
+            <Text style={[styles.themeBtnText, settings.theme === "light" && styles.themeBtnTextActive, { color: settings.theme === "light" ? "#fff" : colors.text }]}>
+              Claro
+            </Text>
+          </Pressable>
+        </View>
+
+        <Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>URL de la API</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder, color: colors.text }]}
           value={apiUrlInput}
           onChangeText={setApiUrlInput}
           placeholder="http://192.168.x.x:3000"
-          placeholderTextColor="#71717a"
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -79,24 +105,24 @@ export default function AjustesScreen() {
             <Pressable
               key={c}
               onPress={() => setDefaultCurrency(c)}
-              style={[styles.currencyBtn, settings.defaultCurrency === c && styles.currencyBtnActive]}
+              style={[styles.currencyBtn, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }, settings.defaultCurrency === c && styles.currencyBtnActive]}
             >
-              <Text style={[styles.currencyBtnText, settings.defaultCurrency === c && styles.currencyBtnTextActive]}>
+              <Text style={[styles.currencyBtnText, { color: colors.textSecondary }, settings.defaultCurrency === c && styles.currencyBtnTextActive]}>
                 {c}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        <Text style={[styles.sectionTitle, styles.sectionTitleTop]}>Cryptos favoritas</Text>
-        <Text style={styles.hint}>Se usan en la pestaña Precios. Añade símbolos (ej. BTC, ETH).</Text>
+        <Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>Cryptos favoritas</Text>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>Se usan en la pestaña Precios. Añade símbolos (ej. BTC, ETH).</Text>
         <View style={styles.cryptoInputRow}>
           <TextInput
-            style={[styles.input, styles.cryptoInput]}
+            style={[styles.input, styles.cryptoInput, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder, color: colors.text }]}
             value={cryptoInput}
             onChangeText={setCryptoInput}
             placeholder="BTC"
-            placeholderTextColor="#71717a"
+            placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
             onSubmitEditing={addCrypto}
           />
@@ -109,11 +135,11 @@ export default function AjustesScreen() {
             <Pressable
               key={s}
               onPress={() => removeCrypto(s)}
-              style={styles.chip}
-              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+              style={[styles.chip, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}
+              android_ripple={{ color: "rgba(0,0,0,0.06)" }}
             >
-              <Text style={styles.chipText}>{s}</Text>
-              <Ionicons name="close" size={16} color="#a1a1aa" />
+              <Text style={[styles.chipText, { color: colors.text }]}>{s}</Text>
+              <Ionicons name="close" size={16} color={colors.textSecondary} />
             </Pressable>
           ))}
         </View>
@@ -122,9 +148,9 @@ export default function AjustesScreen() {
             <Pressable
               key={s}
               onPress={() => setFavoriteCryptos([...settings.favoriteCryptos, s])}
-              style={styles.suggestionChip}
+              style={[styles.suggestionChip, { backgroundColor: colors.groupBg }]}
             >
-              <Text style={styles.suggestionChipText}>+ {s}</Text>
+              <Text style={[styles.suggestionChipText, { color: colors.textSecondary }]}>+ {s}</Text>
             </Pressable>
           ))}
         </View>
@@ -138,7 +164,6 @@ export default function AjustesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0C1117",
   },
   header: {
     paddingTop: 56,
@@ -148,13 +173,39 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: "800",
-    color: "#fff",
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
-    color: "#a1a1aa",
     marginTop: 4,
+  },
+  themeRow: {
+    flexDirection: "row",
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  themeBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+  },
+  themeBtnActive: {
+    backgroundColor: "#0FA226",
+  },
+  themeBtnActiveLight: {
+    backgroundColor: "#0FA226",
+  },
+  themeBtnText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  themeBtnTextActive: {
+    color: "#fff",
   },
   scroll: {
     flex: 1,
@@ -166,17 +217,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#fff",
     marginBottom: 8,
   },
   sectionTitleTop: {
     marginTop: 22,
   },
   input: {
-    ...glass,
+    borderWidth: 1,
+    borderRadius: 16,
     padding: 14,
     fontSize: 16,
-    color: "#fff",
   },
   saveBtn: {
     marginTop: 10,
@@ -198,7 +248,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 14,
-    ...glassCard,
+    borderWidth: 1,
   },
   currencyBtnActive: {
     backgroundColor: "#0FA226",
@@ -224,10 +274,10 @@ const styles = StyleSheet.create({
   },
   cryptoInput: {
     flex: 1,
-    ...glass,
+    borderWidth: 1,
+    borderRadius: 16,
     padding: 14,
     fontSize: 16,
-    color: "#fff",
   },
   addCryptoBtn: {
     width: 48,
@@ -250,10 +300,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
-    ...glassCard,
+    borderWidth: 1,
   },
   chipText: {
-    color: "#fff",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -267,10 +316,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.08)",
   },
   suggestionChipText: {
-    color: "#a1a1aa",
     fontSize: 13,
   },
 });

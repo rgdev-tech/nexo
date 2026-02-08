@@ -6,6 +6,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const KEY_API_URL = "@precios_api_url";
 const KEY_DEFAULT_CURRENCY = "@precios_default_currency";
 const KEY_FAVORITE_CRYPTOS = "@precios_favorite_cryptos";
+const KEY_THEME = "@precios_theme";
+
+export type ThemeMode = "light" | "dark";
 
 function getDefaultApiUrl(): string {
   const env = typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL;
@@ -24,6 +27,7 @@ export type Settings = {
   apiUrl: string;
   defaultCurrency: string;
   favoriteCryptos: string[];
+  theme: ThemeMode;
 };
 
 type SettingsContextValue = {
@@ -31,6 +35,7 @@ type SettingsContextValue = {
   setApiUrl: (url: string) => Promise<void>;
   setDefaultCurrency: (currency: string) => Promise<void>;
   setFavoriteCryptos: (list: string[]) => Promise<void>;
+  setTheme: (theme: ThemeMode) => Promise<void>;
   isLoaded: boolean;
 };
 
@@ -38,6 +43,7 @@ const defaultSettings: Settings = {
   apiUrl: getDefaultApiUrl(),
   defaultCurrency: "USD",
   favoriteCryptos: ["BTC", "ETH", "SOL", "AVAX"],
+  theme: "dark",
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -49,15 +55,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [url, currency, cryptos] = await Promise.all([
+        const [url, currency, cryptos, theme] = await Promise.all([
           AsyncStorage.getItem(KEY_API_URL),
           AsyncStorage.getItem(KEY_DEFAULT_CURRENCY),
           AsyncStorage.getItem(KEY_FAVORITE_CRYPTOS),
+          AsyncStorage.getItem(KEY_THEME),
         ]);
         setSettings({
           apiUrl: url ?? defaultSettings.apiUrl,
           defaultCurrency: currency ?? defaultSettings.defaultCurrency,
           favoriteCryptos: cryptos ? JSON.parse(cryptos) : defaultSettings.favoriteCryptos,
+          theme: theme === "light" || theme === "dark" ? theme : defaultSettings.theme,
         });
       } finally {
         setIsLoaded(true);
@@ -82,6 +90,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((s) => ({ ...s, favoriteCryptos: valid.length ? valid : defaultSettings.favoriteCryptos }));
   }, []);
 
+  const setTheme = useCallback(async (theme: ThemeMode) => {
+    await AsyncStorage.setItem(KEY_THEME, theme);
+    setSettings((s) => ({ ...s, theme }));
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -89,6 +102,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setApiUrl,
         setDefaultCurrency,
         setFavoriteCryptos,
+        setTheme,
         isLoaded,
       }}
     >

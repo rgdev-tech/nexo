@@ -11,7 +11,8 @@ import {
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
-import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
+import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
+import { Sparkline } from "@/components/Sparkline";
 
 type CryptoPrice = {
   symbol: string;
@@ -19,7 +20,10 @@ type CryptoPrice = {
   currency: string;
   source: string;
   timestamp: number;
+  change24h?: number;
 };
+
+type HistoryDay = { date: string; price?: number; oficial?: number; paralelo?: number; rate?: number };
 
 type ForexRate = {
   from: string;
@@ -64,6 +68,7 @@ function currencySymbol(currency: string): string {
 
 export default function PreciosScreen() {
   const { settings, isLoaded } = useSettings();
+  const colors = getColors(settings.theme);
   const [crypto, setCrypto] = useState<CryptoPrice[]>([]);
   const [forex, setForex] = useState<ForexRate | null>(null);
   const [ves, setVes] = useState<UsdToVes | null>(null);
@@ -72,6 +77,9 @@ export default function PreciosScreen() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [, setTick] = useState(0);
+  const [vesHistory, setVesHistory] = useState<HistoryDay[]>([]);
+  const [forexHistory, setForexHistory] = useState<HistoryDay[]>([]);
+  const [cryptoHistory, setCryptoHistory] = useState<Record<string, { date: string; price: number }[]>>({});
 
   useEffect(() => {
     if (lastUpdatedAt == null) return;
@@ -125,6 +133,43 @@ export default function PreciosScreen() {
     return () => clearInterval(id);
   }, [loading, error, fetchPrices]);
 
+  const fetchHistory = useCallback(async () => {
+    if (!settings.apiUrl) return;
+    try {
+      const [vesHRes, forexHRes] = await Promise.all([
+        fetch(`${settings.apiUrl}/api/prices/ves/history?days=7`),
+        fetch(`${settings.apiUrl}/api/prices/forex/history?days=7&from=USD&to=EUR`),
+      ]);
+      if (vesHRes.ok) {
+        const d = (await vesHRes.json()) as { history: HistoryDay[] };
+        setVesHistory(d.history ?? []);
+      } else setVesHistory([]);
+      if (forexHRes.ok) {
+        const d = (await forexHRes.json()) as { history: { date: string; rate: number }[] };
+        setForexHistory((d.history ?? []).map((h) => ({ date: h.date, rate: h.rate })));
+      } else setForexHistory([]);
+      const syms = settings.favoriteCryptos.length ? settings.favoriteCryptos : ["BTC", "ETH", "SOL", "AVAX"];
+      const cryptoHist = await Promise.all(
+        syms.map(async (sym) => {
+          const res = await fetch(`${settings.apiUrl}/api/prices/crypto/history?symbol=${sym}&days=7&currency=${settings.defaultCurrency}`);
+          if (!res.ok) return [sym, []] as const;
+          const data = (await res.json()) as { history: { date: string; price: number }[] };
+          return [sym, data.history ?? []] as const;
+        })
+      );
+      setCryptoHistory(Object.fromEntries(cryptoHist));
+    } catch {
+      setVesHistory([]);
+      setForexHistory([]);
+      setCryptoHistory({});
+    }
+  }, [settings.apiUrl, settings.favoriteCryptos, settings.defaultCurrency]);
+
+  useEffect(() => {
+    if (!isLoaded || loading || error) return;
+    fetchHistory();
+  }, [isLoaded, loading, error, fetchHistory]);
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchPrices(false);
@@ -132,20 +177,20 @@ export default function PreciosScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0FA226" />
-        <Text style={styles.loadingText}>Cargando precios…</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accent} />
+        <Text style={[styles.loadingText, { color: colors.textMuted }]}>Cargando precios…</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
         <View style={styles.headerLeft}>
-          <Text style={styles.title}>Precios</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Precios</Text>
           {lastUpdatedAt != null && (
-            <Text style={styles.headerSubtext}>
+            <Text style={[styles.headerSubtext, { color: colors.textMuted }]}>
               Actualizado {formatUpdatedAt(lastUpdatedAt)} · Próxima en {nextRefreshIn(lastUpdatedAt)}s
             </Text>
           )}
@@ -155,7 +200,7 @@ export default function PreciosScreen() {
           style={styles.headerConvertidorBtn}
           hitSlop={8}
         >
-          <Ionicons name="calculator-outline" size={30} color="#0FA226" />
+          <Ionicons name="calculator-outline" size={30} color={colors.accent} />
         </Pressable>
       </View>
 
@@ -167,73 +212,129 @@ export default function PreciosScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#0FA226"
+            tintColor={colors.accent}
           />
         }
       >
         {error ? (
-          <View style={styles.errorGroup}>
-            <Text style={styles.errorText}>{error}</Text>
-            <Text style={styles.errorHint}>
+          <View style={[styles.errorGroup, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
+            <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+            <Text style={[styles.errorHint, { color: colors.textMuted }]}>
               ¿Está la API en marcha? En Ajustes puedes cambiar la URL.
             </Text>
           </View>
         ) : (
           <>
             {/* Crypto — lista tipo Settings */}
-            <Text style={styles.groupLabel}>CRYPTO · {settings.defaultCurrency}</Text>
-            <View style={styles.group}>
-              {crypto.map((p, i) => (
-                <View
-                  key={p.symbol}
-                  style={[
-                    styles.row,
-                    i > 0 && styles.rowBorder,
-                  ]}
-                >
-                  <Text style={styles.rowLabel}>{p.symbol}</Text>
-                  <Text style={styles.rowValue}>
-                    {currencySymbol(p.currency)}
-                    {p.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-                  </Text>
-                </View>
-              ))}
-              <Text style={styles.groupFooter}>{crypto[0]?.source ?? "—"}</Text>
+            <Text style={[styles.groupLabel, { color: colors.textMuted }]}>CRYPTO · {settings.defaultCurrency}</Text>
+            <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
+              {crypto.map((p, i) => {
+                const sparkValues = (cryptoHistory[p.symbol] ?? []).map((d) => d.price).filter((v) => v > 0);
+                return (
+                  <Pressable
+                    key={p.symbol}
+                    style={[
+                      styles.row,
+                      i > 0 && [styles.rowBorder, { borderTopColor: colors.rowBorder }],
+                    ]}
+                    onPress={() => router.push({ pathname: "/crypto-history", params: { symbol: p.symbol } })}
+                    android_ripple={{ color: colors.groupBg }}
+                  >
+                    <View style={styles.rowLeftWithSpark}>
+                      <View style={styles.cryptoNameAndChange}>
+                        <Text style={[styles.rowLabel, { color: colors.text }]}>{p.symbol}</Text>
+                        {p.change24h != null && (
+                          <Text
+                            style={[
+                              styles.change24hSmall,
+                              { color: p.change24h >= 0 ? colors.accent : colors.error },
+                            ]}
+                          >
+                            {p.change24h >= 0 ? "+" : ""}
+                            {p.change24h.toFixed(2)}%
+                          </Text>
+                        )}
+                      </View>
+                      {sparkValues.length >= 2 && (
+                        <Sparkline values={sparkValues} color={colors.accent} />
+                      )}
+                    </View>
+                    <View style={styles.rowValueWithChevron}>
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>
+                        {currencySymbol(p.currency)}
+                        {p.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={16} color={colors.inputMuted} style={styles.chevronCrypto} />
+                    </View>
+                  </Pressable>
+                );
+              })}
+              <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{crypto[0]?.source ?? "—"}</Text>
             </View>
 
             {/* 1 USD → BS */}
             {ves ? (
               <>
-                <Text style={[styles.groupLabel, styles.groupLabelTop]}>BOLÍVARES · 1 USD</Text>
-                <View style={styles.group}>
+                <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>BOLÍVARES · 1 USD</Text>
+                <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
                   <Pressable
                     onPress={() => router.push({ pathname: "/ves-history", params: { tipo: "oficial" } })}
                     style={styles.row}
-                    android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+                    android_ripple={{ color: colors.groupBg }}
                   >
-                    <Text style={styles.rowLabel}>Oficial (BCV)</Text>
+                    <View style={styles.rowLeftWithSpark}>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>Oficial (BCV)</Text>
+                      {vesHistory.length >= 2 && (
+                        <Sparkline
+                          values={vesHistory.map((h) => h.oficial ?? 0)}
+                          color={colors.accent}
+                        />
+                      )}
+                    </View>
                     <View style={styles.rowValueWithChevron}>
-                      <Text style={styles.rowValue}>
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>
                         {ves.oficial > 0 ? `${ves.oficial.toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS` : "—"}
                       </Text>
-                      <Ionicons name="chevron-forward" size={18} color="#636366" />
+                      <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <View style={styles.rowBorder} />
+                  <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
                   <Pressable
                     onPress={() => router.push({ pathname: "/ves-history", params: { tipo: "paralelo" } })}
                     style={styles.row}
-                    android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+                    android_ripple={{ color: colors.groupBg }}
                   >
-                    <Text style={styles.rowLabel}>Paralelo</Text>
+                    <View style={styles.rowLeftWithSpark}>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>Paralelo</Text>
+                      {vesHistory.length >= 2 && (
+                        <Sparkline
+                          values={vesHistory.map((h) => h.paralelo ?? 0)}
+                          color={colors.accent}
+                        />
+                      )}
+                    </View>
                     <View style={styles.rowValueWithChevron}>
-                      <Text style={styles.rowValue}>
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>
                         {ves.paralelo > 0 ? `${ves.paralelo.toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS` : "—"}
                       </Text>
-                      <Ionicons name="chevron-forward" size={18} color="#636366" />
+                      <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={styles.groupFooter}>{ves.source}</Text>
+                  {ves.oficial > 0 && ves.paralelo > 0 && (
+                    <>
+                      <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                      <View style={styles.comparadorRow}>
+                        <Text style={[styles.comparadorRowLabel, { color: colors.textMuted }]}>Diferencia paralelo − oficial</Text>
+                        <Text style={[styles.comparadorRowValue, { color: colors.text }]}>
+                          +{(ves.paralelo - ves.oficial).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS
+                          <Text style={[styles.comparadorRowPct, { color: colors.accent }]}>
+                            {" "}({(((ves.paralelo - ves.oficial) / ves.oficial) * 100).toFixed(1)}%)
+                          </Text>
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{ves.source}</Text>
                 </View>
               </>
             ) : null}
@@ -241,40 +342,40 @@ export default function PreciosScreen() {
             {/* 1 EUR → BS */}
             {ves && forex && forex.rate > 0 ? (
               <>
-                <Text style={[styles.groupLabel, styles.groupLabelTop]}>BOLÍVARES · 1 EUR</Text>
-                <View style={styles.group}>
+                <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>BOLÍVARES · 1 EUR</Text>
+                <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
                   <Pressable
                     onPress={() => router.push({ pathname: "/ves-history", params: { tipo: "oficial_eur" } })}
                     style={styles.row}
-                    android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+                    android_ripple={{ color: colors.groupBg }}
                   >
-                    <Text style={styles.rowLabel}>Oficial (BCV)</Text>
+                    <Text style={[styles.rowLabel, { color: colors.text }]}>Oficial (BCV)</Text>
                     <View style={styles.rowValueWithChevron}>
-                      <Text style={styles.rowValue}>
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>
                         {ves.oficial > 0
                           ? `${(ves.oficial / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
                           : "—"}
                       </Text>
-                      <Ionicons name="chevron-forward" size={18} color="#636366" />
+                      <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <View style={styles.rowBorder} />
+                  <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
                   <Pressable
                     onPress={() => router.push({ pathname: "/ves-history", params: { tipo: "paralelo_eur" } })}
                     style={styles.row}
-                    android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+                    android_ripple={{ color: colors.groupBg }}
                   >
-                    <Text style={styles.rowLabel}>Paralelo</Text>
+                    <Text style={[styles.rowLabel, { color: colors.text }]}>Paralelo</Text>
                     <View style={styles.rowValueWithChevron}>
-                      <Text style={styles.rowValue}>
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>
                         {ves.paralelo > 0
                           ? `${(ves.paralelo / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
                           : "—"}
                       </Text>
-                      <Ionicons name="chevron-forward" size={18} color="#636366" />
+                      <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={styles.groupFooter}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
+                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
                 </View>
               </>
             ) : null}
@@ -282,20 +383,28 @@ export default function PreciosScreen() {
             {/* USD → EUR */}
             {forex ? (
               <>
-                <Text style={[styles.groupLabel, styles.groupLabelTop]}>TIPO DE CAMBIO</Text>
-                <View style={styles.group}>
+                <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>TIPO DE CAMBIO</Text>
+                <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
                   <Pressable
                     onPress={() => router.push("/forex-history")}
                     style={styles.row}
-                    android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+                    android_ripple={{ color: colors.groupBg }}
                   >
-                    <Text style={styles.rowLabel}>{forex.from} → {forex.to}</Text>
+                    <View style={styles.rowLeftWithSpark}>
+                      <Text style={[styles.rowLabel, { color: colors.text }]}>{forex.from} → {forex.to}</Text>
+                      {forexHistory.length >= 2 && (
+                        <Sparkline
+                          values={forexHistory.map((h) => h.rate ?? 0)}
+                          color={colors.accent}
+                        />
+                      )}
+                    </View>
                     <View style={styles.rowValueWithChevron}>
-                      <Text style={styles.rowValue}>{forex.rate.toFixed(4)}</Text>
-                      <Ionicons name="chevron-forward" size={18} color="#636366" />
+                      <Text style={[styles.rowValue, { color: colors.accent }]}>{forex.rate.toFixed(4)}</Text>
+                      <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={styles.groupFooter}>{forex.source} · Toca para ver historial</Text>
+                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{forex.source} · Toca para ver historial</Text>
                 </View>
               </>
             ) : null}
@@ -416,6 +525,42 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+  },
+  rowLeftWithSpark: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    flex: 1,
+  },
+  cryptoNameAndChange: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 6,
+  },
+  change24hSmall: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  chevronCrypto: {
+    marginLeft: 2,
+  },
+  comparadorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: ROW_PADDING_V,
+    paddingHorizontal: ROW_PADDING_H,
+  },
+  comparadorRowLabel: {
+    fontSize: 15,
+    fontWeight: "400",
+  },
+  comparadorRowValue: {
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  comparadorRowPct: {
+    fontWeight: "600",
   },
   groupFooter: {
     fontSize: 12,

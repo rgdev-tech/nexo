@@ -8,7 +8,11 @@ export type CryptoPrice = {
   currency: string;
   source: string;
   timestamp: number;
+  /** Variación 24h % (Binance); opcional */
+  change24h?: number;
 };
+
+export type CryptoHistoryDay = { date: string; price: number };
 
 const COINGECKO_IDS: Record<string, string> = {
   BTC: "bitcoin",
@@ -40,18 +44,20 @@ const COINGECKO_IDS: Record<string, string> = {
 async function fetchBinance(symbol: string, currency: string): Promise<CryptoPrice | null> {
   const quote = currency === "USD" ? "USDT" : currency;
   const pair = symbol + quote;
-  const url = `https://api.binance.com/api/v3/ticker/price?symbol=${pair}`;
+  const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
   if (!res.ok) return null;
-  const data = (await res.json()) as { price?: string };
-  const price = parseFloat(data.price);
+  const data = (await res.json()) as { lastPrice?: string; priceChangePercent?: string };
+  const price = parseFloat(data.lastPrice ?? "");
   if (Number.isNaN(price)) return null;
+  const change24h = data.priceChangePercent != null ? parseFloat(data.priceChangePercent) : undefined;
   return {
     symbol,
     price,
     currency: currency === "USDT" ? "USD" : currency,
     source: "binance",
     timestamp: Date.now(),
+    ...(Number.isFinite(change24h) && { change24h }),
   };
 }
 
@@ -108,4 +114,28 @@ export async function getCryptoPrices(
     symbols.map((s) => getCryptoPrice(s.trim(), currency))
   );
   return results.filter((r): r is CryptoPrice => r != null);
+}
+
+/** Historial de precios (CoinGecko). Últimos N días, un punto por día. */
+export async function getCryptoHistory(
+  symbol: string,
+  currency = "USD",
+  days = 7
+): Promise<CryptoHistoryDay[]> {
+  const id = COINGECKO_IDS[symbol.toUpperCase()];
+  if (!id) return [];
+  const vs = currency.toLowerCase();
+  const url = `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=${vs}&days=${Math.min(90, Math.max(1, days))}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  if (!res.ok) return [];
+  const data = (await res.json()) as { prices?: [number, number][] };
+  const prices = data.prices ?? [];
+  const byDay = new Map<string, number>();
+  for (const [ts, value] of prices) {
+    const date = new Date(ts).toISOString().slice(0, 10);
+    byDay.set(date, value);
+  }
+  return Array.from(byDay.entries())
+    .map(([date, price]) => ({ date, price }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }

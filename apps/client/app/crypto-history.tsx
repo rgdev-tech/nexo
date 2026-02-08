@@ -8,26 +8,36 @@ import {
   Text,
   View,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Svg, { Circle, Line, Polygon, Polyline } from "react-native-svg";
 import { useSettings } from "@/lib/settings";
 import { getColors, glass, glassCard, HORIZONTAL } from "@/lib/theme";
 
-type HistoryDay = { date: string; rate: number };
+type HistoryDay = { date: string; price: number };
 
 const CHART_WIDTH = Dimensions.get("window").width - HORIZONTAL * 2;
 const CHART_HEIGHT = 200;
 const PADDING = { top: 28, right: 16, bottom: 32, left: 52 };
 const CHART_H = CHART_HEIGHT - PADDING.top - PADDING.bottom;
 
-export default function ForexHistoryScreen() {
+function currencySymbol(currency: string): string {
+  if (currency === "USD") return "$";
+  if (currency === "EUR") return "€";
+  if (currency === "GBP") return "£";
+  return currency + " ";
+}
+
+export default function CryptoHistoryScreen() {
+  const { symbol: paramSymbol } = useLocalSearchParams<{ symbol?: string }>();
+  const symbol = (paramSymbol ?? "BTC").toUpperCase();
   const { settings } = useSettings();
   const colors = getColors(settings.theme);
+  const currency = settings.defaultCurrency;
   const [history, setHistory] = useState<HistoryDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [days, setDays] = useState(30);
+  const [days, setDays] = useState(7);
 
   const fetchHistory = useCallback(async () => {
     if (!settings.apiUrl) return;
@@ -35,7 +45,7 @@ export default function ForexHistoryScreen() {
     setError(null);
     try {
       const res = await fetch(
-        `${settings.apiUrl}/api/prices/forex/history?days=${days}&from=USD&to=EUR`
+        `${settings.apiUrl}/api/prices/crypto/history?symbol=${symbol}&days=${days}&currency=${currency}`
       );
       if (!res.ok) throw new Error("No se pudo cargar el historial");
       const data = (await res.json()) as { history: HistoryDay[] };
@@ -46,13 +56,13 @@ export default function ForexHistoryScreen() {
     } finally {
       setLoading(false);
     }
-  }, [days, settings.apiUrl]);
+  }, [symbol, days, currency, settings.apiUrl]);
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
-  const values = history.map((d) => d.rate).filter((v) => v > 0);
+  const values = history.map((d) => d.price).filter((v) => v > 0);
   const rawMin = values.length ? Math.min(...values) : 0;
   const rawMax = values.length ? Math.max(...values) : 1;
   const rawRange = rawMax - rawMin || 0.01;
@@ -73,7 +83,6 @@ export default function ForexHistoryScreen() {
       pts.push({ x, y });
     }
     const lineStr = pts.map((p) => `${p.x},${p.y}`).join(" ");
-    const first = pts[0];
     const last = pts[pts.length - 1];
     const areaStr = [
       `${PADDING.left},${CHART_HEIGHT - PADDING.bottom}`,
@@ -82,7 +91,7 @@ export default function ForexHistoryScreen() {
       `${PADDING.left},${CHART_HEIGHT - PADDING.bottom}`,
     ].join(" ");
     const ticks = [minVal, (minVal + maxVal) / 2, maxVal].map((v) =>
-      v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+      v >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(2)}K` : v.toFixed(2)
     );
     return {
       linePoints: lineStr,
@@ -99,11 +108,14 @@ export default function ForexHistoryScreen() {
     yTicks: [],
   };
 
-  const lastRate = values.length ? values[values.length - 1] : null;
+  const lastPrice = values.length ? values[values.length - 1] : null;
   const firstDate = history.length ? history[0]?.date : null;
   const lastDate = history.length ? history[history.length - 1]?.date : null;
   const midIndex = Math.floor(history.length / 2);
   const midDate = history.length >= 3 ? history[midIndex]?.date : null;
+
+  const gridStroke = colors.groupBorder;
+  const axisStroke = colors.rowBorder;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -111,8 +123,10 @@ export default function ForexHistoryScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
         </Pressable>
-        <Text style={[styles.title, { color: colors.text }]}>Historial · USD → EUR</Text>
-        <Text style={[styles.subtitle, { color: colors.textMuted }]}>1 USD en EUR · Frankfurter · últimos {days} días</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Historial · {symbol}</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          {symbol} en {currency} · últimos {days} días
+        </Text>
       </View>
 
       <View style={styles.daysRow}>
@@ -120,9 +134,19 @@ export default function ForexHistoryScreen() {
           <Pressable
             key={d}
             onPress={() => setDays(d)}
-            style={[styles.daysBtn, days === d && styles.daysBtnActive]}
+            style={[
+              styles.daysBtn,
+              { borderColor: colors.groupBorder },
+              days === d && [styles.daysBtnActive, { backgroundColor: colors.accent, borderColor: colors.accent }],
+            ]}
           >
-            <Text style={[styles.daysBtnText, days === d && styles.daysBtnTextActive]}>
+            <Text
+              style={[
+                styles.daysBtnText,
+                { color: colors.textMuted },
+                days === d && [styles.daysBtnTextActive, { color: "#fff" }],
+              ]}
+            >
               {d} días
             </Text>
           </Pressable>
@@ -131,15 +155,15 @@ export default function ForexHistoryScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0FA226" />
+          <ActivityIndicator size="large" color={colors.accent} />
         </View>
       ) : error ? (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         </View>
       ) : history.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>No se pudo cargar el historial.</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>No se pudo cargar el historial.</Text>
         </View>
       ) : (
         <ScrollView
@@ -147,22 +171,24 @@ export default function ForexHistoryScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {lastRate != null && (
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryLabel}>Último valor</Text>
-              <Text style={styles.summaryValue}>1 USD = {lastRate.toFixed(4)} EUR</Text>
+          {lastPrice != null && (
+            <View style={[styles.summaryCard, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+              <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Último valor</Text>
+              <Text style={[styles.summaryValue, { color: colors.accent }]}>
+                1 {symbol} = {currencySymbol(currency)}
+                {lastPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+              </Text>
             </View>
           )}
           <View style={styles.chartWrapper}>
             <View style={styles.yAxisLabels}>
               {(yTicks ?? []).map((tick, i) => (
-                <Text key={i} style={styles.yAxisText}>
+                <Text key={i} style={[styles.yAxisText, { color: colors.textMuted }]}>
                   {tick}
                 </Text>
               ))}
             </View>
-            <Svg width={CHART_WIDTH} height={CHART_HEIGHT} style={styles.chartSvg}>
-              {/* Grid */}
+            <Svg width={CHART_WIDTH} height={CHART_HEIGHT} style={[styles.chartSvg, { backgroundColor: colors.groupBg }]}>
               {[1 / 3, 2 / 3].map((frac) => {
                 const y = PADDING.top + h * frac;
                 return (
@@ -172,19 +198,18 @@ export default function ForexHistoryScreen() {
                     y1={y}
                     x2={CHART_WIDTH - PADDING.right}
                     y2={y}
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke={gridStroke}
                     strokeWidth={1}
                     strokeDasharray="4,4"
                   />
                 );
               })}
-              {/* Ejes */}
               <Line
                 x1={PADDING.left}
                 y1={PADDING.top}
                 x2={PADDING.left}
                 y2={CHART_HEIGHT - PADDING.bottom}
-                stroke="rgba(255,255,255,0.2)"
+                stroke={axisStroke}
                 strokeWidth={1}
               />
               <Line
@@ -192,56 +217,66 @@ export default function ForexHistoryScreen() {
                 y1={CHART_HEIGHT - PADDING.bottom}
                 x2={CHART_WIDTH - PADDING.right}
                 y2={CHART_HEIGHT - PADDING.bottom}
-                stroke="rgba(255,255,255,0.2)"
+                stroke={axisStroke}
                 strokeWidth={1}
               />
-              {/* Área bajo la línea */}
               {areaPoints ? (
                 <Polygon
                   points={areaPoints}
-                  fill="rgba(15,162,38,0.12)"
+                  fill={colors.accent + "20"}
                   stroke="none"
                 />
               ) : null}
-              {/* Línea */}
               {linePoints ? (
                 <Polyline
                   points={linePoints}
                   fill="none"
-                  stroke="#0FA226"
+                  stroke={colors.accent}
                   strokeWidth={2.5}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               ) : null}
-              {/* Punto último valor */}
               {lastPoint && (
                 <Circle
                   cx={lastPoint.x}
                   cy={lastPoint.y}
                   r={5}
-                  fill="#0FA226"
-                  stroke="#000"
+                  fill={colors.accent}
+                  stroke={colors.background}
                   strokeWidth={1.5}
                 />
               )}
             </Svg>
             <View style={styles.xAxisLabels}>
-              {firstDate && <Text style={styles.xAxisText}>{firstDate}</Text>}
-              {midDate && <Text style={styles.xAxisTextMid}>{midDate}</Text>}
-              {lastDate && <Text style={styles.xAxisText}>{lastDate}</Text>}
+              {firstDate && <Text style={[styles.xAxisText, { color: colors.textMuted }]}>{firstDate}</Text>}
+              {midDate && <Text style={[styles.xAxisTextMid, { color: colors.textMuted }]}>{midDate}</Text>}
+              {lastDate && <Text style={[styles.xAxisText, { color: colors.textMuted }]}>{lastDate}</Text>}
             </View>
           </View>
-          <View style={styles.list}>
-            {history.slice().reverse().map((d, i) => {
-              const isLast = i === history.length - 1;
-              return (
-                <View key={d.date} style={[styles.listRow, isLast && styles.listRowLast]}>
-                  <Text style={styles.listDate}>{d.date}</Text>
-                  <Text style={styles.listValue}>{d.rate.toFixed(4)} EUR</Text>
-                </View>
-              );
-            })}
+          <View style={[styles.list, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+            {history
+              .slice()
+              .reverse()
+              .map((d, i) => {
+                const isLast = i === history.length - 1;
+                return (
+                  <View
+                    key={d.date}
+                    style={[
+                      styles.listRow,
+                      { borderBottomColor: colors.rowBorder },
+                      isLast && styles.listRowLast,
+                    ]}
+                  >
+                    <Text style={[styles.listDate, { color: colors.textSecondary }]}>{d.date}</Text>
+                    <Text style={[styles.listValue, { color: colors.accent }]}>
+                      {currencySymbol(currency)}
+                      {d.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+                    </Text>
+                  </View>
+                );
+              })}
           </View>
         </ScrollView>
       )}
@@ -252,13 +287,11 @@ export default function ForexHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0C1117",
   },
   header: {
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 16,
-    backgroundColor: "#0C1117",
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
@@ -271,13 +304,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#fff",
   },
   subtitle: {
     width: "100%",
     marginLeft: 36,
     fontSize: 14,
-    color: "#71717a",
   },
   daysRow: {
     flexDirection: "row",
@@ -289,20 +320,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
+    borderWidth: 1,
     ...glassCard,
   },
-  daysBtnActive: {
-    backgroundColor: "#0FA226",
-    borderColor: "#0FA226",
-  },
+  daysBtnActive: {},
   daysBtnText: {
-    color: "#a1a1aa",
     fontSize: 14,
     fontWeight: "600",
   },
-  daysBtnTextActive: {
-    color: "#fff",
-  },
+  daysBtnTextActive: {},
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -310,11 +336,9 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   errorText: {
-    color: "#f87171",
     fontSize: 16,
   },
   emptyText: {
-    color: "#71717a",
     fontSize: 15,
     textAlign: "center",
   },
@@ -331,16 +355,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
     borderRadius: 12,
+    borderWidth: 1,
   },
   summaryLabel: {
     fontSize: 12,
-    color: "#8e8e93",
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#0FA226",
   },
   chartWrapper: {
     marginBottom: 20,
@@ -357,10 +380,8 @@ const styles = StyleSheet.create({
   },
   yAxisText: {
     fontSize: 11,
-    color: "#8e8e93",
   },
   chartSvg: {
-    ...glass,
     borderRadius: 16,
   },
   xAxisLabels: {
@@ -371,15 +392,14 @@ const styles = StyleSheet.create({
   },
   xAxisText: {
     fontSize: 10,
-    color: "#8e8e93",
   },
   xAxisTextMid: {
     fontSize: 10,
-    color: "#8e8e93",
   },
   list: {
-    ...glass,
     overflow: "hidden",
+    borderRadius: 12,
+    borderWidth: 1,
   },
   listRow: {
     flexDirection: "row",
@@ -388,17 +408,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.08)",
   },
   listRowLast: {
     borderBottomWidth: 0,
   },
   listDate: {
-    color: "#a1a1aa",
     fontSize: 15,
   },
   listValue: {
-    color: "#0FA226",
     fontSize: 16,
     fontWeight: "700",
   },

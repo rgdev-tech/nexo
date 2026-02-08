@@ -16,7 +16,7 @@ import { router } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
-import { HORIZONTAL } from "@/lib/theme";
+import { getColors, HORIZONTAL } from "@/lib/theme";
 
 type CurrencyId = "USD" | "EUR" | "BS_Oficial" | "BS_Paralelo";
 
@@ -51,6 +51,7 @@ type PickerKind = "from" | "to" | null;
 
 export default function ConvertidorScreen() {
   const { settings, isLoaded } = useSettings();
+  const colors = getColors(settings.theme);
   const [fromCurrency, setFromCurrency] = useState<CurrencyId>("USD");
   const [toCurrency, setToCurrency] = useState<CurrencyId>("EUR");
   const [amount, setAmount] = useState("");
@@ -106,60 +107,60 @@ export default function ConvertidorScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={80}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.background }]}>
           <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#a1a1aa" />
+            <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
           </Pressable>
           <View style={styles.headerCenter}>
-            <Text style={styles.title}>Convertidor</Text>
-            <Text style={styles.subtitle}>De una moneda a otra</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Convertidor</Text>
+            <Text style={[styles.subtitle, { color: colors.textMuted }]}>De una moneda a otra</Text>
           </View>
         </View>
 
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0FA226" />
-          <Text style={styles.loadingText}>Cargando tipos de cambio…</Text>
+        <View style={[styles.centered, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={[styles.loadingText, { color: colors.textMuted }]}>Cargando tipos de cambio…</Text>
         </View>
       ) : error ? (
-        <View style={styles.errorGroup}>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={[styles.errorGroup, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         </View>
       ) : (
         <View style={styles.content}>
-          <Text style={styles.groupLabel}>MONEDAS</Text>
-          <View style={styles.group}>
+          <Text style={[styles.groupLabel, { color: colors.textMuted }]}>MONEDAS</Text>
+          <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
             <Pressable
               style={styles.row}
               onPress={() => {
                 setPickerValue(fromCurrency);
                 setPickerOpen("from");
               }}
-              android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+              android_ripple={{ color: colors.groupBg }}
             >
-              <Text style={styles.rowLabel}>De</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>De</Text>
               <View style={styles.rowValueWithChevron}>
-                <Text style={styles.rowValue}>{currencyLabel(fromCurrency)}</Text>
-                <Ionicons name="chevron-forward" size={18} color="#636366" />
+                <Text style={[styles.rowValue, { color: colors.accent }]}>{currencyLabel(fromCurrency)}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
               </View>
             </Pressable>
-            <View style={styles.rowBorder} />
+            <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
             <Pressable
               style={styles.row}
               onPress={() => {
                 setPickerValue(toCurrency);
                 setPickerOpen("to");
               }}
-              android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+              android_ripple={{ color: colors.groupBg }}
             >
-              <Text style={styles.rowLabel}>A</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>A</Text>
               <View style={styles.rowValueWithChevron}>
-                <Text style={styles.rowValue}>{currencyLabel(toCurrency)}</Text>
-                <Ionicons name="chevron-forward" size={18} color="#636366" />
+                <Text style={[styles.rowValue, { color: colors.accent }]}>{currencyLabel(toCurrency)}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
               </View>
             </Pressable>
           </View>
@@ -199,14 +200,14 @@ export default function ConvertidorScreen() {
             </Pressable>
           </Modal>
 
-          <Text style={[styles.groupLabel, styles.groupLabelTop]}>CANTIDAD</Text>
-          <View style={styles.group}>
+          <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>CANTIDAD</Text>
+          <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               value={amount}
               onChangeText={setAmount}
               placeholder="0"
-              placeholderTextColor="#636366"
+              placeholderTextColor={colors.inputMuted}
               keyboardType="decimal-pad"
               selectTextOnFocus
             />
@@ -214,11 +215,11 @@ export default function ConvertidorScreen() {
 
           {fromCurrency !== toCurrency && rateFrom > 0 && rateTo > 0 && (
             <>
-              <Text style={[styles.groupLabel, styles.groupLabelTop]}>RESULTADO</Text>
-              <View style={styles.group}>
+              <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>RESULTADO</Text>
+              <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
                 <View style={styles.row}>
-                  <Text style={styles.rowLabel}>Total</Text>
-                  <Text style={styles.resultValue}>
+                  <Text style={[styles.rowLabel, { color: colors.text }]}>Total</Text>
+                  <Text style={[styles.resultValue, { color: colors.accent }]}>
                     {formatResult(result)} {currencyLabel(toCurrency)}
                   </Text>
                 </View>
@@ -239,7 +240,6 @@ const ROW_PADDING_H = 16;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
   },
   header: {
     flexDirection: "row",
@@ -247,7 +247,6 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 20,
-    backgroundColor: "#000",
   },
   backBtn: {
     marginRight: 12,
@@ -325,8 +324,8 @@ const styles = StyleSheet.create({
   },
   errorGroup: {
     marginHorizontal: HORIZONTAL,
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: GROUP_RADIUS,
+    borderWidth: 1,
     padding: ROW_PADDING_H,
   },
   errorText: {

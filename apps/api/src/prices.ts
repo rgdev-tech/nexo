@@ -4,7 +4,7 @@
  */
 import { cacheGet, cacheSet } from "./cache";
 import { rateLimit } from "./rate-limit";
-import { getCryptoPrice, getCryptoPrices } from "./providers/crypto";
+import { getCryptoHistory, getCryptoPrice, getCryptoPrices } from "./providers/crypto";
 import { getForexHistory, getForexRate } from "./providers/forex";
 import { getUsdToVes } from "./providers/ves";
 import { getVesHistory } from "./ves-history";
@@ -50,7 +50,7 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
     const symbol = decodeURIComponent(cryptoSymbolMatch[1]);
     const currency = url.searchParams.get("currency") ?? "USD";
     const cacheKey = `crypto:${symbol}:${currency}`;
-    const cached = cacheGet<{ symbol: string; price: number; currency: string; source: string; timestamp: number }>(cacheKey);
+    const cached = cacheGet<{ symbol: string; price: number; currency: string; source: string; timestamp: number; change24h?: number }>(cacheKey);
     if (cached) {
       return jsonResponse(cached, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
     }
@@ -71,13 +71,29 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
     const symbols = symbolsParam ? symbolsParam.split(",").map((s) => s.trim()).filter(Boolean) : ["BTC", "ETH"];
     const currency = url.searchParams.get("currency") ?? "USD";
     const cacheKey = `crypto:${symbols.join(",")}:${currency}`;
-    const cached = cacheGet<{ symbol: string; price: number; currency: string; source: string; timestamp: number }[]>(cacheKey);
+    const cached = cacheGet<{ symbol: string; price: number; currency: string; source: string; timestamp: number; change24h?: number }[]>(cacheKey);
     if (cached) {
       return jsonResponse({ prices: cached }, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
     }
     const results = await getCryptoPrices(symbols, currency);
     cacheSet(cacheKey, results, CACHE_TTL_MS);
     return jsonResponse({ prices: results }, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
+  }
+
+  // GET /api/prices/crypto/history?symbol=BTC&days=7&currency=USD
+  if (pathname === `${prefix}/crypto/history` && req.method === "GET") {
+    const symbol = url.searchParams.get("symbol") ?? "BTC";
+    const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get("days") ?? "7", 10) || 7));
+    const currency = url.searchParams.get("currency") ?? "USD";
+    const cacheKey = `crypto:history:${symbol}:${currency}:${days}`;
+    const cached = cacheGet<{ history: { date: string; price: number }[] }>(cacheKey);
+    if (cached) {
+      return jsonResponse(cached, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
+    }
+    const history = await getCryptoHistory(symbol, currency, days);
+    const payload = { history };
+    cacheSet(cacheKey, payload, 5 * 60 * 1000);
+    return jsonResponse(payload, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
   }
 
   // GET /api/prices/ves/history?days=7 — historial por día (oficial y paralelo)
