@@ -5,7 +5,8 @@ export async function savePlaylist(
   db: SQLiteDatabase,
   name: string,
   sourceUrl: string,
-  parsed: ParsedPlaylist
+  parsed: ParsedPlaylist,
+  defaultGroupTitle?: string
 ): Promise<number> {
   const result = await db.runAsync(
     "INSERT INTO playlists (name, source_url) VALUES (?, ?)",
@@ -17,7 +18,7 @@ export async function savePlaylist(
 
   const groupNames = new Map<string, number>();
   for (const ch of parsed.channels) {
-    const groupTitle = ch.groupTitle.trim() || "Sin categoría";
+    const groupTitle = (defaultGroupTitle ?? ch.groupTitle).trim() || "Sin categoría";
     if (!groupNames.has(groupTitle)) {
       const r = await db.runAsync(
         "INSERT INTO groups (playlist_id, name) VALUES (?, ?)",

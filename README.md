@@ -34,11 +34,21 @@ bun install
 doppler run -- bun install
 ```
 
+## Levantar el proyecto
+
+**Un solo comando** desde la raíz levanta client (Expo) y API (Bun) a la vez:
+
+```bash
+bun dev
+```
+
+(o `bun run dev`). Turbo orquesta ambos: Expo en el client, servidor en `apps/api`. API en `http://localhost:3000`, Metro/Expo en `http://localhost:8081`.
+
 ## Scripts (raíz)
 
 | Comando   | Descripción                    |
 |-----------|--------------------------------|
-| `bun run dev`   | Arranca client y api en modo dev (Turbo) |
+| `bun dev` | **Todo:** client + API (recomendado) |
 | `bun run client`| Solo frontend (Expo)           |
 | `bun run api`   | Solo backend (Bun)             |
 | `bun run build` | Build de todas las apps        |

@@ -15,14 +15,20 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.rgtech.nexo"
+      "bundleIdentifier": "dev.rgtech.nexo",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0f0f12"
       },
-      "package": "dev.rgtech.nexo"
+      "package": "dev.rgtech.nexo",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -32,7 +38,8 @@
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-video"
+      "expo-video",
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
     ],
     "experiments": {
       "autolinkingModuleResolution": true

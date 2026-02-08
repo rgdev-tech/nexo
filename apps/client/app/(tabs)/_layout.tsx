@@ -1,9 +1,10 @@
 import { Tabs } from "expo-router";
+import { BlurView } from "expo-blur";
 import { Platform, StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-const TAB_BAR_HEIGHT = 72;
-const PILL_BG = "rgba(39, 39, 42, 0.85)";
+const TAB_BAR_HEIGHT = 64;
+const PILL_MARGIN_H = 56;
 
 export default function TabsLayout() {
   return (
@@ -11,6 +12,13 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
+        tabBarBackground: () => (
+          <BlurView
+            intensity={90}
+            tint="dark"
+            style={StyleSheet.absoluteFill}
+          />
+        ),
         tabBarActiveTintColor: "#0FA226",
         tabBarInactiveTintColor: "#a1a1aa",
         tabBarShowLabel: true,
@@ -22,36 +30,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Inicio",
+          title: "Precios",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="series"
-        options={{
-          title: "Series",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="tv-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="peliculas"
-        options={{
-          title: "Películas",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="film-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="configuracion"
-        options={{
-          title: "Configuración",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size ?? 24} color={color} />
+            <Ionicons name="trending-up-outline" size={size ?? 24} color={color} />
           ),
         }}
       />
@@ -62,18 +43,19 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     position: "absolute",
-    left: 20,
-    right: 20,
+    left: PILL_MARGIN_H,
+    right: PILL_MARGIN_H,
     bottom: Platform.OS === "ios" ? 28 : 20,
     height: TAB_BAR_HEIGHT,
-    backgroundColor: PILL_BG,
+    backgroundColor: "transparent",
     borderRadius: TAB_BAR_HEIGHT / 2,
     borderTopWidth: 0,
+    overflow: "hidden",
     elevation: 0,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
   },
   tabBarLabel: {
     fontSize: 11,
