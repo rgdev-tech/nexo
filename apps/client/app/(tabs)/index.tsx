@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -8,11 +9,14 @@ import {
   Text,
   View,
 } from "react-native";
+import { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
 import { Sparkline } from "@/components/Sparkline";
+import { StoryCard } from "@/components/StoryCard";
 
 type CryptoPrice = {
   symbol: string;
@@ -80,6 +84,8 @@ export default function PreciosScreen() {
   const [vesHistory, setVesHistory] = useState<HistoryDay[]>([]);
   const [forexHistory, setForexHistory] = useState<HistoryDay[]>([]);
   const [cryptoHistory, setCryptoHistory] = useState<Record<string, { date: string; price: number }[]>>({});
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const storyRef = useRef<View>(null);
 
   useEffect(() => {
     if (lastUpdatedAt == null) return;
@@ -175,6 +181,31 @@ export default function PreciosScreen() {
     fetchPrices(false);
   }, [fetchPrices]);
 
+  const openShareModal = useCallback(() => setShareModalVisible(true), []);
+  const closeShareModal = useCallback(() => setShareModalVisible(false), []);
+
+  const handleShare = useCallback(async () => {
+    if (!storyRef.current) return;
+    try {
+      const canShare = await Sharing.isAvailableAsync();
+      if (!canShare) return;
+      const uri = await captureRef(storyRef, {
+        format: "png",
+        quality: 1,
+        result: "tmpfile",
+        width: 375 * 2,
+        height: 667 * 2,
+      });
+      await Sharing.shareAsync(uri, {
+        mimeType: "image/png",
+        dialogTitle: "Compartir",
+      });
+      closeShareModal();
+    } catch {
+      // ignored
+    }
+  }, [closeShareModal]);
+
   if (loading) {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
@@ -195,14 +226,56 @@ export default function PreciosScreen() {
             </Text>
           )}
         </View>
-        <Pressable
-          onPress={() => router.push("/convertidor")}
-          style={styles.headerConvertidorBtn}
-          hitSlop={8}
-        >
-          <Ionicons name="calculator-outline" size={30} color={colors.accent} />
-        </Pressable>
+        <View style={styles.headerRight}>
+          <Pressable onPress={openShareModal} style={styles.headerIconBtn} hitSlop={8}>
+            <Ionicons name="paper-plane-outline" size={26} color={colors.accent} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/convertidor")}
+            style={styles.headerIconBtn}
+            hitSlop={8}
+          >
+            <Ionicons name="calculator-outline" size={30} color={colors.accent} />
+          </Pressable>
+        </View>
       </View>
+
+      <Modal
+        visible={shareModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeShareModal}
+      >
+        <Pressable style={styles.shareOverlay} onPress={closeShareModal}>
+          <View style={styles.shareModal} pointerEvents="box-none">
+            <Pressable onPress={(e) => e.stopPropagation()} style={styles.shareCardWrap}>
+              <View ref={storyRef} collapsable={false}>
+                <StoryCard
+                  ves={ves}
+                  forex={forex}
+                  crypto={crypto}
+                  theme={settings.theme}
+                />
+              </View>
+            </Pressable>
+            <View style={styles.shareActions}>
+              <Pressable
+                onPress={handleShare}
+                style={[styles.shareBtn, { backgroundColor: colors.accent }]}
+              >
+                <Ionicons name="paper-plane-outline" size={20} color="#fff" />
+                <Text style={styles.shareBtnText}>Compartir</Text>
+              </Pressable>
+              <Pressable
+                onPress={closeShareModal}
+                style={[styles.shareBtnSecondary, { borderColor: colors.groupBorder }]}
+              >
+                <Text style={[styles.shareBtnSecondaryText, { color: colors.text }]}>Cerrar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
 
       <ScrollView
         style={styles.scroll}
@@ -459,8 +532,59 @@ const styles = StyleSheet.create({
     color: "#8e8e93",
     marginTop: 6,
   },
-  headerConvertidorBtn: {
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  headerIconBtn: {
     padding: 8,
+  },
+  shareOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  shareModal: {
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  shareCardWrap: {
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  shareActions: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+  },
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  shareBtnText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  shareBtnSecondary: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  shareBtnSecondaryText: {
+    fontSize: 17,
+    fontWeight: "600",
   },
   scroll: {
     flex: 1,

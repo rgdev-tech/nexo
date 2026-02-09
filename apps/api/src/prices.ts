@@ -44,6 +44,22 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
   const pathname = url.pathname;
   const prefix = "/api/prices";
 
+  // GET /api/prices/crypto/history?symbol=BTC&days=7&currency=USD (antes que /crypto/:symbol)
+  if (pathname === `${prefix}/crypto/history` && req.method === "GET") {
+    const symbol = url.searchParams.get("symbol") ?? "BTC";
+    const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get("days") ?? "7", 10) || 7));
+    const currency = url.searchParams.get("currency") ?? "USD";
+    const cacheKey = `crypto:history:${symbol}:${currency}:${days}`;
+    const cached = cacheGet<{ history: { date: string; price: number }[] }>(cacheKey);
+    if (cached) {
+      return jsonResponse(cached, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
+    }
+    const history = await getCryptoHistory(symbol, currency, days);
+    const payload = { history };
+    cacheSet(cacheKey, payload, 5 * 60 * 1000);
+    return jsonResponse(payload, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
+  }
+
   // GET /api/prices/crypto/:symbol
   const cryptoSymbolMatch = pathname.match(new RegExp(`^${prefix}/crypto/([^/]+)$`));
   if (cryptoSymbolMatch && req.method === "GET") {
@@ -78,22 +94,6 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
     const results = await getCryptoPrices(symbols, currency);
     cacheSet(cacheKey, results, CACHE_TTL_MS);
     return jsonResponse({ prices: results }, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
-  }
-
-  // GET /api/prices/crypto/history?symbol=BTC&days=7&currency=USD
-  if (pathname === `${prefix}/crypto/history` && req.method === "GET") {
-    const symbol = url.searchParams.get("symbol") ?? "BTC";
-    const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get("days") ?? "7", 10) || 7));
-    const currency = url.searchParams.get("currency") ?? "USD";
-    const cacheKey = `crypto:history:${symbol}:${currency}:${days}`;
-    const cached = cacheGet<{ history: { date: string; price: number }[] }>(cacheKey);
-    if (cached) {
-      return jsonResponse(cached, { headers: { ...rateLimitHeaders, "X-Cache": "HIT" } });
-    }
-    const history = await getCryptoHistory(symbol, currency, days);
-    const payload = { history };
-    cacheSet(cacheKey, payload, 5 * 60 * 1000);
-    return jsonResponse(payload, { headers: { ...rateLimitHeaders, "X-Cache": "MISS" } });
   }
 
   // GET /api/prices/ves/history?days=7 — historial por día (oficial y paralelo)

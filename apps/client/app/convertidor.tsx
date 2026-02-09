@@ -3,86 +3,69 @@ import {
   ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
-  TouchableWithoutFeedback,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
-import { Picker } from "@react-native-picker/picker";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Clipboard from "expo-clipboard";
+import * as Haptics from "expo-haptics";
 import { useSettings } from "@/lib/settings";
 import { getColors, HORIZONTAL } from "@/lib/theme";
 
-type CurrencyId = "USD" | "EUR" | "BS_Oficial" | "BS_Paralelo";
-
-const CURRENCIES: { id: CurrencyId; label: string }[] = [
-  { id: "USD", label: "USD" },
-  { id: "EUR", label: "EUR" },
-  { id: "BS_Oficial", label: "BS Oficial" },
-  { id: "BS_Paralelo", label: "BS Paralelo" },
-];
-
-function currencyLabel(id: CurrencyId): string {
-  if (id === "USD" || id === "EUR") return id;
-  return id === "BS_Oficial" ? "BS Oficial" : "BS Paralelo";
-}
-
-type ForexRate = { rate: number };
 type UsdToVes = { oficial: number; paralelo: number };
 
-function getRateFromUsd(
-  id: CurrencyId,
-  forex: ForexRate | null,
-  ves: UsdToVes | null
-): number {
-  if (id === "USD") return 1;
-  if (id === "EUR" && forex) return forex.rate;
-  if (id === "BS_Oficial" && ves?.oficial) return ves.oficial;
-  if (id === "BS_Paralelo" && ves?.paralelo) return ves.paralelo;
-  return 0;
+const BS_THRESHOLD = 1000; // Montos >= esto se interpretan como BS para la ficha "BS → $"
+
+function formatBs(n: number): string {
+  return n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
+}
+function formatUsd(n: number): string {
+  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatEur(n: number): string {
+  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-type PickerKind = "from" | "to" | null;
+type FromCurrency = "USD" | "EUR";
 
 export default function ConvertidorScreen() {
   const { settings, isLoaded } = useSettings();
   const colors = getColors(settings.theme);
-  const [fromCurrency, setFromCurrency] = useState<CurrencyId>("USD");
-  const [toCurrency, setToCurrency] = useState<CurrencyId>("EUR");
-  const [amount, setAmount] = useState("");
-  const [forex, setForex] = useState<ForexRate | null>(null);
+  const [input, setInput] = useState("");
+  const [fromCurrency, setFromCurrency] = useState<FromCurrency>("USD");
   const [ves, setVes] = useState<UsdToVes | null>(null);
+  const [forexRate, setForexRate] = useState<number | null>(null); // 1 USD = forexRate EUR
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pickerOpen, setPickerOpen] = useState<PickerKind>(null);
-  const [pickerValue, setPickerValue] = useState<CurrencyId>("USD");
 
   const fetchRates = useCallback(async () => {
     if (!settings.apiUrl) return;
     setLoading(true);
     setError(null);
     try {
-      const [forexRes, vesRes] = await Promise.all([
-        fetch(`${settings.apiUrl}/api/prices/forex?from=USD&to=EUR`),
+      const [vesRes, forexRes] = await Promise.all([
         fetch(`${settings.apiUrl}/api/prices/ves`),
+        fetch(`${settings.apiUrl}/api/prices/forex?from=USD&to=EUR`),
       ]);
-      if (forexRes.ok) {
-        const d = (await forexRes.json()) as { rate: number };
-        setForex({ rate: d.rate });
-      } else setForex(null);
       if (vesRes.ok) {
         const d = (await vesRes.json()) as UsdToVes;
         setVes({ oficial: d.oficial, paralelo: d.paralelo });
       } else setVes(null);
+      if (forexRes.ok) {
+        const f = (await forexRes.json()) as { rate: number };
+        setForexRate(f.rate);
+      } else setForexRate(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
-      setForex(null);
       setVes(null);
+      setForexRate(null);
     } finally {
       setLoading(false);
     }
@@ -92,17 +75,50 @@ export default function ConvertidorScreen() {
     if (isLoaded) fetchRates();
   }, [isLoaded, fetchRates]);
 
-  const rateFrom = getRateFromUsd(fromCurrency, forex, ves);
-  const rateTo = getRateFromUsd(toCurrency, forex, ves);
-  const amountNum = parseFloat(amount.replace(",", ".")) || 0;
-  const result =
-    rateFrom > 0 && rateTo > 0 ? (amountNum * rateTo) / rateFrom : 0;
+  const amount = parseFloat(input.replace(",", ".")) || 0;
+  const hasAmount = amount > 0;
+  const isLikelyBs = amount >= BS_THRESHOLD;
 
-  const formatResult = (n: number) => {
-    if (toCurrency === "EUR" || toCurrency === "USD")
-      return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
-  };
+  const copyAndHaptic = useCallback(async (text: string) => {
+    await Clipboard.setStringAsync(text);
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {
+      // ignore if haptics not available
+    }
+  }, []);
+
+  const toggleCurrency = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setFromCurrency((c) => (c === "USD" ? "EUR" : "USD"));
+  }, []);
+
+  // Tasas a BS (por 1 unidad de fromCurrency)
+  const rateParalelo =
+    fromCurrency === "USD"
+      ? ves?.paralelo ?? 0
+      : forexRate && ves?.paralelo
+        ? ves.paralelo / forexRate
+        : 0;
+  const rateOficial =
+    fromCurrency === "USD"
+      ? ves?.oficial ?? 0
+      : forexRate && ves?.oficial
+        ? ves.oficial / forexRate
+        : 0;
+
+  const ficha1Value = hasAmount && rateParalelo > 0 ? amount * rateParalelo : 0;
+  const ficha2Value = hasAmount && rateOficial > 0 ? amount * rateOficial : 0;
+  const ficha3Value =
+    hasAmount && isLikelyBs && ves?.paralelo ? amount / ves.paralelo : 0;
+  const ficha3EurValue =
+    hasAmount && isLikelyBs && ves?.paralelo && forexRate
+      ? (amount / ves.paralelo) * forexRate
+      : 0;
+
+  const fromLabel = fromCurrency === "USD" ? "USD" : "EUR";
+  const blurTint = settings.theme === "dark" ? "dark" : "light";
+  const isLight = settings.theme === "light";
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -115,127 +131,149 @@ export default function ConvertidorScreen() {
           <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
           </Pressable>
-          <View style={styles.headerCenter}>
-            <Text style={[styles.title, { color: colors.text }]}>Convertidor</Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>De una moneda a otra</Text>
-          </View>
+          <Text style={[styles.title, { color: colors.text }]}>Conversor Inteligente</Text>
         </View>
 
-      {loading ? (
-        <View style={[styles.centered, { backgroundColor: colors.background }]}>
-          <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={[styles.loadingText, { color: colors.textMuted }]}>Cargando tipos de cambio…</Text>
-        </View>
-      ) : error ? (
-        <View style={[styles.errorGroup, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
-          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
-        </View>
-      ) : (
-        <View style={styles.content}>
-          <Text style={[styles.groupLabel, { color: colors.textMuted }]}>MONEDAS</Text>
-          <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
-            <Pressable
-              style={styles.row}
-              onPress={() => {
-                setPickerValue(fromCurrency);
-                setPickerOpen("from");
-              }}
-              android_ripple={{ color: colors.groupBg }}
-            >
-              <Text style={[styles.rowLabel, { color: colors.text }]}>De</Text>
-              <View style={styles.rowValueWithChevron}>
-                <Text style={[styles.rowValue, { color: colors.accent }]}>{currencyLabel(fromCurrency)}</Text>
-                <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
-              </View>
-            </Pressable>
-            <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
-            <Pressable
-              style={styles.row}
-              onPress={() => {
-                setPickerValue(toCurrency);
-                setPickerOpen("to");
-              }}
-              android_ripple={{ color: colors.groupBg }}
-            >
-              <Text style={[styles.rowLabel, { color: colors.text }]}>A</Text>
-              <View style={styles.rowValueWithChevron}>
-                <Text style={[styles.rowValue, { color: colors.accent }]}>{currencyLabel(toCurrency)}</Text>
-                <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
-              </View>
-            </Pressable>
+        {loading ? (
+          <View style={[styles.centered, { backgroundColor: colors.background }]}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={[styles.loadingText, { color: colors.textMuted }]}>Cargando tasas…</Text>
           </View>
-
-          <Modal
-            visible={pickerOpen !== null}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setPickerOpen(null)}
-          >
-            <Pressable style={styles.modalOverlay} onPress={() => setPickerOpen(null)}>
-              <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-                <View style={styles.modalHeader}>
-                  <Pressable
-                    onPress={() => {
-                      if (pickerOpen === "from") setFromCurrency(pickerValue);
-                      else if (pickerOpen === "to") setToCurrency(pickerValue);
-                      setPickerOpen(null);
-                    }}
-                    hitSlop={12}
-                  >
-                    <Text style={styles.modalDone}>Listo</Text>
-                  </Pressable>
-                </View>
-                <Picker
-                  selectedValue={pickerValue}
-                  onValueChange={(v) => setPickerValue(v as CurrencyId)}
-                  style={styles.picker}
-                  itemStyle={Platform.OS === "ios" ? styles.pickerItem : undefined}
-                  prompt={pickerOpen === "from" ? "Moneda de origen" : "Moneda de destino"}
+        ) : error ? (
+          <View style={[styles.centered, { backgroundColor: colors.background }]}>
+            <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.spotlightWrap}>
+              <View style={[styles.glassRow, isLight && styles.glassRowLight]}>
+                {!isLight && (
+                  <BlurView intensity={48} tint={blurTint} style={StyleSheet.absoluteFill} />
+                )}
+                <TextInput
+                  style={[
+                    styles.spotlightInput,
+                    {
+                      color: colors.text,
+                    },
+                  ]}
+                  value={input}
+                  onChangeText={setInput}
+                  placeholder="Escribe un monto…"
+                  placeholderTextColor={colors.inputMuted}
+                  keyboardType="decimal-pad"
+                  selectTextOnFocus
+                  autoFocus
+                />
+                <Pressable
+                  onPress={toggleCurrency}
+                  style={[
+                    styles.currencyPill,
+                    {
+                      backgroundColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)",
+                      borderColor: isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.18)",
+                    },
+                  ]}
                 >
-                  {CURRENCIES.map((c) => (
-                    <Picker.Item key={c.id} label={c.label} value={c.id} />
-                  ))}
-                </Picker>
-              </View>
-            </Pressable>
-          </Modal>
-
-          <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>CANTIDAD</Text>
-          <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
-            <TextInput
-              style={[styles.input, { color: colors.text }]}
-              value={amount}
-              onChangeText={setAmount}
-              placeholder="0"
-              placeholderTextColor={colors.inputMuted}
-              keyboardType="decimal-pad"
-              selectTextOnFocus
-            />
-          </View>
-
-          {fromCurrency !== toCurrency && rateFrom > 0 && rateTo > 0 && (
-            <>
-              <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>RESULTADO</Text>
-              <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
-                <View style={styles.row}>
-                  <Text style={[styles.rowLabel, { color: colors.text }]}>Total</Text>
-                  <Text style={[styles.resultValue, { color: colors.accent }]}>
-                    {formatResult(result)} {currencyLabel(toCurrency)}
+                  <Text style={[styles.currencyPillText, { color: colors.accent }]}>
+                    {fromLabel}
                   </Text>
-                </View>
+                </Pressable>
               </View>
-            </>
-          )}
-        </View>
-      )}
+            </View>
+
+            {hasAmount && (rateParalelo > 0 || rateOficial > 0) && (
+              <View style={styles.fichas}>
+                {rateParalelo > 0 && (
+                  <Pressable
+                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    onPress={() => copyAndHaptic(`${formatBs(ficha1Value)} BS`)}
+                  >
+                    {!isLight && (
+                      <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
+                    )}
+                    <View style={[styles.ficha, isLight && styles.fichaLight]}>
+                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                        {fromLabel} → BS (Paralelo)
+                      </Text>
+                      <Text style={[styles.fichaValue, { color: colors.accent }]}>
+                        {fromCurrency === "USD" ? formatUsd(amount) : formatEur(amount)} {fromLabel} = {formatBs(ficha1Value)} BS
+                      </Text>
+                    </View>
+                  </Pressable>
+                )}
+                {rateOficial > 0 && (
+                  <Pressable
+                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    onPress={() => copyAndHaptic(`${formatBs(ficha2Value)} BS`)}
+                  >
+                    {!isLight && (
+                      <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
+                    )}
+                    <View style={[styles.ficha, isLight && styles.fichaLight]}>
+                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                        {fromLabel} → BS (BCV)
+                      </Text>
+                      <Text style={[styles.fichaValue, { color: colors.accent }]}>
+                        {fromCurrency === "USD" ? formatUsd(amount) : formatEur(amount)} {fromLabel} = {formatBs(ficha2Value)} BS
+                      </Text>
+                    </View>
+                  </Pressable>
+                )}
+                {isLikelyBs && ves?.paralelo > 0 && (
+                  <Pressable
+                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    onPress={() => copyAndHaptic(`$${formatUsd(ficha3Value)} USD`)}
+                  >
+                    {!isLight && (
+                      <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
+                    )}
+                    <View style={[styles.ficha, isLight && styles.fichaLight]}>
+                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>BS → $</Text>
+                      <Text style={[styles.fichaValue, { color: colors.accent }]}>
+                        {formatBs(amount)} BS ≈ {formatUsd(ficha3Value)} USD
+                        {forexRate != null && (
+                          <Text style={{ color: colors.textMuted, fontWeight: "500", fontSize: 16 }}>
+                            {" "}({formatEur(ficha3EurValue)} EUR)
+                          </Text>
+                        )}
+                      </Text>
+                    </View>
+                  </Pressable>
+                )}
+
+                {rateParalelo > 0 && rateOficial > 0 && (
+                  <View style={[styles.diferenciaOuter, isLight && styles.fichaOuterLight]}>
+                    {!isLight && (
+                      <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
+                    )}
+                    <View style={[styles.diferenciaInner, isLight && styles.fichaLight]}>
+                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                        Diferencia Paralelo − BCV
+                      </Text>
+                      <Text style={[styles.fichaValue, { color: colors.accent }]}>
+                        +{formatBs(ficha1Value - ficha2Value)} BS
+                        <Text style={[styles.diferenciaPct, { color: colors.textMuted }]}>
+                          {" "}({rateOficial > 0 ? (((rateParalelo - rateOficial) / rateOficial) * 100).toFixed(1) : "0"}%)
+                        </Text>
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {hasAmount && (!ves || (ves.oficial <= 0 && ves.paralelo <= 0)) && (
+              <Text style={[styles.hint, { color: colors.textMuted }]}>
+                No hay tasas de cambio. Revisa la API en Ajustes.
+              </Text>
+            )}
+          </>
+        )}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 }
-
-const GROUP_RADIUS = 12;
-const ROW_PADDING_V = 14;
-const ROW_PADDING_H = 16;
 
 const styles = StyleSheet.create({
   container: {
@@ -246,25 +284,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
-    paddingBottom: 20,
+    paddingBottom: 16,
   },
   backBtn: {
     marginRight: 12,
     padding: 4,
   },
-  headerCenter: {
-    flex: 1,
-  },
   title: {
-    fontSize: 34,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#fff",
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: "#8e8e93",
-    marginTop: 6,
+    flex: 1,
   },
   centered: {
     flex: 1,
@@ -273,107 +302,99 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingText: {
-    color: "#8e8e93",
     fontSize: 15,
   },
-  content: {
-    paddingHorizontal: HORIZONTAL,
-    paddingTop: 8,
-  },
-  groupLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#8e8e93",
-    letterSpacing: 0.2,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  groupLabelTop: {
-    marginTop: 28,
-  },
-  group: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: GROUP_RADIUS,
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: ROW_PADDING_V,
-    paddingHorizontal: ROW_PADDING_H,
-  },
-  rowBorder: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  rowLabel: {
-    fontSize: 17,
-    color: "#fff",
-    fontWeight: "400",
-  },
-  rowValue: {
-    fontSize: 17,
-    color: "#0FA226",
-    fontWeight: "600",
-  },
-  rowValueWithChevron: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  errorGroup: {
-    marginHorizontal: HORIZONTAL,
-    borderRadius: GROUP_RADIUS,
-    borderWidth: 1,
-    padding: ROW_PADDING_H,
-  },
   errorText: {
-    color: "#ff453a",
     fontSize: 17,
     fontWeight: "500",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+  spotlightWrap: {
+    paddingHorizontal: HORIZONTAL,
+    paddingTop: 32,
+    paddingBottom: 24,
   },
-  modalContent: {
-    backgroundColor: "#1c1c1e",
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    paddingBottom: Platform.OS === "ios" ? 34 : 20,
-  },
-  modalHeader: {
+  glassRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    overflow: "hidden",
+  },
+  glassRowLight: {
+    backgroundColor: "rgba(255,255,255,0.7)",
+    borderColor: "rgba(0,0,0,0.08)",
+  },
+  spotlightInput: {
+    flex: 1,
+    paddingVertical: 18,
     paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 8,
-  },
-  modalDone: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#0FA226",
-  },
-  picker: {
-    ...(Platform.OS === "android" && { color: "#fff", backgroundColor: "transparent" }),
-  },
-  pickerItem: {
-    fontSize: 20,
-    color: "#fff",
-  },
-  input: {
-    paddingVertical: ROW_PADDING_V,
-    paddingHorizontal: ROW_PADDING_H,
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#fff",
+    fontSize: 32,
+    fontWeight: "300",
     backgroundColor: "transparent",
   },
-  resultValue: {
-    fontSize: 17,
+  currencyPill: {
+    marginRight: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  currencyPillText: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  fichas: {
+    paddingHorizontal: HORIZONTAL,
+  },
+  fichaOuter: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  fichaOuterLight: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderColor: "rgba(0,0,0,0.06)",
+  },
+  ficha: {
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    backgroundColor: "transparent",
+  },
+  fichaLight: {
+    backgroundColor: "transparent",
+  },
+  diferenciaOuter: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  diferenciaInner: {
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    backgroundColor: "transparent",
+  },
+  diferenciaPct: {
+    fontSize: 16,
     fontWeight: "600",
-    color: "#0FA226",
+  },
+  fichaLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.2,
+    marginBottom: 6,
+  },
+  fichaValue: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  hint: {
+    paddingHorizontal: HORIZONTAL,
+    paddingTop: 16,
+    fontSize: 15,
   },
 });
