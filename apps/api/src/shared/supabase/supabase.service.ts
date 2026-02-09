@@ -10,7 +10,7 @@ export class SupabaseService implements OnModuleInit {
 
   onModuleInit() {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_KEY');
+    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || this.configService.get<string>('SUPABASE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
       console.warn('Missing SUPABASE_URL or SUPABASE_KEY env variables');

@@ -23,6 +23,7 @@
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.13",
     "@nestjs/platform-express": "^11.1.13",
+    "@nestjs/swagger": "^11.2.6",
     "@nestjs/throttler": "^6.5.0",
     "@supabase/supabase-js": "^2.95.3",
     "cache-manager": "^7.2.8",
@@ -31,6 +32,7 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1"
   }
 }
