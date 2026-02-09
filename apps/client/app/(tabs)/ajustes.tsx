@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as Haptics from "expo-haptics";
 import { useSettings } from "@/lib/settings";
 import { getColors } from "@/lib/theme";
 import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
@@ -22,15 +23,22 @@ export default function AjustesScreen() {
   const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos, setTheme, setBalanceFaceIdEnabled } = useSettings();
   const [apiUrlInput, setApiUrlInput] = useState(settings.apiUrl);
   const [cryptoInput, setCryptoInput] = useState("");
+  const [urlSaved, setUrlSaved] = useState(false);
   const colors = getColors(settings.theme);
 
   useEffect(() => {
     setApiUrlInput(settings.apiUrl);
   }, [settings.apiUrl]);
 
-  const saveApiUrl = useCallback(() => {
-    setApiUrl(apiUrlInput);
-  }, [apiUrlInput, setApiUrl]);
+  const saveApiUrl = useCallback(async () => {
+    const url = apiUrlInput.trim().replace(/\/+$/, "") || settings.apiUrl;
+    if (!url) return;
+    await setApiUrl(url);
+    setApiUrlInput(url);
+    setUrlSaved(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    setTimeout(() => setUrlSaved(false), 2500);
+  }, [apiUrlInput, setApiUrl, settings.apiUrl]);
 
   const addCrypto = useCallback(() => {
     const sym = cryptoInput.trim().toUpperCase();
@@ -114,8 +122,11 @@ export default function AjustesScreen() {
           autoCorrect={false}
         />
         <Pressable style={styles.saveBtn} onPress={saveApiUrl} android_ripple={{ color: "rgba(255,255,255,0.2)" }}>
-          <Text style={styles.saveBtnText}>Guardar URL</Text>
+          <Text style={styles.saveBtnText}>{urlSaved ? "Guardado" : "Guardar URL"}</Text>
         </Pressable>
+        {urlSaved && (
+          <Text style={[styles.savedHint, { color: colors.textMuted }]}>URL guardada. Ve a Precios y toca Reintentar.</Text>
+        )}
 
         <Text style={[styles.sectionTitle, styles.sectionTitleTop]}>Divisa por defecto</Text>
         <View style={styles.currencyRow}>
@@ -280,6 +291,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  savedHint: {
+    fontSize: 13,
+    marginTop: 8,
+    marginBottom: 4,
   },
   currencyRow: {
     flexDirection: "row",
