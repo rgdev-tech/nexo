@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Updates from "expo-updates";
 
 const KEY_API_URL = "@precios_api_url";
 const KEY_DEFAULT_CURRENCY = "@precios_default_currency";
@@ -12,16 +13,35 @@ const KEY_BALANCE_FACE_ID = "@nexo_balance_face_id";
 export type ThemeMode = "light" | "dark";
 
 function getDefaultApiUrl(): string {
-  const env = typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL;
-  if (env) return env.replace(/\/+$/, "");
-  if (Platform.OS === "android") return "http://10.0.2.2:3000";
-  if (Platform.OS === "ios") return "http://127.0.0.1:3000";
-  const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest?.debuggerHost;
-  if (hostUri) {
-    const host = hostUri.split(":")[0];
-    return `http://${host}:3000`;
+  // 1. Si existe una variable de entorno explícita (definida en .env, .env.production, EAS Secrets), úsala.
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && envUrl.trim() !== "") {
+    return envUrl.replace(/\/+$/, "");
   }
-  return "http://127.0.0.1:3000";
+
+  // 2. Si estamos en desarrollo (Running locally)
+  if (__DEV__) {
+    // Intentar obtener la IP de la máquina host (LAN) para que funcione en dispositivos físicos
+    const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest?.debuggerHost;
+    if (hostUri) {
+      const host = hostUri.split(":")[0];
+      return `http://${host}:3000`;
+    }
+    
+    // Fallbacks para simuladores si no se detecta hostUri
+    if (Platform.OS === "android") return "http://10.0.2.2:3000";
+    return "http://127.0.0.1:3000";
+  }
+
+  // 3. Si es una build de producción/staging y no hubo variable de entorno,
+  // intentamos deducir por el canal de actualizaciones (si usas EAS Update)
+  const channel = Updates.channel;
+  if (channel === "preview" || channel === "staging") {
+    return "https://nexo-api-staging.vercel.app"; // URL de Staging (Placeholder)
+  }
+
+  // 4. Fallback final a Producción
+  return "https://nexo-api.vercel.app"; // URL de Producción (Placeholder)
 }
 
 export type Settings = {
@@ -66,8 +86,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.getItem(KEY_THEME),
           AsyncStorage.getItem(KEY_BALANCE_FACE_ID),
         ]);
+        
+        // Si el usuario nunca ha configurado una URL manual, usamos la dinámica por defecto
+        const initialUrl = url ?? getDefaultApiUrl();
+
         setSettings({
-          apiUrl: url ?? defaultSettings.apiUrl,
+          apiUrl: initialUrl,
           defaultCurrency: currency ?? defaultSettings.defaultCurrency,
           favoriteCryptos: cryptos ? JSON.parse(cryptos) : defaultSettings.favoriteCryptos,
           theme: theme === "light" || theme === "dark" ? theme : defaultSettings.theme,
