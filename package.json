@@ -11,8 +11,12 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "clean": "turbo run clean --force && rm -rf node_modules",
-    "client": "bun run --filter client dev",
-    "api": "bun run --filter api dev",
+    "client": "cd apps/client && bun run dev",
+    "api": "cd apps/api && bun run dev",
+    "client:ios": "cd apps/client && bun run ios",
+    "client:android": "cd apps/client && bun run android",
+    "client:web": "cd apps/client && bun run web",
+    "api:build": "cd apps/api && bun run build",
     "ports:free": "lsof -ti :3000 | xargs kill -9 2>/dev/null; lsof -ti :8081 | xargs kill -9 2>/dev/null; true"
   },
   "devDependencies": {
