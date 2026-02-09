@@ -111,7 +111,8 @@ export default function AjustesScreen() {
           </Pressable>
         </View>
 
-        <Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>URL de la API</Text>
+<Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>URL de la API</Text>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>Expo Go: IP de tu Mac (ej. 192.168.4.163:3000). Standalone: URL de Vercel.</Text>
         <TextInput
           style={[styles.input, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder, color: colors.text }]}
           value={apiUrlInput}
@@ -121,9 +122,20 @@ export default function AjustesScreen() {
           autoCapitalize="none"
           autoCorrect={false}
         />
-        <Pressable style={styles.saveBtn} onPress={saveApiUrl} android_ripple={{ color: "rgba(255,255,255,0.2)" }}>
-          <Text style={styles.saveBtnText}>{urlSaved ? "Guardado" : "Guardar URL"}</Text>
-        </Pressable>
+        <View style={styles.saveRow}>
+          <Pressable style={[styles.saveBtn, styles.saveBtnFlex]} onPress={saveApiUrl} android_ripple={{ color: "rgba(255,255,255,0.2)" }}>
+            <Text style={styles.saveBtnText}>{urlSaved ? "Guardado" : "Guardar URL"}</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.useDefaultBtn, { borderColor: colors.groupBorder }]}
+            onPress={() => {
+              const url = (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL)?.replace(/\/+$/, "") || "http://192.168.4.163:3000";
+              setApiUrlInput(url);
+            }}
+          >
+            <Text style={[styles.useDefaultText, { color: colors.textMuted }]}>Usar .env</Text>
+          </Pressable>
+        </View>
         {urlSaved && (
           <Text style={[styles.savedHint, { color: colors.textMuted }]}>URL guardada. Ve a Precios y toca Reintentar.</Text>
         )}
@@ -280,12 +292,30 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 16,
   },
-  saveBtn: {
+  saveRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
     marginTop: 10,
+  },
+  saveBtn: {
     paddingVertical: 14,
     borderRadius: 14,
     backgroundColor: "#0FA226",
     alignItems: "center",
+  },
+  saveBtnFlex: {
+    flex: 1,
+  },
+  useDefaultBtn: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  useDefaultText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   saveBtnText: {
     color: "#fff",

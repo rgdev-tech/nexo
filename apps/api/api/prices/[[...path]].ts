@@ -2,7 +2,7 @@
  * Vercel serverless: todas las rutas /api/prices/*.
  * getVesHistory se sustituye por [] (sin SQLite en serverless).
  */
-import { createHandlePrices } from "../../src/prices";
+import { createHandlePrices } from "../../src/prices.js";
 
 const handlePrices = createHandlePrices(() => []);
 

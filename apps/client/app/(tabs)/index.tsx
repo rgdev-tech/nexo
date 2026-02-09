@@ -95,16 +95,40 @@ export default function PreciosScreen() {
 
   const symbols = settings.favoriteCryptos.length ? settings.favoriteCryptos.join(",") : "BTC,ETH,SOL,AVAX";
 
+  const FETCH_TIMEOUT_MS = 20000;
+
   const fetchPrices = useCallback(async (isBackground = false) => {
     if (!settings.apiUrl) return;
+    const base = settings.apiUrl;
+    if (!isBackground) {
+      console.log("[Nexo Precios] Iniciando fetch", { url: base, symbols });
+    }
     try {
       if (!isBackground) setError(null);
-      const [cryptoRes, forexRes, vesRes] = await Promise.all([
-        fetch(`${settings.apiUrl}/api/prices/crypto?symbols=${symbols}&currency=${settings.defaultCurrency}`),
-        fetch(`${settings.apiUrl}/api/prices/forex?from=USD&to=EUR`),
-        fetch(`${settings.apiUrl}/api/prices/ves`),
-      ]);
-      if (!cryptoRes.ok || !forexRes.ok) throw new Error("API no disponible");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      const opts = { signal: controller.signal };
+      const t0 = Date.now();
+      let cryptoRes: Response;
+      let forexRes: Response;
+      let vesRes: Response;
+      try {
+        [cryptoRes, forexRes, vesRes] = await Promise.all([
+          fetch(`${base}/api/prices/crypto?symbols=${symbols}&currency=${settings.defaultCurrency}`, opts),
+          fetch(`${base}/api/prices/forex?from=USD&to=EUR`, opts),
+          fetch(`${base}/api/prices/ves`, opts),
+        ]);
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      const elapsed = Date.now() - t0;
+      console.log("[Nexo Precios] Respuestas recibidas", {
+        crypto: cryptoRes.status,
+        forex: forexRes.status,
+        ves: vesRes.status,
+        elapsedMs: elapsed,
+      });
+      if (!cryptoRes.ok || !forexRes.ok) throw new Error(`API error ${cryptoRes.status || forexRes.status}`);
       const cryptoData = (await cryptoRes.json()) as { prices: CryptoPrice[] };
       const forexData = (await forexRes.json()) as ForexRate;
       setCrypto(cryptoData.prices ?? []);
@@ -116,11 +140,23 @@ export default function PreciosScreen() {
         setVes(null);
       }
       setLastUpdatedAt(Date.now());
+      if (!isBackground) console.log("[Nexo Precios] OK, precios cargados");
     } catch (e) {
+      const name = e instanceof Error ? e.name : "";
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn("[Nexo Precios] Error", {
+        name,
+        message: msg,
+        url: base,
+        fullError: e,
+      });
       if (!isBackground) {
-        const msg = e instanceof Error ? e.message : "Error al cargar precios";
+        const isTimeout = name === "TimeoutError" || msg.includes("timeout") || msg.includes("aborted");
         const isNetwork = msg === "Network request failed" || (e instanceof TypeError && e.message?.includes("fetch"));
-        setError(isNetwork ? "No se pudo conectar a la API" : msg);
+        let display = "No se pudo conectar a la API";
+        if (isTimeout) display = "La API tardó demasiado. Reintenta.";
+        else if (!isNetwork) display = msg;
+        setError(display);
         setCrypto([]);
         setForex(null);
         setVes(null);
@@ -295,7 +331,7 @@ export default function PreciosScreen() {
           <View style={[styles.errorGroup, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
             <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
             <Text style={[styles.errorHint, { color: colors.textMuted }]}>
-              En build standalone la URL debe ser alcanzable desde el dispositivo: misma red WiFi (ej. http://192.168.1.x:3000) o una API en internet. Configura la URL en Ajustes.
+              URL: {settings.apiUrl}. Prueba abrir {settings.apiUrl}/health en Safari para ver si la API responde.
             </Text>
             <Pressable
               style={[styles.errorRetryBtn, { backgroundColor: colors.accent }]}

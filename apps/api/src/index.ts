@@ -1,8 +1,8 @@
-import { createHandlePrices } from "./prices";
-import { getVesHistory } from "./ves-history";
+import { createHandlePrices } from "./prices.js";
+import { getVesHistory } from "./ves-history.js";
 
 const handlePrices = createHandlePrices(getVesHistory);
-import { backfillUsdEurFromFrankfurter, fetchAndSaveVes } from "./ves-history";
+import { backfillUsdEurFromFrankfurter, fetchAndSaveVes } from "./ves-history.js";
 
 const port = Number(process.env.PORT) || 3000;
 const VES_HOUR_MS = 60 * 60 * 1000;

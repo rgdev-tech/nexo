@@ -2,8 +2,8 @@
  * Historial de precios USD → VES (y EUR → BS vía USD/EUR). SQLite, un registro por hora.
  */
 import { Database } from "bun:sqlite";
-import { getForexRate } from "./providers/forex";
-import { getUsdToVes } from "./providers/ves";
+import { getForexRate } from "./providers/forex.js";
+import { getUsdToVes } from "./providers/ves.js";
 
 const DB_PATH = process.env.VES_DB_PATH ?? "ves.db";
 let db: Database | null = null;

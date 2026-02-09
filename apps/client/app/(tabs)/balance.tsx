@@ -21,6 +21,9 @@ import { useSettings } from "@/lib/settings";
 import { useBalance, BALANCE_TAGS, type TransactionType } from "@/lib/balance";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
 
+const BALANCE_LOCK_AFTER_MS = 10 * 60 * 1000; // 10 min sin pedir Face ID de nuevo
+let lastBalanceUnlockAt = 0;
+
 function getTagIcon(tagStr: string): keyof typeof Ionicons.glyphMap {
   const id = tagStr.includes("|") ? tagStr.split("|")[0] : null;
   const found = id ? BALANCE_TAGS.find((t) => t.id === id) : null;
@@ -80,6 +83,7 @@ export default function BalanceScreen() {
       fallbackLabel: "Usar contraseña",
     });
     if (result.success) {
+      lastBalanceUnlockAt = Date.now();
       setUnlocked(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
@@ -91,6 +95,10 @@ export default function BalanceScreen() {
         setUnlocked(true);
         return () => {};
       }
+      if (Date.now() - lastBalanceUnlockAt < BALANCE_LOCK_AFTER_MS) {
+        setUnlocked(true);
+        return () => {};
+      }
       setUnlocked(false);
       setBiometricAvailable(null);
       let cancelled = false;
@@ -99,7 +107,6 @@ export default function BalanceScreen() {
       });
       return () => {
         cancelled = true;
-        setUnlocked(false);
       };
     }, [promptAuth, settings.balanceFaceIdEnabled])
   );

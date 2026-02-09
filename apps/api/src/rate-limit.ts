@@ -7,7 +7,7 @@ const maxRequestsPerWindow = 60; // 60 req/min por IP
 
 const counts = new Map<string, { count: number; resetAt: number }>();
 
-export function rateLimit(ip: string): { ok: boolean; remaining: number; resetInMs: number } {
+export function rateLimit(ip: string): { ok: boolean; limit: number; remaining: number; resetInMs: number } {
   const now = Date.now();
   let entry = counts.get(ip);
 

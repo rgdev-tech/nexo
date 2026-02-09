@@ -2,11 +2,11 @@
  * Rutas del aggregator de precios: crypto + forex.
  * Contrato unificado, cache y rate limit.
  */
-import { cacheGet, cacheSet } from "./cache";
-import { rateLimit } from "./rate-limit";
-import { getCryptoHistory, getCryptoPrice, getCryptoPrices } from "./providers/crypto";
-import { getForexHistory, getForexRate } from "./providers/forex";
-import { getUsdToVes } from "./providers/ves";
+import { cacheGet, cacheSet } from "./cache.js";
+import { rateLimit } from "./rate-limit.js";
+import { getCryptoHistory, getCryptoPrice, getCryptoPrices } from "./providers/crypto.js";
+import { getForexHistory, getForexRate } from "./providers/forex.js";
+import { getUsdToVes } from "./providers/ves.js";
 
 export type VesHistoryDay = { date: string; oficial: number; paralelo: number; oficial_eur?: number; paralelo_eur?: number };
 
