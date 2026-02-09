@@ -7,7 +7,8 @@ import { rateLimit } from "./rate-limit";
 import { getCryptoHistory, getCryptoPrice, getCryptoPrices } from "./providers/crypto";
 import { getForexHistory, getForexRate } from "./providers/forex";
 import { getUsdToVes } from "./providers/ves";
-import { getVesHistory } from "./ves-history";
+
+export type VesHistoryDay = { date: string; oficial: number; paralelo: number; oficial_eur?: number; paralelo_eur?: number };
 
 const CACHE_TTL_MS = 60 * 1000; // 1 min
 
@@ -24,7 +25,10 @@ function jsonResponse(data: unknown, init: ResponseInit = {}) {
   });
 }
 
-export async function handlePrices(req: Request, requestUrl: string): Promise<Response | null> {
+export function createHandlePrices(
+  getVesHistory: (days: number) => VesHistoryDay[]
+): (req: Request, requestUrl: string) => Promise<Response | null> {
+  return async function handlePrices(req: Request, requestUrl: string): Promise<Response | null> {
   const ip = getClientIp(req);
   const rl = rateLimit(ip);
   const rateLimitHeaders = {
@@ -166,4 +170,5 @@ export async function handlePrices(req: Request, requestUrl: string): Promise<Re
   }
 
   return null;
+  };
 }

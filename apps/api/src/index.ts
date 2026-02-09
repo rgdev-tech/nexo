@@ -1,4 +1,7 @@
-import { handlePrices } from "./prices";
+import { createHandlePrices } from "./prices";
+import { getVesHistory } from "./ves-history";
+
+const handlePrices = createHandlePrices(getVesHistory);
 import { backfillUsdEurFromFrankfurter, fetchAndSaveVes } from "./ves-history";
 
 const port = Number(process.env.PORT) || 3000;

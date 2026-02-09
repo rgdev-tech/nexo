@@ -118,7 +118,9 @@ export default function PreciosScreen() {
       setLastUpdatedAt(Date.now());
     } catch (e) {
       if (!isBackground) {
-        setError(e instanceof Error ? e.message : "Error al cargar precios");
+        const msg = e instanceof Error ? e.message : "Error al cargar precios";
+        const isNetwork = msg === "Network request failed" || (e instanceof TypeError && e.message?.includes("fetch"));
+        setError(isNetwork ? "No se pudo conectar a la API" : msg);
         setCrypto([]);
         setForex(null);
         setVes(null);
@@ -293,8 +295,15 @@ export default function PreciosScreen() {
           <View style={[styles.errorGroup, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
             <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
             <Text style={[styles.errorHint, { color: colors.textMuted }]}>
-              ¿Está la API en marcha? En Ajustes puedes cambiar la URL.
+              En build standalone la URL debe ser alcanzable desde el dispositivo: misma red WiFi (ej. http://192.168.1.x:3000) o una API en internet. Configura la URL en Ajustes.
             </Text>
+            <Pressable
+              style={[styles.errorRetryBtn, { backgroundColor: colors.accent }]}
+              onPress={() => { setError(null); setLoading(true); fetchPrices(false); }}
+            >
+              <Ionicons name="refresh" size={20} color="#fff" />
+              <Text style={styles.errorRetryText}>Reintentar</Text>
+            </Pressable>
           </View>
         ) : (
           <>
@@ -607,6 +616,22 @@ const styles = StyleSheet.create({
     color: "#8e8e93",
     fontSize: 15,
     marginTop: 6,
+    lineHeight: 22,
+  },
+  errorRetryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  errorRetryText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
   },
   groupLabel: {
     fontSize: 13,

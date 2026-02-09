@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "outputDirectory": "public",
+  "buildCommand": "echo 'No build required'",
+  "rewrites": [
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/", "destination": "/api/index" },
+    { "source": "/api", "destination": "/api/index" }
+  ]
+}
