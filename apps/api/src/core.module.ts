@@ -1,0 +1,35 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
+
+import { SharedModule } from './shared/shared.module';
+
+import { VesModule } from './modules/ves/ves.module';
+
+import { CryptoModule } from './modules/crypto/crypto.module';
+
+import { ForexModule } from './modules/forex/forex.module';
+
+@Module({
+  imports: [
+    SharedModule,
+    VesModule,
+    CryptoModule,
+    ForexModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 60,
+    }]),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 60000, // 1 minute default
+    }),
+  ],
+  controllers: [],
+  providers: [],
+})
+export class CoreModule {}

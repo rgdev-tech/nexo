@@ -1,5 +1,0 @@
-# Copiar a doppler.yaml y ajustar project/config.
-# Uso: doppler run -- bun run dev
-#
-# project: nexo
-# config: dev

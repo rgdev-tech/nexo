@@ -1,20 +1,32 @@
-export default function handler(): Response {
-  return new Response(
-    JSON.stringify({
-      name: "nexo-api",
-      endpoints: {
-        health: "GET /health",
-        prices: {
-          crypto: "GET /api/prices/crypto/:symbol?currency=USD",
-          cryptoBatch: "GET /api/prices/crypto?symbols=BTC,ETH&currency=USD",
-          forex: "GET /api/prices/forex?from=USD&to=EUR",
-          ves: "GET /api/prices/ves",
-        },
-      },
-    }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    }
+import { NestFactory } from '@nestjs/core';
+import { CoreModule } from '../src/core.module';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
+
+const server = express();
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+let appPromise: Promise<any>;
+
+const createNestServer = async (expressInstance: any) => {
+  const app = await NestFactory.create(
+    CoreModule,
+    new ExpressAdapter(expressInstance),
   );
-}
+  app.enableCors();
+  await app.init();
+  return app;
+};
+
+export default async (req: any, res: any) => {
+  if (!appPromise) {
+    appPromise = createNestServer(server);
+  }
+  await appPromise;
+  server(req, res);
+};
