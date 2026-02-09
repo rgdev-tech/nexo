@@ -7,6 +7,7 @@ const KEY_API_URL = "@precios_api_url";
 const KEY_DEFAULT_CURRENCY = "@precios_default_currency";
 const KEY_FAVORITE_CRYPTOS = "@precios_favorite_cryptos";
 const KEY_THEME = "@precios_theme";
+const KEY_BALANCE_FACE_ID = "@nexo_balance_face_id";
 
 export type ThemeMode = "light" | "dark";
 
@@ -28,6 +29,7 @@ export type Settings = {
   defaultCurrency: string;
   favoriteCryptos: string[];
   theme: ThemeMode;
+  balanceFaceIdEnabled: boolean;
 };
 
 type SettingsContextValue = {
@@ -36,6 +38,7 @@ type SettingsContextValue = {
   setDefaultCurrency: (currency: string) => Promise<void>;
   setFavoriteCryptos: (list: string[]) => Promise<void>;
   setTheme: (theme: ThemeMode) => Promise<void>;
+  setBalanceFaceIdEnabled: (enabled: boolean) => Promise<void>;
   isLoaded: boolean;
 };
 
@@ -44,6 +47,7 @@ const defaultSettings: Settings = {
   defaultCurrency: "USD",
   favoriteCryptos: ["BTC", "ETH", "SOL", "AVAX"],
   theme: "dark",
+  balanceFaceIdEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -55,17 +59,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [url, currency, cryptos, theme] = await Promise.all([
+        const [url, currency, cryptos, theme, faceId] = await Promise.all([
           AsyncStorage.getItem(KEY_API_URL),
           AsyncStorage.getItem(KEY_DEFAULT_CURRENCY),
           AsyncStorage.getItem(KEY_FAVORITE_CRYPTOS),
           AsyncStorage.getItem(KEY_THEME),
+          AsyncStorage.getItem(KEY_BALANCE_FACE_ID),
         ]);
         setSettings({
           apiUrl: url ?? defaultSettings.apiUrl,
           defaultCurrency: currency ?? defaultSettings.defaultCurrency,
           favoriteCryptos: cryptos ? JSON.parse(cryptos) : defaultSettings.favoriteCryptos,
           theme: theme === "light" || theme === "dark" ? theme : defaultSettings.theme,
+          balanceFaceIdEnabled: faceId === "false" ? false : defaultSettings.balanceFaceIdEnabled,
         });
       } finally {
         setIsLoaded(true);
@@ -95,6 +101,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setSettings((s) => ({ ...s, theme }));
   }, []);
 
+  const setBalanceFaceIdEnabled = useCallback(async (enabled: boolean) => {
+    await AsyncStorage.setItem(KEY_BALANCE_FACE_ID, enabled ? "true" : "false");
+    setSettings((s) => ({ ...s, balanceFaceIdEnabled: enabled }));
+  }, []);
+
   return (
     <SettingsContext.Provider
       value={{
@@ -103,6 +114,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setDefaultCurrency,
         setFavoriteCryptos,
         setTheme,
+        setBalanceFaceIdEnabled,
         isLoaded,
       }}
     >

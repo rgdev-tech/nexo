@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Swipeable } from "react-native-gesture-handler";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
+import * as LocalAuthentication from "expo-local-authentication";
+import { useFocusEffect } from "expo-router";
 import { useSettings } from "@/lib/settings";
 import { useBalance, BALANCE_TAGS, type TransactionType } from "@/lib/balance";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
@@ -56,6 +58,51 @@ export default function BalanceScreen() {
   const [tag, setTag] = useState<typeof BALANCE_TAGS[number]>(BALANCE_TAGS[0]);
   const [note, setNote] = useState("");
   const [initialInput, setInitialInput] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState<boolean | null>(null);
+
+  const promptAuth = useCallback(async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) {
+      setBiometricAvailable(false);
+      setUnlocked(true);
+      return;
+    }
+    const enrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!enrolled) {
+      setBiometricAvailable(false);
+      setUnlocked(true);
+      return;
+    }
+    setBiometricAvailable(true);
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Desbloquea Balance",
+      fallbackLabel: "Usar contraseña",
+    });
+    if (result.success) {
+      setUnlocked(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!settings.balanceFaceIdEnabled) {
+        setUnlocked(true);
+        return () => {};
+      }
+      setUnlocked(false);
+      setBiometricAvailable(null);
+      let cancelled = false;
+      promptAuth().then(() => {
+        if (cancelled) setUnlocked(false);
+      });
+      return () => {
+        cancelled = true;
+        setUnlocked(false);
+      };
+    }, [promptAuth, settings.balanceFaceIdEnabled])
+  );
 
   useEffect(() => {
     if (!settings.apiUrl) return;
@@ -103,6 +150,27 @@ export default function BalanceScreen() {
     return (
       <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (settings.balanceFaceIdEnabled && !unlocked) {
+    return (
+      <View style={[styles.screen, styles.centered, { backgroundColor: colors.background }]}>
+        <View style={[styles.lockCard, { backgroundColor: colors.groupBg }]}>
+          <Ionicons name="lock-closed" size={48} color={colors.textMuted} />
+          <Text style={[styles.lockTitle, { color: colors.text }]}>Balance protegido</Text>
+          <Text style={[styles.lockSub, { color: colors.textMuted }]}>
+            Usa Face ID para ver tu balance y movimientos.
+          </Text>
+          <Pressable
+            style={[styles.lockBtn, { backgroundColor: colors.accent }]}
+            onPress={() => promptAuth()}
+          >
+            <Ionicons name="scan-outline" size={22} color="#fff" />
+            <Text style={styles.lockBtnText}>Desbloquear con Face ID</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
@@ -252,6 +320,18 @@ export default function BalanceScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  lockCard: {
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+    borderRadius: 20,
+    marginHorizontal: 24,
+    maxWidth: 320,
+  },
+  lockTitle: { fontSize: 22, fontWeight: "700", marginTop: 16, marginBottom: 8 },
+  lockSub: { fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 24 },
+  lockBtn: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14 },
+  lockBtnText: { fontSize: 17, fontWeight: "600", color: "#fff" },
   scroll: { paddingHorizontal: HORIZONTAL },
   title: { fontSize: 28, fontWeight: "700", marginBottom: 8 },
   total: { fontSize: 40, fontWeight: "700", marginBottom: 4 },

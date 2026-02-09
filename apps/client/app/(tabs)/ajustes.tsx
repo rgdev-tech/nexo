@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableWithoutFeedback,
@@ -18,7 +19,7 @@ const CURRENCIES = ["USD", "EUR", "GBP"];
 const CRYPTO_SUGGESTIONS = ["BTC", "ETH", "SOL", "AVAX", "XRP", "DOGE", "LINK", "DOT"];
 
 export default function AjustesScreen() {
-  const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos, setTheme } = useSettings();
+  const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos, setTheme, setBalanceFaceIdEnabled } = useSettings();
   const [apiUrlInput, setApiUrlInput] = useState(settings.apiUrl);
   const [cryptoInput, setCryptoInput] = useState("");
   const colors = getColors(settings.theme);
@@ -61,7 +62,24 @@ export default function AjustesScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Apariencia</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Balance</Text>
+        <View style={[styles.settingRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <View style={styles.settingRowLeft}>
+            <Ionicons name="lock-closed-outline" size={22} color={colors.text} />
+            <View>
+              <Text style={[styles.settingRowTitle, { color: colors.text }]}>Proteger con Face ID</Text>
+              <Text style={[styles.settingRowSub, { color: colors.textMuted }]}>Pide Face ID al entrar a Balance</Text>
+            </View>
+          </View>
+          <Switch
+            value={settings.balanceFaceIdEnabled}
+            onValueChange={setBalanceFaceIdEnabled}
+            trackColor={{ false: colors.groupBorder, true: "#0FA226" }}
+            thumbColor="#fff"
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>Apariencia</Text>
         <View style={[styles.themeRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
           <Pressable
             onPress={() => setTheme("dark")}
@@ -221,6 +239,29 @@ const styles = StyleSheet.create({
   },
   sectionTitleTop: {
     marginTop: 22,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  settingRowLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  settingRowTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  settingRowSub: {
+    fontSize: 12,
+    marginTop: 2,
   },
   input: {
     borderWidth: 1,

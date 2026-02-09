@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSFaceIDUsageDescription": "Nexo usa Face ID para proteger tu balance."
       }
     },
     "android": {
@@ -39,7 +40,8 @@
       "expo-router",
       "expo-asset",
       "expo-video",
-      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }],
+      ["expo-local-authentication", { "faceIDPermission": "Nexo usa Face ID para proteger tu balance." }]
     ],
     "experiments": {
       "autolinkingModuleResolution": true
