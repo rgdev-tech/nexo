@@ -25,8 +25,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  const host = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para que el móvil en la red local pueda conectarse
+  await app.listen(port, host);
+  console.log(`Application is running on: http://${host}:${port}`);
   console.log(`Swagger docs available at: ${await app.getUrl()}/api/docs`);
 }
 bootstrap();

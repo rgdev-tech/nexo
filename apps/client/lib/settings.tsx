@@ -92,8 +92,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.getItem(KEY_BALANCE_FACE_ID),
         ]);
         
-        // Si el usuario nunca ha configurado una URL manual, usamos la dinámica por defecto
-        const initialUrl = url ?? getDefaultApiUrl();
+        // En desarrollo, priorizar siempre la URL del .env para evitar IPs guardadas desactualizadas
+        const initialUrl =
+          __DEV__ && process.env.EXPO_PUBLIC_API_URL?.trim()
+            ? process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, "")
+            : (url ?? getDefaultApiUrl());
 
         setSettings({
           apiUrl: initialUrl,
