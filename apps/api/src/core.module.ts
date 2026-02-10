@@ -11,12 +11,17 @@ import { CryptoModule } from './modules/crypto/crypto.module';
 
 import { ForexModule } from './modules/forex/forex.module';
 
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+
 @Module({
   imports: [
     SharedModule,
     VesModule,
     CryptoModule,
     ForexModule,
+    UsersModule,
+    AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

@@ -4,7 +4,17 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".expo/**", "dist/**", "!.expo/cache/**"]
+      "outputs": ["dist/**", ".expo/**", "!.expo/cache/**"],
+      "env": [
+        "EXPO_PUBLIC_API_URL",
+        "EXPO_PUBLIC_SUPABASE_URL",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "PORT",
+        "NODE_ENV"
+      ]
     },
     "dev": {
       "cache": false,
@@ -17,5 +27,5 @@
       "cache": false
     }
   },
-  "globalDependencies": [".env", ".env.*"]
+  "globalDependencies": [".env", ".env.*", "tsconfig.json"]
 }
