@@ -1,129 +1,242 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useAuth } from '@/lib/auth';
-import { useSettings } from '@/lib/settings';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import { useAuth } from "@/lib/auth";
+import { useSettings } from "@/lib/settings";
+import { useRouter } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { getColors } from "@/lib/theme";
+import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const { theme } = useSettings();
+  const { settings, theme } = useSettings();
   const router = useRouter();
-  const isDark = theme === 'dark';
-  const styles = getStyles(isDark);
+  const colors = getColors(theme);
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>Inicia sesión para ver tu perfil</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.push('/login')}>
-          <Text style={styles.buttonText}>Iniciar Sesión</Text>
-        </TouchableOpacity>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>Perfil</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Inicia sesión para sincronizar tus datos
+          </Text>
+        </View>
+        <View style={[styles.emptyCard, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <View style={[styles.emptyIconWrap, { backgroundColor: colors.groupBg }]}>
+            <Ionicons name="person-outline" size={40} color={colors.textMuted} />
+          </View>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>
+            No has iniciado sesión
+          </Text>
+          <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
+            Entra con tu cuenta para ver tu perfil y mantener tus preferencias sincronizadas.
+          </Text>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => router.push("/login")}
+            android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+          >
+            <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
-            {user.email?.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-        <Text style={styles.email}>{user.email}</Text>
-        {user.user_metadata?.full_name && (
-          <Text style={styles.name}>{user.user_metadata.full_name}</Text>
-        )}
+        <Text style={[styles.title, { color: colors.text }]}>Perfil</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Tu cuenta y preferencias
+        </Text>
       </View>
 
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem}>
-          <Ionicons name="settings-outline" size={24} color={isDark ? '#fff' : '#000'} />
-          <Text style={styles.menuText}>Configuración</Text>
-          <Ionicons name="chevron-forward" size={24} color={isDark ? '#666' : '#ccc'} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.menuItem, styles.signOutButton]} onPress={signOut}>
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-          <Text style={[styles.menuText, { color: '#FF3B30' }]}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.avatarCard, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <View style={[styles.avatarCircle, { backgroundColor: colors.accent }]}>
+            <Text style={styles.avatarText}>
+              {user.email?.charAt(0).toUpperCase() ?? "?"}
+            </Text>
+          </View>
+          <Text style={[styles.email, { color: colors.text }]} numberOfLines={1}>
+            {user.email}
+          </Text>
+          {user.user_metadata?.full_name ? (
+            <Text style={[styles.name, { color: colors.textMuted }]}>
+              {user.user_metadata.full_name}
+            </Text>
+          ) : null}
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Cuenta</Text>
+        <View style={[styles.sectionGroup, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.menuRow,
+              styles.menuRowFirst,
+              { borderBottomColor: colors.groupBorder },
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={() => router.push("/(tabs)/ajustes")}
+            android_ripple={{ color: colors.groupBorder }}
+          >
+            <Ionicons name="settings-outline" size={22} color={colors.text} />
+            <Text style={[styles.menuLabel, { color: colors.text }]}>Ajustes</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.menuRow,
+              styles.menuRowLast,
+              pressed && { opacity: 0.7 },
+            ]}
+            onPress={signOut}
+            android_ripple={{ color: colors.groupBorder }}
+          >
+            <Ionicons name="log-out-outline" size={22} color={colors.error} />
+            <Text style={[styles.menuLabel, { color: colors.error }]}>Cerrar sesión</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </Pressable>
+        </View>
+        <View style={{ height: BOTTOM_SPACER }} />
+      </ScrollView>
     </View>
   );
 }
 
-const getStyles = (isDark: boolean) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#000' : '#f2f2f7',
-    padding: 20,
-  },
-  message: {
-    fontSize: 18,
-    color: isDark ? '#fff' : '#000',
-    textAlign: 'center',
-    marginBottom: 20,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 40,
-    marginTop: 20,
+    paddingTop: 56,
+    paddingHorizontal: HORIZONTAL,
+    paddingBottom: 16,
   },
-  avatarContainer: {
+  title: {
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 15,
+    marginTop: 4,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: HORIZONTAL,
+    paddingBottom: 24,
+  },
+  emptyCard: {
+    marginHorizontal: HORIZONTAL,
+    marginTop: 24,
+    padding: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  emptyIconWrap: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  emptyHint: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  primaryButton: {
+    backgroundColor: "#0FA226",
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 14,
+    minWidth: 180,
+    alignItems: "center",
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  avatarCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  avatarCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
   },
   avatarText: {
-    color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "700",
   },
   email: {
-    fontSize: 18,
-    color: isDark ? '#fff' : '#000',
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: "600",
   },
   name: {
-    fontSize: 16,
-    color: isDark ? '#aaa' : '#666',
-    marginTop: 5,
+    fontSize: 14,
+    marginTop: 4,
   },
-  section: {
-    backgroundColor: isDark ? '#1c1c1e' : '#fff',
-    borderRadius: 12,
-    overflow: 'hidden',
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    marginTop: 22,
+    marginBottom: 8,
   },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+  sectionGroup: {
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  menuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  menuRowFirst: {
     borderBottomWidth: 1,
-    borderBottomColor: isDark ? '#333' : '#f0f0f0',
   },
-  menuText: {
-    flex: 1,
-    fontSize: 16,
-    marginLeft: 15,
-    color: isDark ? '#fff' : '#000',
-  },
-  signOutButton: {
+  menuRowLast: {
     borderBottomWidth: 0,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '600',
+  menuLabel: {
+    flex: 1,
     fontSize: 16,
+    fontWeight: "600",
   },
 });
