@@ -13,14 +13,14 @@ export class UsersController {
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: 200, description: 'Returns the user profile.' })
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: any) {
     return this.usersService.getProfile(req.user.id);
   }
 
   @Patch('profile')
   @ApiOperation({ summary: 'Update user profile' })
   @ApiResponse({ status: 200, description: 'Returns the updated user profile.' })
-  async updateProfile(@Request() req, @Body() updates: any) {
+  async updateProfile(@Request() req: any, @Body() updates: any) {
     return this.usersService.updateProfile(req.user.id, updates);
   }
 }
