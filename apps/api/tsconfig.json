@@ -1,11 +1,18 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
+    "module": "commonjs",
+    "target": "es2019",
+    "sourceMap": true,
+    "noEmit": false,
     "types": ["bun", "node"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "paths": {
+      "*": ["src/*"]
+    }
   },
   "include": ["src/**/*.ts", "api/**/*.ts"]
 }
