@@ -56,7 +56,6 @@ export type Settings = {
 
 type SettingsContextValue = {
   settings: Settings;
-  setApiUrl: (url: string) => Promise<void>;
   setDefaultCurrency: (currency: string) => Promise<void>;
   setFavoriteCryptos: (list: string[]) => Promise<void>;
   setTheme: (theme: ThemeMode) => Promise<void>;
@@ -196,12 +195,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const setApiUrl = useCallback(async (url: string) => {
-    const trimmed = url.trim().replace(/\/+$/, "") || getDefaultApiUrl();
-    await AsyncStorage.setItem(KEY_API_URL, trimmed);
-    setSettings((s) => ({ ...s, apiUrl: trimmed }));
-  }, []);
-
   const setDefaultCurrency = useCallback(async (currency: string) => {
     await AsyncStorage.setItem(KEY_DEFAULT_CURRENCY, currency);
     setSettings((s) => {
@@ -236,7 +229,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     <SettingsContext.Provider
       value={{
         settings,
-        setApiUrl,
         setDefaultCurrency,
         setFavoriteCryptos,
         setTheme,

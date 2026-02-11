@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Keyboard,
   Pressable,
@@ -22,25 +22,9 @@ const CURRENCIES = ["USD", "EUR", "GBP"];
 const CRYPTO_SUGGESTIONS = ["BTC", "ETH", "SOL", "AVAX", "XRP", "DOGE", "LINK", "DOT"];
 
 export default function AjustesScreen() {
-  const { settings, setApiUrl, setDefaultCurrency, setFavoriteCryptos, setTheme, setBalanceFaceIdEnabled } = useSettings();
-  const [apiUrlInput, setApiUrlInput] = useState(settings.apiUrl);
+  const { settings, setDefaultCurrency, setFavoriteCryptos, setTheme, setBalanceFaceIdEnabled } = useSettings();
   const [cryptoInput, setCryptoInput] = useState("");
-  const [urlSaved, setUrlSaved] = useState(false);
   const colors = getColors(settings.theme);
-
-  useEffect(() => {
-    setApiUrlInput(settings.apiUrl);
-  }, [settings.apiUrl]);
-
-  const saveApiUrl = useCallback(async () => {
-    const url = apiUrlInput.trim().replace(/\/+$/, "") || settings.apiUrl;
-    if (!url) return;
-    await setApiUrl(url);
-    setApiUrlInput(url);
-    setUrlSaved(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    setTimeout(() => setUrlSaved(false), 2500);
-  }, [apiUrlInput, setApiUrl, settings.apiUrl]);
 
   const addCrypto = useCallback(() => {
     const sym = cryptoInput.trim().toUpperCase();
@@ -62,7 +46,7 @@ export default function AjustesScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Ajustes</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>API, divisa y cryptos</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Divisa, cryptos y apariencia</Text>
         </View>
 
       <ScrollView
@@ -113,36 +97,7 @@ export default function AjustesScreen() {
           </Pressable>
         </View>
 
-<Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>URL de la API</Text>
-        <Text style={[styles.hint, { color: colors.textMuted }]}>Expo Go: IP de tu Mac (ej. 192.168.4.163:3000). Standalone: URL de Vercel.</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder, color: colors.text }]}
-          value={apiUrlInput}
-          onChangeText={setApiUrlInput}
-          placeholder="http://192.168.x.x:3000"
-          placeholderTextColor={colors.textMuted}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <View style={styles.saveRow}>
-          <Pressable style={[styles.saveBtn, styles.saveBtnFlex]} onPress={saveApiUrl} android_ripple={{ color: "rgba(255,255,255,0.2)" }}>
-            <Text style={styles.saveBtnText}>{urlSaved ? "Guardado" : "Guardar URL"}</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.useDefaultBtn, { borderColor: colors.groupBorder }]}
-            onPress={() => {
-              const url = (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_API_URL)?.replace(/\/+$/, "") || "http://192.168.4.163:3000";
-              setApiUrlInput(url);
-            }}
-          >
-            <Text style={[styles.useDefaultText, { color: colors.textMuted }]}>Usar .env</Text>
-          </Pressable>
-        </View>
-        {urlSaved && (
-          <Text style={[styles.savedHint, { color: colors.textMuted }]}>URL guardada. Ve a Precios y toca Reintentar.</Text>
-        )}
-
-        <Text style={[styles.sectionTitle, styles.sectionTitleTop]}>Divisa por defecto</Text>
+<Text style={[styles.sectionTitle, styles.sectionTitleTop]}>Divisa por defecto</Text>
         <View style={styles.currencyRow}>
           {CURRENCIES.map((c) => (
             <Pressable
@@ -336,41 +291,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     fontSize: 16,
-  },
-  saveRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 10,
-  },
-  saveBtn: {
-    paddingVertical: 14,
-    borderRadius: 14,
-    backgroundColor: "#0FA226",
-    alignItems: "center",
-  },
-  saveBtnFlex: {
-    flex: 1,
-  },
-  useDefaultBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  useDefaultText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  saveBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  savedHint: {
-    fontSize: 13,
-    marginTop: 8,
-    marginBottom: 4,
   },
   currencyRow: {
     flexDirection: "row",
