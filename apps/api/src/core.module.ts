@@ -18,6 +18,7 @@ import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
+    HealthModule,
     SharedModule,
     VesModule,
     CryptoModule,

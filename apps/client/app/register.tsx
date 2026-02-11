@@ -1,18 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
-import { useSettings } from '@/lib/settings';
-import { LEGAL_URLS } from '@/lib/constants';
-import { openUrl } from '@/lib/openUrl';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { supabase } from "@/lib/supabase";
+import { useSettings } from "@/lib/settings";
+import { getColors } from "@/lib/theme";
+import { HORIZONTAL } from "@/lib/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { LEGAL_URLS } from "@/lib/constants";
+import { openUrl } from "@/lib/openUrl";
 
 export default function RegisterScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { theme } = useSettings();
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
 
   const handleRegister = async () => {
     setLoading(true);
@@ -27,134 +42,215 @@ export default function RegisterScreen() {
     });
 
     if (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     } else {
-      Alert.alert('Éxito', 'Registro exitoso. Por favor verifica tu email.');
-      router.replace('/login');
+      Alert.alert("Éxito", "Registro exitoso. Revisa tu email para confirmar.");
+      router.replace("/login");
     }
     setLoading(false);
   };
 
-  const isDark = theme === 'dark';
-  const styles = getStyles(isDark);
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Crear Cuenta</Text>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Nombre Completo"
-        placeholderTextColor={isDark ? '#888' : '#666'}
-        value={fullName}
-        onChangeText={setFullName}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={isDark ? '#888' : '#666'}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        placeholderTextColor={isDark ? '#888' : '#666'}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <Text style={[styles.legalText, { color: isDark ? '#aaa' : '#666' }]}>
-        Al registrarte aceptas los{' '}
-        <Pressable onPress={() => openUrl(LEGAL_URLS.terms)}>
-          <Text style={styles.legalLink}>Términos y Condiciones</Text>
-        </Pressable>
-        {' '}y la{' '}
-        <Pressable onPress={() => openUrl(LEGAL_URLS.privacy)}>
-          <Text style={styles.legalLink}>Política de Privacidad</Text>
-        </Pressable>
-        .
-      </Text>
-
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleRegister}
-        disabled={loading}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboard}
       >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Registrarse</Text>
-        )}
-      </TouchableOpacity>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              Crear cuenta
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Regístrate para usar Nexo
+            </Text>
+          </View>
 
-      <TouchableOpacity onPress={() => router.back()} style={styles.linkButton}>
-        <Text style={styles.linkText}>¿Ya tienes cuenta? Inicia Sesión</Text>
-      </TouchableOpacity>
+          <View style={styles.form}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Nombre
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.groupBg,
+                  borderColor: colors.groupBorder,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Tu nombre"
+              placeholderTextColor={colors.inputMuted}
+              value={fullName}
+              onChangeText={setFullName}
+              autoComplete="name"
+            />
+
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Email
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.groupBg,
+                  borderColor: colors.groupBorder,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="tu@email.com"
+              placeholderTextColor={colors.inputMuted}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+
+            <Text style={[styles.label, { color: colors.textSecondary }]}>
+              Contraseña
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.groupBg,
+                  borderColor: colors.groupBorder,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor={colors.inputMuted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password-new"
+            />
+
+            <Text style={[styles.legalText, { color: colors.textMuted }]}>
+              Al registrarte aceptas los{" "}
+              <Text style={styles.legalLink} onPress={() => openUrl(LEGAL_URLS.terms)}>
+                Términos y Condiciones
+              </Text>
+              {" "}y la{" "}
+              <Text style={styles.legalLink} onPress={() => openUrl(LEGAL_URLS.privacy)}>
+                Política de Privacidad
+              </Text>
+              .
+            </Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && { opacity: 0.9 },
+              ]}
+              onPress={handleRegister}
+              disabled={loading}
+              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Registrarse</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={styles.linkWrap}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={16} color={colors.accent} />
+              <Text style={[styles.linkText, { color: colors.accent }]}>
+                Ya tengo cuenta. Iniciar sesión
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
-const getStyles = (isDark: boolean) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: isDark ? '#000' : '#fff',
+  },
+  keyboard: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: HORIZONTAL,
+    paddingTop: 56,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 32,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
-    color: isDark ? '#fff' : '#000',
+    fontSize: 34,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 15,
+    marginTop: 4,
+  },
+  form: {
+    gap: 0,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: 16,
   },
   input: {
     height: 50,
     borderWidth: 1,
-    borderColor: isDark ? '#333' : '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    color: isDark ? '#fff' : '#000',
-    backgroundColor: isDark ? '#111' : '#f9f9f9',
-  },
-  button: {
-    height: 50,
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
-    fontWeight: '600',
   },
-  linkButton: {
-    marginTop: 20,
-    alignItems: 'center',
+  primaryButton: {
+    height: 52,
+    backgroundColor: "#0FA226",
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 28,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  linkWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 24,
   },
   linkText: {
-    color: '#007AFF',
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: "600",
   },
   legalText: {
     fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+    textAlign: "center",
+    marginTop: 16,
+    marginBottom: 8,
     paddingHorizontal: 8,
   },
   legalLink: {
-    color: '#007AFF',
+    color: "#0FA226",
     fontSize: 12,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
+    fontWeight: "600",
   },
 });
