@@ -21,7 +21,8 @@
           "NSAllowsArbitraryLoads": true
         },
         "NSFaceIDUsageDescription": "Nexo usa Face ID para proteger tu balance."
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +30,11 @@
         "backgroundColor": "#0f0f12"
       },
       "package": "dev.rgtech.nexo",
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -40,11 +45,30 @@
       "expo-router",
       "expo-asset",
       "expo-video",
-      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }],
-      ["expo-local-authentication", { "faceIDPermission": "Nexo usa Face ID para proteger tu balance." }]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Nexo usa Face ID para proteger tu balance."
+        }
+      ]
     ],
     "experiments": {
       "autolinkingModuleResolution": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c70657e7-5c18-42a4-aa04-de00f2c6e1af"
+      }
+    },
+    "owner": "rgdev-owner"
   }
 }

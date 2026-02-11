@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Pressable, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useSettings } from '@/lib/settings';
+import { LEGAL_URLS } from '@/lib/constants';
+import { openUrl } from '@/lib/openUrl';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -67,6 +69,18 @@ export default function RegisterScreen() {
         secureTextEntry
       />
 
+      <Text style={[styles.legalText, { color: isDark ? '#aaa' : '#666' }]}>
+        Al registrarte aceptas los{' '}
+        <Pressable onPress={() => openUrl(LEGAL_URLS.terms)}>
+          <Text style={styles.legalLink}>Términos y Condiciones</Text>
+        </Pressable>
+        {' '}y la{' '}
+        <Pressable onPress={() => openUrl(LEGAL_URLS.privacy)}>
+          <Text style={styles.legalLink}>Política de Privacidad</Text>
+        </Pressable>
+        .
+      </Text>
+
       <TouchableOpacity 
         style={styles.button} 
         onPress={handleRegister}
@@ -130,5 +144,17 @@ const getStyles = (isDark: boolean) => StyleSheet.create({
   linkText: {
     color: '#007AFF',
     fontSize: 14,
+  },
+  legalText: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  legalLink: {
+    color: '#007AFF',
+    fontSize: 12,
+    textDecorationLine: 'underline',
   },
 });

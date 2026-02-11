@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { useAuth } from '@/lib/auth';
 import { useSettings } from '@/lib/settings';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LEGAL_URLS } from '@/lib/constants';
+import { openUrl } from '@/lib/openUrl';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -43,6 +45,18 @@ export default function ProfileScreen() {
           <Text style={styles.menuText}>Configuración</Text>
           <Ionicons name="chevron-forward" size={24} color={isDark ? '#666' : '#ccc'} />
         </TouchableOpacity>
+
+        <Pressable style={styles.menuItem} onPress={() => openUrl(LEGAL_URLS.privacy)}>
+          <Ionicons name="document-text-outline" size={24} color={isDark ? '#fff' : '#000'} />
+          <Text style={styles.menuText}>Política de Privacidad</Text>
+          <Ionicons name="chevron-forward" size={24} color={isDark ? '#666' : '#ccc'} />
+        </Pressable>
+
+        <Pressable style={styles.menuItem} onPress={() => openUrl(LEGAL_URLS.terms)}>
+          <Ionicons name="document-outline" size={24} color={isDark ? '#fff' : '#000'} />
+          <Text style={styles.menuText}>Términos y Condiciones</Text>
+          <Ionicons name="chevron-forward" size={24} color={isDark ? '#666' : '#ccc'} />
+        </Pressable>
         
         <TouchableOpacity style={[styles.menuItem, styles.signOutButton]} onPress={signOut}>
           <Ionicons name="log-out-outline" size={24} color="#FF3B30" />

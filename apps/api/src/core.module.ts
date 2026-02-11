@@ -13,6 +13,8 @@ import { ForexModule } from './modules/forex/forex.module';
 
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CronModule } from './modules/cron/cron.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { AuthModule } from './modules/auth/auth.module';
     ForexModule,
     UsersModule,
     AuthModule,
+    CronModule,
+    HealthModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

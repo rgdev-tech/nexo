@@ -14,6 +14,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
 import { useSettings } from "@/lib/settings";
 import { getColors } from "@/lib/theme";
+import { LEGAL_URLS } from "@/lib/constants";
+import { openUrl } from "@/lib/openUrl";
 import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
@@ -195,6 +197,33 @@ export default function AjustesScreen() {
             </Pressable>
           ))}
         </View>
+
+        <Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>Legal</Text>
+        <View style={[styles.legalGroup, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
+          <Pressable
+            onPress={() => openUrl(LEGAL_URLS.privacy)}
+            style={[styles.legalRow, { borderBottomColor: colors.groupBorder }]}
+            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+          >
+            <View style={styles.settingRowLeft}>
+              <Ionicons name="document-text-outline" size={22} color={colors.text} />
+              <Text style={[styles.settingRowTitle, { color: colors.text }]}>Política de Privacidad</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </Pressable>
+          <Pressable
+            onPress={() => openUrl(LEGAL_URLS.terms)}
+            style={[styles.legalRow, styles.legalRowLast]}
+            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+          >
+            <View style={styles.settingRowLeft}>
+              <Ionicons name="document-outline" size={22} color={colors.text} />
+              <Text style={[styles.settingRowTitle, { color: colors.text }]}>Términos y Condiciones</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </Pressable>
+        </View>
+
         <View style={{ height: BOTTOM_SPACER }} />
       </ScrollView>
       </View>
@@ -277,6 +306,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
     flex: 1,
+  },
+  legalGroup: {
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  legalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  legalRowLast: {
+    borderBottomWidth: 0,
   },
   settingRowTitle: {
     fontSize: 16,

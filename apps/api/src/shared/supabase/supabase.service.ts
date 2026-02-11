@@ -13,13 +13,10 @@ export class SupabaseService implements OnModuleInit {
     const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || this.configService.get<string>('SUPABASE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
-      console.warn('Missing SUPABASE_URL or SUPABASE_KEY env variables');
+      throw new Error('Missing required env: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)');
     }
 
-    this.supabase = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseKey || 'placeholder'
-    );
+    this.supabase = createClient(supabaseUrl, supabaseKey);
   }
 
   getClient(): SupabaseClient {

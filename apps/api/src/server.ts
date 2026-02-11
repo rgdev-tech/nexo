@@ -5,17 +5,23 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(CoreModule);
-  
-  app.enableCors();
+
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean);
+  app.enableCors({
+    origin: corsOrigins?.length ? corsOrigins : '*',
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
+    forbidNonWhitelisted: true,
   }));
 
   const config = new DocumentBuilder()
     .setTitle('Nexo API')
     .setDescription('API for tracking VES, Crypto and Forex prices')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('VES', 'Bolívares prices and history')
     .addTag('Crypto', 'Cryptocurrency prices and history')
     .addTag('Forex', 'Fiat currency exchange rates')

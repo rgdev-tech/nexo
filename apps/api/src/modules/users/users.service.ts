@@ -22,7 +22,7 @@ export class UsersService {
     return data;
   }
 
-  async updateProfile(userId: string, updates: any) {
+  async updateProfile(userId: string, updates: { first_name?: string; last_name?: string; avatar_url?: string; preferences?: Record<string, unknown> }) {
     const { data, error } = await this.supabaseService.getClient()
       .from('profiles')
       .update(updates)

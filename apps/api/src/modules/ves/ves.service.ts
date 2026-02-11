@@ -37,10 +37,13 @@ export class VesService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    if (process.env.VERCEL === '1') {
+      this.logger.log('Skipping VES background jobs (serverless); use /api/cron/ves-snapshot instead.');
+      return;
+    }
     this.logger.log('Initializing VES background jobs...');
     this.fetchAndSaveVes().catch((err) => this.logger.error('Error in initial fetchAndSaveVes:', err));
     this.backfillUsdEurFromFrankfurter().catch((err) => this.logger.error('Error in backfillUsdEurFromFrankfurter:', err));
-    
     setInterval(() => {
       this.fetchAndSaveVes().catch((err) => this.logger.error('Error in interval fetchAndSaveVes:', err));
     }, VES_HOUR_MS);
