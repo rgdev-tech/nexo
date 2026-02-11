@@ -1,0 +1,60 @@
+name: "🐛 Bug"
+description: "Reportar un error"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - API
+        - Cliente
+        - Ambos
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severidad
+      options:
+        - 🔴 Crítico (app no funciona)
+        - 🟡 Medio (funcionalidad afectada)
+        - 🟢 Bajo (cosmético)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del bug
+      description: "¿Qué pasa?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Ir a...
+        2. Tocar...
+        3. Ver error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamiento esperado
+      description: "¿Qué debería pasar?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: "Capturas, logs, dispositivo, versión, etc."
+    validations:
+      required: false

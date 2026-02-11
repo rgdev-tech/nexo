@@ -1,0 +1,55 @@
+name: "🚀 Feature"
+description: "Nueva funcionalidad o mejora"
+labels: ["feature"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - API
+        - Cliente
+        - Ambos
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - 🔴 Alta
+        - 🟡 Media
+        - 🟢 Baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: "¿Qué se quiere lograr?"
+      placeholder: "Como usuario quiero..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      description: "¿Cómo sabemos que está completo?"
+      placeholder: |
+        - [ ] Endpoint creado y documentado
+        - [ ] Pantalla en el cliente
+        - [ ] Tests
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: Notas técnicas
+      description: "Detalles de implementación, endpoints, esquemas, etc."
+      placeholder: "Endpoint: POST /api/alerts ..."
+    validations:
+      required: false

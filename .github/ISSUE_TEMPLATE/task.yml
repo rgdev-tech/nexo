@@ -1,0 +1,45 @@
+name: "📋 Tarea"
+description: "Tarea técnica, refactor o mantenimiento"
+labels: ["task"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - API
+        - Cliente
+        - Infra / CI
+        - Docs
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - 🔴 Alta
+        - 🟡 Media
+        - 🟢 Baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: "¿Qué hay que hacer y por qué?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist
+      placeholder: |
+        - [ ] Paso 1
+        - [ ] Paso 2
+        - [ ] Verificar
+    validations:
+      required: false
