@@ -18,7 +18,11 @@ export class SupabaseGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token format');
     }
 
-    const { data: { user }, error } = await this.supabaseService.getClient().auth.getUser(token);
+    const client = this.supabaseService.getClient();
+    // Cast necesario: en monorepos los tipos de @supabase/auth-js
+    // pueden no resolverse correctamente en el build de Vercel.
+    const { data, error } = await (client.auth as any).getUser(token);
+    const user = data?.user ?? null;
 
     if (error || !user) {
       throw new UnauthorizedException('Invalid token');
