@@ -2,9 +2,16 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Health')
-@Controller('api')
+@Controller()
 export class HealthController {
-  @Get('health')
+  @Get()
+  @ApiOperation({ summary: 'Root' })
+  @ApiResponse({ status: 200, description: 'API info.' })
+  getRoot() {
+    return { name: '🚀 Nexo API', status: 'ok', docs: '/api/docs' };
+  }
+
+  @Get('api/health')
   @ApiOperation({ summary: 'Health check' })
   @ApiResponse({ status: 200, description: 'API is healthy.' })
   getHealth() {
