@@ -220,7 +220,7 @@ export default function ConvertidorScreen() {
                     </View>
                   </Pressable>
                 )}
-                {isLikelyBs && ves?.paralelo > 0 && (
+                {isLikelyBs && (ves?.paralelo ?? 0) > 0 && (
                   <Pressable
                     style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
                     onPress={() => copyAndHaptic(`$${formatUsd(ficha3Value)} USD`)}

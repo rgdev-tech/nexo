@@ -317,11 +317,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   daysBtn: {
+    ...glassCard,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
-    borderWidth: 1,
-    ...glassCard,
   },
   daysBtnActive: {},
   daysBtnText: {

@@ -91,7 +91,12 @@ export default function VesHistoryScreen() {
   const w = CHART_WIDTH - PADDING.left - PADDING.right;
   const h = CHART_H;
 
-  const { linePoints, areaPoints, lastPoint, yTicks } = useMemo(() => {
+  const { linePoints, areaPoints, lastPoint, yTicks } = useMemo((): {
+    linePoints: string;
+    areaPoints: string;
+    lastPoint: { x: number; y: number } | null;
+    yTicks: string[];
+  } => {
     const pts: { x: number; y: number }[] = [];
     if (values.length < 2) return { linePoints: "", areaPoints: "", lastPoint: null, yTicks: [] };
     for (let i = 0; i < values.length; i++) {
@@ -107,7 +112,7 @@ export default function VesHistoryScreen() {
       `${last.x},${CHART_HEIGHT - PADDING.bottom}`,
       `${PADDING.left},${CHART_HEIGHT - PADDING.bottom}`,
     ].join(" ");
-    const ticks = [minVal, (minVal + maxVal) / 2, maxVal].map((v) =>
+    const yTicks = [minVal, (minVal + maxVal) / 2, maxVal].map((v) =>
       v.toLocaleString("es-VE", { maximumFractionDigits: 0 })
     );
     return { linePoints: lineStr, areaPoints: areaStr, lastPoint: last, yTicks };
@@ -173,7 +178,7 @@ export default function VesHistoryScreen() {
           )}
           <View style={styles.chartWrapper}>
             <View style={styles.yAxisLabels}>
-              {(yTicks ?? []).map((tick, i) => (
+              {(yTicks ?? []).map((tick: string, i: number) => (
                 <Text key={i} style={styles.yAxisText}>
                   {tick} BS
                 </Text>
@@ -298,10 +303,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   daysBtn: {
+    ...glassCard,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
-    ...glassCard,
   },
   daysBtnActive: {
     backgroundColor: "#0FA226",
@@ -338,11 +343,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   summaryCard: {
-    ...glass,
+    backgroundColor: glass.backgroundColor,
+    borderWidth: glass.borderWidth,
+    borderColor: glass.borderColor,
+    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 12,
   },
   summaryLabel: {
     fontSize: 12,

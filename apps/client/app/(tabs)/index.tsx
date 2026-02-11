@@ -165,7 +165,7 @@ export default function PreciosScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [settings.apiUrl, symbols]);
+  }, [settings.apiUrl, settings.defaultCurrency, symbols]);
 
   useEffect(() => {
     if (isLoaded) fetchPrices();

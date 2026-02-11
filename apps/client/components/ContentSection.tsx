@@ -1,6 +1,5 @@
 import { router } from "expo-router";
 import {
-  Dimensions,
   Image,
   Pressable,
   ScrollView,

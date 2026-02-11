@@ -73,7 +73,6 @@ export default function ForexHistoryScreen() {
       pts.push({ x, y });
     }
     const lineStr = pts.map((p) => `${p.x},${p.y}`).join(" ");
-    const first = pts[0];
     const last = pts[pts.length - 1];
     const areaStr = [
       `${PADDING.left},${CHART_HEIGHT - PADDING.bottom}`,
@@ -286,10 +285,10 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   daysBtn: {
+    ...glassCard,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
-    ...glassCard,
   },
   daysBtnActive: {
     backgroundColor: "#0FA226",

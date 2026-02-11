@@ -10,14 +10,13 @@ import { useAuth } from "@/lib/auth";
 import { useSettings } from "@/lib/settings";
 import { useRouter } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { getColors } from "@/lib/theme";
-import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
+import { getColors, BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 import { LEGAL_URLS } from "@/lib/constants";
 import { openUrl } from "@/lib/openUrl";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const { settings, theme } = useSettings();
+  const { theme } = useSettings();
   const router = useRouter();
   const colors = getColors(theme);
 

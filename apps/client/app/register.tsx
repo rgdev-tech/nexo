@@ -14,8 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useSettings } from "@/lib/settings";
-import { getColors } from "@/lib/theme";
-import { HORIZONTAL } from "@/lib/theme";
+import { getColors, HORIZONTAL } from "@/lib/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LEGAL_URLS } from "@/lib/constants";
 import { openUrl } from "@/lib/openUrl";

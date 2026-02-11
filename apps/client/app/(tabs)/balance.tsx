@@ -62,22 +62,18 @@ export default function BalanceScreen() {
   const [note, setNote] = useState("");
   const [initialInput, setInitialInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
-  const [biometricAvailable, setBiometricAvailable] = useState<boolean | null>(null);
 
   const promptAuth = useCallback(async () => {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
     if (!hasHardware) {
-      setBiometricAvailable(false);
       setUnlocked(true);
       return;
     }
     const enrolled = await LocalAuthentication.isEnrolledAsync();
     if (!enrolled) {
-      setBiometricAvailable(false);
       setUnlocked(true);
       return;
     }
-    setBiometricAvailable(true);
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: "Desbloquea Balance",
       fallbackLabel: "Usar contraseña",
@@ -100,7 +96,6 @@ export default function BalanceScreen() {
         return () => {};
       }
       setUnlocked(false);
-      setBiometricAvailable(null);
       let cancelled = false;
       promptAuth().then(() => {
         if (cancelled) setUnlocked(false);

@@ -11,12 +11,10 @@ import {
   View,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Haptics from "expo-haptics";
 import { useSettings } from "@/lib/settings";
-import { getColors } from "@/lib/theme";
+import { getColors, BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 import { LEGAL_URLS } from "@/lib/constants";
 import { openUrl } from "@/lib/openUrl";
-import { BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
 const CRYPTO_SUGGESTIONS = ["BTC", "ETH", "SOL", "AVAX", "XRP", "DOGE", "LINK", "DOT"];
