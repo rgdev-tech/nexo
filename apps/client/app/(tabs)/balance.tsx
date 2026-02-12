@@ -169,8 +169,8 @@ export default function BalanceScreen() {
             style={[styles.lockBtn, { backgroundColor: colors.accent }]}
             onPress={() => promptAuth()}
           >
-            <Ionicons name="scan-outline" size={22} color="#fff" />
-            <Text style={styles.lockBtnText}>Desbloquear con Face ID</Text>
+            <Ionicons name="scan-outline" size={22} color={colors.accentOnAccent} />
+            <Text style={[styles.lockBtnText, { color: colors.accentOnAccent }]}>Desbloquear con Face ID</Text>
           </Pressable>
         </View>
       </View>
@@ -201,12 +201,12 @@ export default function BalanceScreen() {
 
           <View style={styles.buttons}>
             <Pressable style={[styles.btn, { backgroundColor: colors.accent }]} onPress={() => openAdd("income")}>
-              <Ionicons name="add" size={24} color="#fff" />
-              <Text style={styles.btnLabel}>Ingreso</Text>
+              <Ionicons name="add" size={24} color={colors.accentOnAccent} />
+              <Text style={[styles.btnLabel, { color: colors.accentOnAccent }]}>Ingreso</Text>
             </Pressable>
             <Pressable style={[styles.btn, { backgroundColor: colors.error }]} onPress={() => openAdd("expense")}>
-              <Ionicons name="remove" size={24} color="#fff" />
-              <Text style={styles.btnLabel}>Gasto</Text>
+              <Ionicons name="remove" size={24} color={colors.accentOnAccent} />
+              <Text style={[styles.btnLabel, { color: colors.accentOnAccent }]}>Gasto</Text>
             </Pressable>
           </View>
 
@@ -220,7 +220,7 @@ export default function BalanceScreen() {
                   key={tx.id}
                   renderRightActions={() => (
                     <Pressable style={[styles.deleteBtn, { backgroundColor: colors.error }]} onPress={() => remove(tx.id)}>
-                      <Ionicons name="trash-outline" size={20} color="#fff" />
+                      <Ionicons name="trash-outline" size={20} color={colors.accentOnAccent} />
                     </Pressable>
                   )}
                 >
@@ -244,13 +244,13 @@ export default function BalanceScreen() {
       </View>
 
       <Modal visible={addVisible} transparent animationType="slide">
-        <Pressable style={styles.modalBg} onPress={() => setAddVisible(false)}>
+        <Pressable style={[styles.modalBg, { backgroundColor: colors.modalOverlay }]} onPress={() => setAddVisible(false)}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.modalKeyboardWrap}
             keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
           >
-            <Pressable style={[styles.modalBox, { backgroundColor: colors.background }]} onPress={() => {}}>
+            <Pressable style={[styles.modalBox, { backgroundColor: colors.background, shadowColor: colors.shadow }]} onPress={() => {}}>
               <View style={styles.modalHandleBar}>
                 <View style={[styles.modalHandleLine, { backgroundColor: colors.textMuted }]} />
               </View>
@@ -288,7 +288,7 @@ export default function BalanceScreen() {
                   placeholderTextColor={colors.inputMuted}
                 />
                 <Pressable onPress={saveAdd} disabled={!canSave} style={[styles.saveBtn, { backgroundColor: canSave ? colors.accent : colors.inputMuted }]}>
-                  <Text style={styles.saveBtnText}>Agregar</Text>
+                  <Text style={[styles.saveBtnText, { color: colors.accentOnAccent }]}>Agregar</Text>
                 </Pressable>
               </View>
             </Pressable>
@@ -297,7 +297,7 @@ export default function BalanceScreen() {
       </Modal>
 
       <Modal visible={initialVisible} transparent animationType="fade">
-        <Pressable style={styles.modalBg} onPress={() => setInitialVisible(false)}>
+        <Pressable style={[styles.modalBg, { backgroundColor: colors.modalOverlay }]} onPress={() => setInitialVisible(false)}>
           <Pressable style={[styles.modalBox, styles.alertBox, { backgroundColor: colors.background }]} onPress={() => {}}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Saldo inicial</Text>
             <TextInput
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   lockTitle: { fontSize: 22, fontWeight: "700", marginTop: 16, marginBottom: 8 },
   lockSub: { fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 24 },
   lockBtn: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14 },
-  lockBtnText: { fontSize: 17, fontWeight: "600", color: "#fff" },
+  lockBtnText: { fontSize: 17, fontWeight: "600" },
   scroll: { paddingHorizontal: HORIZONTAL },
   title: { fontSize: 28, fontWeight: "700", marginBottom: 8 },
   total: { fontSize: 40, fontWeight: "700", marginBottom: 4 },
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 17 },
   buttons: { flexDirection: "row", gap: 12, marginVertical: 24 },
   btn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 16, borderRadius: 14 },
-  btnLabel: { fontSize: 17, fontWeight: "600", color: "#fff" },
+  btnLabel: { fontSize: 17, fontWeight: "600" },
   section: { fontSize: 13, fontWeight: "600", marginBottom: 10 },
   list: { borderRadius: 14, overflow: "hidden" },
   empty: { padding: 24, textAlign: "center", fontSize: 16 },
@@ -354,13 +354,12 @@ const styles = StyleSheet.create({
   listDate: { fontSize: 13, marginTop: 2 },
   listAmount: { fontSize: 17, fontWeight: "600" },
   deleteBtn: { justifyContent: "center", alignItems: "center", width: 72 },
-  modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", justifyContent: "flex-end" },
+  modalBg: { flex: 1, justifyContent: "flex-end" },
   modalKeyboardWrap: { width: "100%", maxHeight: "90%" },
   modalBox: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "85%",
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.35,
     shadowRadius: 16,
@@ -377,7 +376,7 @@ const styles = StyleSheet.create({
   tag: { flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 18, borderWidth: 2, borderColor: "transparent", gap: 6 },
   tagLabel: { fontSize: 14, fontWeight: "600" },
   saveBtn: { marginTop: 14, paddingVertical: 14, borderRadius: 14, alignItems: "center" },
-  saveBtnText: { fontSize: 17, fontWeight: "600", color: "#fff" },
+  saveBtnText: { fontSize: 17, fontWeight: "600" },
   alertBox: { marginHorizontal: 24, borderRadius: 20 },
   alertActions: { flexDirection: "row", justifyContent: "flex-end", gap: 20, marginTop: 20 },
   alertBtn: { fontSize: 17, fontWeight: "600" },

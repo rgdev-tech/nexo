@@ -132,11 +132,11 @@ export default function RegisterScreen() {
 
             <Text style={[styles.legalText, { color: colors.textMuted }]}>
               Al registrarte aceptas los{" "}
-              <Text style={styles.legalLink} onPress={() => openUrl(LEGAL_URLS.terms)}>
+              <Text style={[styles.legalLink, { color: colors.accent }]} onPress={() => openUrl(LEGAL_URLS.terms)}>
                 Términos y Condiciones
               </Text>
               {" "}y la{" "}
-              <Text style={styles.legalLink} onPress={() => openUrl(LEGAL_URLS.privacy)}>
+              <Text style={[styles.legalLink, { color: colors.accent }]} onPress={() => openUrl(LEGAL_URLS.privacy)}>
                 Política de Privacidad
               </Text>
               .
@@ -145,16 +145,17 @@ export default function RegisterScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.primaryButton,
+                { backgroundColor: colors.accent },
                 pressed && { opacity: 0.9 },
               ]}
               onPress={handleRegister}
               disabled={loading}
-              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+              android_ripple={{ color: colors.ripple }}
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.accentOnAccent} />
               ) : (
-                <Text style={styles.primaryButtonText}>Registrarse</Text>
+                <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Registrarse</Text>
               )}
             </Pressable>
 
@@ -217,14 +218,12 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 52,
-    backgroundColor: "#0FA226",
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 28,
   },
   primaryButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -247,7 +246,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   legalLink: {
-    color: "#0FA226",
     fontSize: 12,
     textDecorationLine: "underline",
     fontWeight: "600",

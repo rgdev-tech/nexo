@@ -105,16 +105,17 @@ export default function LoginScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.primaryButton,
+                { backgroundColor: colors.accent },
                 pressed && { opacity: 0.9 },
               ]}
               onPress={handleLogin}
               disabled={loading}
-              android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+              android_ripple={{ color: colors.ripple }}
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.accentOnAccent} />
               ) : (
-                <Text style={styles.primaryButtonText}>Entrar</Text>
+                <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Entrar</Text>
               )}
             </Pressable>
 
@@ -177,14 +178,12 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     height: 52,
-    backgroundColor: "#0FA226",
     borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 28,
   },
   primaryButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },

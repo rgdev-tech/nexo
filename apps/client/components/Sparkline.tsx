@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import Svg, { Polyline } from "react-native-svg";
+import { useSettings } from "@/lib/settings";
+import { getColors } from "@/lib/theme";
 
 const W = 44;
 const H = 20;
@@ -12,7 +14,10 @@ type Props = {
   height?: number;
 };
 
-export function Sparkline({ values, color = "#0FA226", width = W, height = H }: Props) {
+export function Sparkline({ values, color, width = W, height = H }: Props) {
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
+  const resolvedColor = color ?? colors.accent;
   const points = useMemo(() => {
     if (values.length < 2) return "";
     const min = Math.min(...values);
@@ -36,7 +41,7 @@ export function Sparkline({ values, color = "#0FA226", width = W, height = H }: 
       <Polyline
         points={points}
         fill="none"
-        stroke={color}
+        stroke={resolvedColor}
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -34,19 +34,16 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
   const eurBs =
     ves && forex && forex.rate > 0 ? ves.paralelo / forex.rate : null;
 
-  const isDark = theme === "dark";
-  const bg = isDark ? "#0c0c0e" : "#f2f2f7";
-
   return (
-    <View style={[styles.card, { backgroundColor: bg }]}>
+    <View style={[styles.card, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.brand, { color: isDark ? "#8e8e93" : "#636366" }]}>Nexo</Text>
-        <Text style={[styles.date, { color: isDark ? "#a1a1aa" : "#3a3a3c" }]}>
+        <Text style={[styles.brand, { color: colors.textMuted }]}>Nexo</Text>
+        <Text style={[styles.date, { color: colors.textSecondary }]}>
           {today}
         </Text>
 
         <View style={styles.section}>
-          <Text style={[styles.label, { color: isDark ? "#8e8e93" : "#636366" }]}>
+          <Text style={[styles.label, { color: colors.textMuted }]}>
             1 USD · BCV
           </Text>
           <Text style={[styles.value, { color: colors.accent }]}>
@@ -58,7 +55,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.label, { color: isDark ? "#8e8e93" : "#636366" }]}>
+          <Text style={[styles.label, { color: colors.textMuted }]}>
             1 USD · Paralelo
           </Text>
           <Text style={[styles.value, { color: colors.accent }]}>
@@ -71,7 +68,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
 
         {ves && ves.oficial > 0 && ves.paralelo > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.label, { color: isDark ? "#8e8e93" : "#636366" }]}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
               Diferencia
             </Text>
             <Text style={[styles.valueSmall, { color: colors.accent }]}>
@@ -82,7 +79,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
 
         {eurBs != null && eurBs > 0 && (
           <View style={styles.section}>
-            <Text style={[styles.label, { color: isDark ? "#8e8e93" : "#636366" }]}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
               1 EUR
             </Text>
             <Text style={[styles.valueSmall, { color: colors.accent }]}>
@@ -93,7 +90,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
 
         {btc && (
           <View style={[styles.section, styles.sectionLast]}>
-            <Text style={[styles.label, { color: isDark ? "#8e8e93" : "#636366" }]}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
               BTC
             </Text>
             <Text style={[styles.valueSmall, { color: colors.accent }]}>
@@ -102,7 +99,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
           </View>
         )}
 
-        <Text style={[styles.footer, { color: isDark ? "#636366" : "#8e8e93" }]}>
+        <Text style={[styles.footer, { color: colors.inputMuted }]}>
           nexo.app
         </Text>
       </View>

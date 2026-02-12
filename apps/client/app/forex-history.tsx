@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { DaysSelector } from "@/components/DaysSelector";
-import { HistoryChart } from "@/components/HistoryChart";
-import { HistoryList } from "@/components/HistoryList";
-import { SummaryCard } from "@/components/SummaryCard";
-import { useSettings } from "@/lib/settings";
-import { getColors, HORIZONTAL } from "@/lib/theme";
+import { DaysSelector } from "../components/DaysSelector";
+import { HistoryChart } from "../components/HistoryChart";
+import { HistoryList } from "../components/HistoryList";
+import { SummaryCard } from "../components/SummaryCard";
+import { useSettings } from "../lib/settings";
+import { getColors, HORIZONTAL } from "../lib/theme";
 
 type HistoryDay = { date: string; rate: number };
 
@@ -66,11 +66,11 @@ export default function ForexHistoryScreen() {
 
       {error ? (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         </View>
       ) : !loading && history.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>No se pudo cargar el historial.</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>No se pudo cargar el historial.</Text>
         </View>
       ) : (
         <ScrollView
@@ -93,9 +93,6 @@ export default function ForexHistoryScreen() {
               date: d.date,
               valueFormatted: `${d.rate.toFixed(4)} EUR`,
             }))}
-            dateColor={colors.textSecondary}
-            valueColor="#0FA226"
-            borderBottomColor="rgba(255,255,255,0.08)"
           />
         </ScrollView>
       )}
@@ -106,13 +103,11 @@ export default function ForexHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0C1117",
   },
   header: {
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 16,
-    backgroundColor: "#0C1117",
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
@@ -125,13 +120,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#fff",
   },
   subtitle: {
     width: "100%",
     marginLeft: 36,
     fontSize: 14,
-    color: "#71717a",
   },
   centered: {
     flex: 1,
@@ -140,11 +133,9 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   errorText: {
-    color: "#f87171",
     fontSize: 16,
   },
   emptyText: {
-    color: "#71717a",
     fontSize: 15,
     textAlign: "center",
   },

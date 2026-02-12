@@ -66,8 +66,8 @@ export default function AjustesScreen() {
           <Switch
             value={settings.balanceFaceIdEnabled}
             onValueChange={setBalanceFaceIdEnabled}
-            trackColor={{ false: colors.groupBorder, true: "#0FA226" }}
-            thumbColor="#fff"
+            trackColor={{ false: colors.groupBorder, true: colors.accent }}
+            thumbColor={colors.accentOnAccent}
           />
         </View>
 
@@ -75,35 +75,35 @@ export default function AjustesScreen() {
         <View style={[styles.themeRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
           <Pressable
             onPress={() => setTheme("dark")}
-            style={[styles.themeBtn, settings.theme === "dark" && styles.themeBtnActive]}
-            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+            style={[styles.themeBtn, settings.theme === "dark" && { backgroundColor: colors.accent }]}
+            android_ripple={{ color: colors.ripple }}
           >
-            <Ionicons name="moon" size={20} color={settings.theme === "dark" ? "#fff" : colors.textSecondary} />
-            <Text style={[styles.themeBtnText, settings.theme === "dark" && styles.themeBtnTextActive, { color: settings.theme === "dark" ? "#fff" : colors.text }]}>
+            <Ionicons name="moon" size={20} color={settings.theme === "dark" ? colors.accentOnAccent : colors.textSecondary} />
+            <Text style={[styles.themeBtnText, settings.theme === "dark" && styles.themeBtnTextActive, { color: settings.theme === "dark" ? colors.accentOnAccent : colors.text }]}>
               Oscuro
             </Text>
           </Pressable>
           <Pressable
             onPress={() => setTheme("light")}
-            style={[styles.themeBtn, settings.theme === "light" && styles.themeBtnActiveLight]}
-            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+            style={[styles.themeBtn, settings.theme === "light" && { backgroundColor: colors.accent }]}
+            android_ripple={{ color: colors.ripple }}
           >
-            <Ionicons name="sunny" size={20} color={settings.theme === "light" ? "#fff" : colors.textSecondary} />
-            <Text style={[styles.themeBtnText, settings.theme === "light" && styles.themeBtnTextActive, { color: settings.theme === "light" ? "#fff" : colors.text }]}>
+            <Ionicons name="sunny" size={20} color={settings.theme === "light" ? colors.accentOnAccent : colors.textSecondary} />
+            <Text style={[styles.themeBtnText, settings.theme === "light" && styles.themeBtnTextActive, { color: settings.theme === "light" ? colors.accentOnAccent : colors.text }]}>
               Claro
             </Text>
           </Pressable>
         </View>
 
-<Text style={[styles.sectionTitle, styles.sectionTitleTop]}>Divisa por defecto</Text>
+<Text style={[styles.sectionTitle, styles.sectionTitleTop, { color: colors.text }]}>Divisa por defecto</Text>
         <View style={styles.currencyRow}>
           {CURRENCIES.map((c) => (
             <Pressable
               key={c}
               onPress={() => setDefaultCurrency(c)}
-              style={[styles.currencyBtn, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }, settings.defaultCurrency === c && styles.currencyBtnActive]}
+              style={[styles.currencyBtn, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }, settings.defaultCurrency === c && { backgroundColor: colors.accent, borderColor: colors.accent }]}
             >
-              <Text style={[styles.currencyBtnText, { color: colors.textSecondary }, settings.defaultCurrency === c && styles.currencyBtnTextActive]}>
+              <Text style={[styles.currencyBtnText, { color: colors.textSecondary }, settings.defaultCurrency === c && { color: colors.accentOnAccent }]}>
                 {c}
               </Text>
             </Pressable>
@@ -122,8 +122,8 @@ export default function AjustesScreen() {
             autoCapitalize="characters"
             onSubmitEditing={addCrypto}
           />
-          <Pressable onPress={addCrypto} style={styles.addCryptoBtn}>
-            <Ionicons name="add" size={24} color="#fff" />
+          <Pressable onPress={addCrypto} style={[styles.addCryptoBtn, { backgroundColor: colors.accent }]}>
+            <Ionicons name="add" size={24} color={colors.accentOnAccent} />
           </Pressable>
         </View>
         <View style={styles.chipRow}>
@@ -132,7 +132,7 @@ export default function AjustesScreen() {
               key={s}
               onPress={() => removeCrypto(s)}
               style={[styles.chip, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}
-              android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+              android_ripple={{ color: colors.ripple }}
             >
               <Text style={[styles.chipText, { color: colors.text }]}>{s}</Text>
               <Ionicons name="close" size={16} color={colors.textSecondary} />
@@ -156,7 +156,7 @@ export default function AjustesScreen() {
           <Pressable
             onPress={() => openUrl(LEGAL_URLS.privacy)}
             style={[styles.legalRow, { borderBottomColor: colors.groupBorder }]}
-            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+            android_ripple={{ color: colors.ripple }}
           >
             <View style={styles.settingRowLeft}>
               <Ionicons name="document-text-outline" size={22} color={colors.text} />
@@ -167,7 +167,7 @@ export default function AjustesScreen() {
           <Pressable
             onPress={() => openUrl(LEGAL_URLS.terms)}
             style={[styles.legalRow, styles.legalRowLast]}
-            android_ripple={{ color: "rgba(0,0,0,0.06)" }}
+            android_ripple={{ color: colors.ripple }}
           >
             <View style={styles.settingRowLeft}>
               <Ionicons name="document-outline" size={22} color={colors.text} />
@@ -217,19 +217,11 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
   },
-  themeBtnActive: {
-    backgroundColor: "#0FA226",
-  },
-  themeBtnActiveLight: {
-    backgroundColor: "#0FA226",
-  },
   themeBtnText: {
     fontSize: 15,
     fontWeight: "600",
   },
-  themeBtnTextActive: {
-    color: "#fff",
-  },
+  themeBtnTextActive: {},
   scroll: {
     flex: 1,
   },
@@ -300,21 +292,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
   },
-  currencyBtnActive: {
-    backgroundColor: "#0FA226",
-    borderColor: "#0FA226",
-  },
   currencyBtnText: {
-    color: "rgba(255,255,255,0.6)",
     fontSize: 15,
     fontWeight: "600",
   },
-  currencyBtnTextActive: {
-    color: "#fff",
-  },
   hint: {
     fontSize: 12,
-    color: "#71717a",
     marginBottom: 8,
   },
   cryptoInputRow: {
@@ -333,7 +316,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: "#0FA226",
     alignItems: "center",
     justifyContent: "center",
   },

@@ -40,11 +40,11 @@ export default function ProfileScreen() {
             Entra con tu cuenta para ver tu perfil y mantener tus preferencias sincronizadas.
           </Text>
           <Pressable
-            style={styles.primaryButton}
+            style={[styles.primaryButton, { backgroundColor: colors.accent }]}
             onPress={() => router.push("/login")}
-            android_ripple={{ color: "rgba(255,255,255,0.2)" }}
+            android_ripple={{ color: colors.ripple }}
           >
-            <Text style={styles.primaryButtonText}>Iniciar sesión</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Iniciar sesión</Text>
           </Pressable>
         </View>
       </View>
@@ -67,7 +67,7 @@ export default function ProfileScreen() {
       >
         <View style={[styles.avatarCard, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
           <View style={[styles.avatarCircle, { backgroundColor: colors.accent }]}>
-            <Text style={styles.avatarText}>
+            <Text style={[styles.avatarText, { color: colors.accentOnAccent }]}>
               {user.email?.charAt(0).toUpperCase() ?? "?"}
             </Text>
           </View>
@@ -91,7 +91,7 @@ export default function ProfileScreen() {
               pressed && { opacity: 0.7 },
             ]}
             onPress={() => router.push("/(tabs)/ajustes")}
-            android_ripple={{ color: colors.groupBorder }}
+            android_ripple={{ color: colors.ripple }}
           >
             <Ionicons name="settings-outline" size={22} color={colors.text} />
             <Text style={[styles.menuLabel, { color: colors.text }]}>Ajustes</Text>
@@ -104,7 +104,7 @@ export default function ProfileScreen() {
               pressed && { opacity: 0.7 },
             ]}
             onPress={() => openUrl(LEGAL_URLS.privacy)}
-            android_ripple={{ color: colors.groupBorder }}
+            android_ripple={{ color: colors.ripple }}
           >
             <Ionicons name="document-text-outline" size={22} color={colors.text} />
             <Text style={[styles.menuLabel, { color: colors.text }]}>Política de Privacidad</Text>
@@ -117,7 +117,7 @@ export default function ProfileScreen() {
               pressed && { opacity: 0.7 },
             ]}
             onPress={() => openUrl(LEGAL_URLS.terms)}
-            android_ripple={{ color: colors.groupBorder }}
+            android_ripple={{ color: colors.ripple }}
           >
             <Ionicons name="document-outline" size={22} color={colors.text} />
             <Text style={[styles.menuLabel, { color: colors.text }]}>Términos y Condiciones</Text>
@@ -130,7 +130,7 @@ export default function ProfileScreen() {
               pressed && { opacity: 0.7 },
             ]}
             onPress={signOut}
-            android_ripple={{ color: colors.groupBorder }}
+            android_ripple={{ color: colors.ripple }}
           >
             <Ionicons name="log-out-outline" size={22} color={colors.error} />
             <Text style={[styles.menuLabel, { color: colors.error }]}>Cerrar sesión</Text>
@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   primaryButton: {
-    backgroundColor: "#0FA226",
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 14,
@@ -204,7 +203,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryButtonText: {
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -225,7 +223,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarText: {
-    color: "#fff",
     fontSize: 28,
     fontWeight: "700",
   },

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
-import { glass } from "@/lib/theme";
+import { useSettings } from "@/lib/settings";
+import { getColors, getGlass } from "@/lib/theme";
 
 export type HistoryListItem = { date: string; valueFormatted: string };
 
@@ -8,29 +9,31 @@ export type HistoryListProps = {
   items: HistoryListItem[];
   /** Estilo del contenedor (fondo, borde). */
   containerStyle?: ViewStyle;
-  /** Color del texto de la fecha. Por defecto #a1a1aa. */
+  /** Color del texto de la fecha. Por defecto desde tema. */
   dateColor?: string;
-  /** Color del texto del valor. Por defecto #0FA226. */
+  /** Color del texto del valor. Por defecto desde tema. */
   valueColor?: string;
-  /** Color del borde entre filas. Por defecto rgba(255,255,255,0.08). */
+  /** Color del borde entre filas. Por defecto desde tema. */
   borderBottomColor?: string;
 };
-
-const defaultDateColor = "#a1a1aa";
-const defaultValueColor = "#0FA226";
-const defaultBorderColor = "rgba(255,255,255,0.08)";
 
 export function HistoryList({
   items,
   containerStyle,
-  dateColor = defaultDateColor,
-  valueColor = defaultValueColor,
-  borderBottomColor = defaultBorderColor,
+  dateColor,
+  valueColor,
+  borderBottomColor,
 }: HistoryListProps) {
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
+  const glass = getGlass(settings.theme);
+  const resolvedDateColor = dateColor ?? colors.textSecondary;
+  const resolvedValueColor = valueColor ?? colors.accent;
+  const resolvedBorderColor = borderBottomColor ?? colors.rowBorder;
   if (items.length === 0) return null;
 
   return (
-    <View style={[styles.list, containerStyle]}>
+    <View style={[styles.list, glass, containerStyle]}>
       {items.map((item, i) => {
         const isLast = i === items.length - 1;
         return (
@@ -38,14 +41,14 @@ export function HistoryList({
             key={item.date}
             style={[
               styles.listRow,
-              { borderBottomColor },
+              { borderBottomColor: resolvedBorderColor },
               isLast && styles.listRowLast,
             ]}
           >
-            <Text style={[styles.listDate, { color: dateColor }]}>
+            <Text style={[styles.listDate, { color: resolvedDateColor }]}>
               {item.date}
             </Text>
-            <Text style={[styles.listValue, { color: valueColor }]}>
+            <Text style={[styles.listValue, { color: resolvedValueColor }]}>
               {item.valueFormatted}
             </Text>
           </View>
@@ -57,7 +60,6 @@ export function HistoryList({
 
 const styles = StyleSheet.create({
   list: {
-    ...glass,
     overflow: "hidden",
   },
   listRow: {

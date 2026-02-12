@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
-import { glass } from "@/lib/theme";
+import { useSettings } from "@/lib/settings";
+import { getColors, getGlass } from "@/lib/theme";
 
 export type SummaryCardProps = {
   /** Etiqueta (ej: "Último valor"). */
@@ -8,34 +9,36 @@ export type SummaryCardProps = {
   value: string;
   /** Estilo del contenedor (fondo, borde). */
   containerStyle?: ViewStyle;
-  /** Color del label. Por defecto #8e8e93. */
+  /** Color del label. Por defecto desde tema. */
   labelColor?: string;
-  /** Color del valor. Por defecto #0FA226. */
+  /** Color del valor. Por defecto desde tema. */
   valueColor?: string;
 };
 
 const defaultLabel = "Último valor";
-const defaultLabelColor = "#8e8e93";
-const defaultValueColor = "#0FA226";
 
 export function SummaryCard({
   label = defaultLabel,
   value,
   containerStyle,
-  labelColor = defaultLabelColor,
-  valueColor = defaultValueColor,
+  labelColor,
+  valueColor,
 }: SummaryCardProps) {
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
+  const glass = getGlass(settings.theme);
+  const resolvedLabelColor = labelColor ?? colors.textMuted;
+  const resolvedValueColor = valueColor ?? colors.accent;
   return (
-    <View style={[styles.card, containerStyle]}>
-      <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
-      <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
+    <View style={[styles.card, glass, containerStyle]}>
+      <Text style={[styles.label, { color: resolvedLabelColor }]}>{label}</Text>
+      <Text style={[styles.value, { color: resolvedValueColor }]}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    ...glass,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 16,

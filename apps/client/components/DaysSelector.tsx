@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
-import { glassCard, HORIZONTAL } from "@/lib/theme";
+import { useSettings } from "@/lib/settings";
+import { getColors, getGlassCard, HORIZONTAL } from "@/lib/theme";
 
 export type DaysSelectorProps = {
   /** Opciones de días (ej: [7, 14, 30, 90]). */
@@ -10,19 +11,15 @@ export type DaysSelectorProps = {
   onValueChange: (days: number) => void;
   /** Estilo del contenedor (fila). */
   style?: ViewStyle;
-  /** Color del borde de los botones inactivos. Por defecto glassCard. */
+  /** Color del borde de los botones inactivos. Por defecto desde tema. */
   borderColor?: string;
-  /** Fondo y borde del botón activo. Por defecto #0FA226. */
+  /** Fondo y borde del botón activo. Por defecto desde tema. */
   activeColor?: string;
-  /** Color del texto inactivo. Por defecto #a1a1aa. */
+  /** Color del texto inactivo. Por defecto desde tema. */
   textColor?: string;
-  /** Color del texto activo. Por defecto #fff. */
+  /** Color del texto activo. Por defecto desde tema. */
   activeTextColor?: string;
 };
-
-const defaultActive = "#0FA226";
-const defaultText = "#a1a1aa";
-const defaultActiveText = "#fff";
 
 export function DaysSelector({
   options,
@@ -30,10 +27,17 @@ export function DaysSelector({
   onValueChange,
   style,
   borderColor,
-  activeColor = defaultActive,
-  textColor = defaultText,
-  activeTextColor = defaultActiveText,
+  activeColor,
+  textColor,
+  activeTextColor,
 }: DaysSelectorProps) {
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
+  const glassCard = getGlassCard(settings.theme);
+  const resolvedBorderColor = borderColor ?? glassCard.borderColor;
+  const resolvedActiveColor = activeColor ?? colors.accent;
+  const resolvedTextColor = textColor ?? colors.textSecondary;
+  const resolvedActiveTextColor = activeTextColor ?? colors.accentOnAccent;
   return (
     <View style={[styles.row, style]}>
       {options.map((d) => {
@@ -44,15 +48,19 @@ export function DaysSelector({
             onPress={() => onValueChange(d)}
             style={[
               styles.btn,
-              { borderColor: borderColor ?? glassCard.borderColor },
-              isActive && { backgroundColor: activeColor, borderColor: activeColor },
+              glassCard,
+              { borderColor: resolvedBorderColor },
+              isActive && {
+                backgroundColor: resolvedActiveColor,
+                borderColor: resolvedActiveColor,
+              },
             ]}
           >
             <Text
               style={[
                 styles.btnText,
-                { color: textColor },
-                isActive && { color: activeTextColor },
+                { color: resolvedTextColor },
+                isActive && { color: resolvedActiveTextColor },
               ]}
             >
               {d} días
@@ -72,7 +80,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   btn: {
-    ...glassCard,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 12,
