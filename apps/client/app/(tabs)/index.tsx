@@ -15,6 +15,8 @@ import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
+import { currencySymbol } from "@/lib/formatters";
+import { REFRESH_INTERVAL_MS, FETCH_TIMEOUT_MS } from "@/lib/constants";
 import { Sparkline } from "@/components/Sparkline";
 import { StoryCard } from "@/components/StoryCard";
 
@@ -48,8 +50,6 @@ type UsdToVes = {
   timestamp: number;
 };
 
-const REFRESH_INTERVAL_MS = 60 * 1000;
-
 function formatUpdatedAt(ts: number): string {
   const sec = Math.floor((Date.now() - ts) / 1000);
   if (sec < 60) return `hace ${sec}s`;
@@ -61,13 +61,6 @@ function nextRefreshIn(lastTs: number): number {
   const elapsed = Date.now() - lastTs;
   const remaining = REFRESH_INTERVAL_MS - elapsed;
   return Math.max(0, Math.ceil(remaining / 1000));
-}
-
-function currencySymbol(currency: string): string {
-  if (currency === "USD") return "$";
-  if (currency === "EUR") return "€";
-  if (currency === "GBP") return "£";
-  return currency + " ";
 }
 
 export default function PreciosScreen() {
@@ -94,8 +87,6 @@ export default function PreciosScreen() {
   }, [lastUpdatedAt]);
 
   const symbols = settings.favoriteCryptos.length ? settings.favoriteCryptos.join(",") : "BTC,ETH,SOL,AVAX";
-
-  const FETCH_TIMEOUT_MS = 20000;
 
   const fetchPrices = useCallback(async (isBackground = false) => {
     if (!settings.apiUrl) return;

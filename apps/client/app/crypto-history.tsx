@@ -8,15 +8,9 @@ import { HistoryList } from "../components/HistoryList";
 import { SummaryCard } from "../components/SummaryCard";
 import { useSettings } from "../lib/settings";
 import { getColors, HORIZONTAL } from "../lib/theme";
+import { currencySymbol } from "../lib/formatters";
 
 type HistoryDay = { date: string; price: number };
-
-function currencySymbol(currency: string): string {
-  if (currency === "USD") return "$";
-  if (currency === "EUR") return "€";
-  if (currency === "GBP") return "£";
-  return currency + " ";
-}
 
 export default function CryptoHistoryScreen() {
   const { symbol: paramSymbol } = useLocalSearchParams<{ symbol?: string }>();
