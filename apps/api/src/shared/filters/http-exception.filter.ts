@@ -43,7 +43,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const message =
       typeof body === 'object' && body !== null && 'message' in body
-        ? (body as { message?: string | string[] | Record<string, unknown> }).message
+        ? ((body as { message?: string | string[] | Record<string, unknown> }).message ?? 'Internal server error')
         : (typeof body === 'string' ? body : 'Internal server error');
 
     const responseBody: ErrorResponseBody = {
