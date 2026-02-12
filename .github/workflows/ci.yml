@@ -29,6 +29,14 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      - name: Test
+        run: bun run --filter=api test
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CRON_SECRET: ci-test-cron-secret
+
       - name: Build
         run: bun run build
         env:
