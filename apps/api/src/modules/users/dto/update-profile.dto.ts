@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsObject, MaxLength } from 'class-validator';
+import type { UserPreferences } from '../../../shared/types';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -18,5 +19,5 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsObject()
-  preferences?: Record<string, unknown>;
+  preferences?: UserPreferences;
 }

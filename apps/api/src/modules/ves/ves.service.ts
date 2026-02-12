@@ -14,24 +14,9 @@ import {
   VES_SNAPSHOT_INTERVAL_MS,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
+import type { VesHistoryDay, UsdToVes } from '../../shared/types';
 
-export type VesHistoryDay = {
-  date: string;
-  oficial: number;
-  paralelo: number;
-  oficial_eur?: number;
-  paralelo_eur?: number;
-};
-
-export type UsdToVes = {
-  from: string;
-  to: string;
-  oficial: number;
-  paralelo: number;
-  date: string;
-  source: string;
-  timestamp: number;
-};
+export type { VesHistoryDay, UsdToVes };
 
 @Injectable()
 export class VesService implements OnModuleInit {

@@ -19,36 +19,7 @@ import { currencySymbol } from "@/lib/formatters";
 import { REFRESH_INTERVAL_MS, FETCH_TIMEOUT_MS } from "@/lib/constants";
 import { Sparkline } from "@/components/Sparkline";
 import { StoryCard } from "@/components/StoryCard";
-
-type CryptoPrice = {
-  symbol: string;
-  price: number;
-  currency: string;
-  source: string;
-  timestamp: number;
-  change24h?: number;
-};
-
-type HistoryDay = { date: string; price?: number; oficial?: number; paralelo?: number; rate?: number };
-
-type ForexRate = {
-  from: string;
-  to: string;
-  rate: number;
-  date: string;
-  source: string;
-  timestamp: number;
-};
-
-type UsdToVes = {
-  from: string;
-  to: string;
-  oficial: number;
-  paralelo: number;
-  date: string;
-  source: string;
-  timestamp: number;
-};
+import type { CryptoPrice, ForexRate, UsdToVes, VesHistoryDay, ForexHistoryDay } from "@/types";
 
 function formatUpdatedAt(ts: number): string {
   const sec = Math.floor((Date.now() - ts) / 1000);
@@ -74,8 +45,8 @@ export default function PreciosScreen() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [, setTick] = useState(0);
-  const [vesHistory, setVesHistory] = useState<HistoryDay[]>([]);
-  const [forexHistory, setForexHistory] = useState<HistoryDay[]>([]);
+  const [vesHistory, setVesHistory] = useState<VesHistoryDay[]>([]);
+  const [forexHistory, setForexHistory] = useState<ForexHistoryDay[]>([]);
   const [cryptoHistory, setCryptoHistory] = useState<Record<string, { date: string; price: number }[]>>({});
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const storyRef = useRef<View>(null);
@@ -176,12 +147,12 @@ export default function PreciosScreen() {
         fetch(`${settings.apiUrl}/api/prices/forex/history?days=7&from=USD&to=EUR`),
       ]);
       if (vesHRes.ok) {
-        const d = (await vesHRes.json()) as { history: HistoryDay[] };
+        const d = (await vesHRes.json()) as { history: VesHistoryDay[] };
         setVesHistory(d.history ?? []);
       } else setVesHistory([]);
       if (forexHRes.ok) {
-        const d = (await forexHRes.json()) as { history: { date: string; rate: number }[] };
-        setForexHistory((d.history ?? []).map((h) => ({ date: h.date, rate: h.rate })));
+        const d = (await forexHRes.json()) as { history: ForexHistoryDay[] };
+        setForexHistory(d.history ?? []);
       } else setForexHistory([]);
       const syms = settings.favoriteCryptos.length ? settings.favoriteCryptos : ["BTC", "ETH", "SOL", "AVAX"];
       const cryptoHist = await Promise.all(

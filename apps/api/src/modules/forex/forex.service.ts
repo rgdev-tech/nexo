@@ -11,17 +11,9 @@ import {
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
 import { ExternalHttpService } from '../../shared/http.service';
+import type { ForexRate, ForexHistoryDay } from '../../shared/types';
 
-export type ForexRate = {
-  from: string;
-  to: string;
-  rate: number;
-  date: string;
-  source: string;
-  timestamp: number;
-};
-
-export type ForexHistoryDay = { date: string; rate: number };
+export type { ForexRate, ForexHistoryDay };
 
 @Injectable()
 export class ForexService {

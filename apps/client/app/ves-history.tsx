@@ -8,16 +8,9 @@ import { HistoryList } from "@/components/HistoryList";
 import { SummaryCard } from "@/components/SummaryCard";
 import { useSettings } from "@/lib/settings";
 import { getColors, HORIZONTAL } from "@/lib/theme";
+import type { VesHistoryDay } from "@/types";
 
-type HistoryDay = {
-  date: string;
-  oficial: number;
-  paralelo: number;
-  oficial_eur?: number;
-  paralelo_eur?: number;
-};
-
-function getValueForTipo(d: HistoryDay, tipo: string): number | undefined {
+function getValueForTipo(d: VesHistoryDay, tipo: string): number | undefined {
   switch (tipo) {
     case "oficial":
       return d.oficial;
@@ -40,7 +33,7 @@ export default function VesHistoryScreen() {
   const isOficial = tipo === "oficial" || tipo === "oficial_eur";
   const label = isOficial ? "Oficial (BCV)" : "Paralelo";
   const subtitlePrefix = isEur ? "1 EUR en BS" : "1 USD en BS";
-  const [history, setHistory] = useState<HistoryDay[]>([]);
+  const [history, setHistory] = useState<VesHistoryDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(7);
@@ -54,7 +47,7 @@ export default function VesHistoryScreen() {
         `${settings.apiUrl}/api/prices/ves/history?days=${days}`
       );
       if (!res.ok) throw new Error("No se pudo cargar el historial");
-      const data = (await res.json()) as { history: HistoryDay[] };
+      const data = (await res.json()) as { history: VesHistoryDay[] };
       setHistory(data.history ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");

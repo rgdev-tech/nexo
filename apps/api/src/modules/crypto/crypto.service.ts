@@ -13,17 +13,9 @@ import {
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
 import { ExternalHttpService } from '../../shared/http.service';
+import type { CryptoPrice, CryptoHistoryDay } from '../../shared/types';
 
-export type CryptoPrice = {
-  symbol: string;
-  price: number;
-  currency: string;
-  source: string;
-  timestamp: number;
-  change24h?: number;
-};
-
-export type CryptoHistoryDay = { date: string; price: number };
+export type { CryptoPrice, CryptoHistoryDay };
 
 const COINGECKO_IDS: Record<string, string> = {
   BTC: "bitcoin",
