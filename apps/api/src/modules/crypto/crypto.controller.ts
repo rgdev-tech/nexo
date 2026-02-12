@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { CryptoService } from './crypto.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetCryptoPricesQueryDto } from './dto/get-crypto-prices.query.dto';
@@ -15,7 +15,7 @@ export class CryptoController {
   @ApiResponse({ status: 200, description: 'Returns historical price data.' })
   @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   async getHistory(@Query() dto: GetCryptoHistoryQueryDto) {
-    const history = await this.cryptoService.getHistory(dto.symbol!, dto.currency!, dto.days!);
+    const history = await this.cryptoService.getHistory(dto.symbol, dto.currency, dto.days);
     return { history };
   }
 
@@ -24,10 +24,8 @@ export class CryptoController {
   @ApiResponse({ status: 200, description: 'Returns list of current prices.' })
   @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   async getPrices(@Query() dto: GetCryptoPricesQueryDto) {
-    const symbols = dto.symbols
-      ? dto.symbols.split(',').map((s) => s.trim()).filter(Boolean)
-      : ['BTC', 'ETH'];
-    const prices = await this.cryptoService.getPrices(symbols, dto.currency!);
+    const symbols = this.cryptoService.parseSymbols(dto.symbols);
+    const prices = await this.cryptoService.getPrices(symbols, dto.currency);
     return { prices };
   }
 
@@ -40,10 +38,6 @@ export class CryptoController {
     @Param() params: GetCryptoPriceParamDto,
     @Query() dto: GetCryptoPricesQueryDto,
   ) {
-    const result = await this.cryptoService.getPrice(params.symbol, dto.currency!);
-    if (!result) {
-      throw new NotFoundException({ error: 'not_found', message: `No price for ${params.symbol}` });
-    }
-    return result;
+    return this.cryptoService.getPrice(params.symbol, dto.currency);
   }
 }

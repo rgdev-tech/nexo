@@ -1,4 +1,4 @@
-import { Controller, Get, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ForexService } from './forex.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GetForexRateQueryDto } from './dto/get-forex-rate.query.dto';
@@ -14,7 +14,7 @@ export class ForexController {
   @ApiResponse({ status: 200, description: 'Returns historical exchange rates.' })
   @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   async getHistory(@Query() dto: GetForexHistoryQueryDto) {
-    const history = await this.forexService.getHistory(dto.from!, dto.to!, dto.days!);
+    const history = await this.forexService.getHistory(dto.from, dto.to, dto.days);
     return { history };
   }
 
@@ -24,10 +24,6 @@ export class ForexController {
   @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   @ApiResponse({ status: 404, description: 'Rate not found.' })
   async getRate(@Query() dto: GetForexRateQueryDto) {
-    const result = await this.forexService.getRate(dto.from!, dto.to!);
-    if (!result) {
-      throw new NotFoundException({ error: 'not_found', message: `No rate for ${dto.from} → ${dto.to}` });
-    }
-    return result;
+    return this.forexService.getRate(dto.from, dto.to);
   }
 }

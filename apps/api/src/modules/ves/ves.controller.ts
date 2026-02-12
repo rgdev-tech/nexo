@@ -20,7 +20,7 @@ export class VesController {
   @ApiResponse({ status: 200, description: 'Returns historical data for VES rates.' })
   @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   async getHistory(@Query() dto: GetVesHistoryQueryDto) {
-    const history = await this.vesService.getHistory(dto.days!);
+    const history = await this.vesService.getHistory(dto.days);
     return { history };
   }
 }

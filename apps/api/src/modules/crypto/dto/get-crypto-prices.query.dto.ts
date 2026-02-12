@@ -21,5 +21,5 @@ export class GetCryptoPricesQueryDto {
   @IsOptional()
   @IsIn(ALLOWED_CURRENCIES, { message: `currency must be one of: ${ALLOWED_CURRENCIES.join(', ')}` })
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
-  currency?: AllowedCurrency = 'USD';
+  currency: AllowedCurrency = 'USD';
 }

@@ -15,5 +15,5 @@ export class GetVesHistoryQueryDto {
   @IsInt({ message: 'days must be an integer' })
   @Min(DAYS_MIN, { message: `days must be at least ${DAYS_MIN}` })
   @Max(DAYS_MAX_VES, { message: `days must be at most ${DAYS_MAX_VES}` })
-  days?: number = 7;
+  days: number = 7;
 }

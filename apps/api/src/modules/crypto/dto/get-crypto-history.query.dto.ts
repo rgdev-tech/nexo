@@ -13,7 +13,7 @@ export class GetCryptoHistoryQueryDto {
   @IsString()
   @IsNotEmpty({ message: 'symbol must not be empty' })
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase().trim() : value))
-  symbol?: string = 'BTC';
+  symbol: string = 'BTC';
 
   @ApiPropertyOptional({
     description: `Number of days (${DAYS_MIN}-${DAYS_MAX_CRYPTO})`,
@@ -26,7 +26,7 @@ export class GetCryptoHistoryQueryDto {
   @IsInt({ message: 'days must be an integer' })
   @Min(DAYS_MIN, { message: `days must be at least ${DAYS_MIN}` })
   @Max(DAYS_MAX_CRYPTO, { message: `days must be at most ${DAYS_MAX_CRYPTO}` })
-  days?: number = 7;
+  days: number = 7;
 
   @ApiPropertyOptional({
     description: 'Target currency',
@@ -36,5 +36,5 @@ export class GetCryptoHistoryQueryDto {
   @IsOptional()
   @IsIn(ALLOWED_CURRENCIES, { message: `currency must be one of: ${ALLOWED_CURRENCIES.join(', ')}` })
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
-  currency?: AllowedCurrency = 'USD';
+  currency: AllowedCurrency = 'USD';
 }

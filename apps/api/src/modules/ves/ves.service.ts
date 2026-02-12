@@ -183,7 +183,7 @@ export class VesService implements OnModuleInit {
     const data = await this.fetchDolarApi();
     if (!data || (data.oficial <= 0 && data.paralelo <= 0)) return;
     
-    const forex = await this.forexService.getRate("USD", "EUR");
+    const forex = await this.forexService.findRate("USD", "EUR");
     const usd_eur = forex?.rate != null && forex.rate > 0 ? forex.rate : null;
     await this.saveVesSnapshot(data.oficial, data.paralelo, usd_eur);
   }
