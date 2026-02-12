@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PORT_DEFAULT, HOST_DEFAULT } from './shared/constants';
 import { getConfigNumber } from './shared/config-utils';
+import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(CoreModule);
@@ -16,6 +17,7 @@ async function bootstrap() {
     origin: corsOrigins?.length ? corsOrigins : '*',
     credentials: true,
   });
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,

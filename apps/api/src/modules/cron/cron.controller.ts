@@ -1,12 +1,13 @@
-import { Controller, Get, Headers, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Headers, UnauthorizedException, Logger, BadGatewayException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VesService } from '../ves/ves.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ParseBearerTokenPipe } from '../../shared/pipes/parse-bearer-token.pipe';
+import { ParseBearerTokenPipe } from 'shared/pipes/parse-bearer-token.pipe';
 
 @ApiTags('Cron')
 @Controller('api/cron')
 export class CronController {
+  private readonly logger = new Logger(CronController.name);
   private readonly bearerPipe = new ParseBearerTokenPipe();
 
   constructor(
@@ -19,6 +20,7 @@ export class CronController {
   @ApiResponse({ status: 200, description: 'VES snapshot saved.' })
   @ApiResponse({ status: 400, description: 'Invalid Authorization header format.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 502, description: 'VES fetch/save failed.' })
   async vesSnapshot(@Headers('authorization') authHeader?: string) {
     const token = this.bearerPipe.transform(authHeader);
 
@@ -29,7 +31,15 @@ export class CronController {
     if (token !== secret) {
       throw new UnauthorizedException('Invalid cron secret');
     }
-    await this.vesService.fetchAndSaveVes();
-    return { ok: true, message: 'VES snapshot saved' };
+    try {
+      await this.vesService.fetchAndSaveVes();
+      return { ok: true, message: 'VES snapshot saved' };
+    } catch (e) {
+      this.logger.error('fetchAndSaveVes failed', e instanceof Error ? e : e);
+      throw new BadGatewayException({
+        error: 'ves_snapshot_failed',
+        message: 'Failed to fetch or save VES snapshot',
+      });
+    }
   }
 }

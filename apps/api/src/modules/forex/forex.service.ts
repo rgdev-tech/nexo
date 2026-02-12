@@ -82,7 +82,10 @@ export class ForexService {
 
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutMedium) });
-      if (!res.ok) return [];
+      if (!res.ok) {
+        this.logger.warn(`Frankfurter history responded with ${res.status} for ${f}->${t}`);
+        return [];
+      }
       const data = (await res.json()) as { rates?: Record<string, Record<string, number>> };
       const rates = data.rates;
       if (!rates || typeof rates !== "object") return [];
@@ -107,7 +110,10 @@ export class ForexService {
     const url = `${this.frankfurterUrl}/v1/latest?base=${from}&symbols=${to}`;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        this.logger.warn(`Frankfurter responded with ${res.status} for ${from}->${to}`);
+        return null;
+      }
       const data = (await res.json()) as {
         base?: string;
         date?: string;
@@ -123,7 +129,8 @@ export class ForexService {
         source: "frankfurter",
         timestamp: Date.now(),
       };
-    } catch {
+    } catch (e) {
+      this.logger.warn(`Frankfurter fetch failed for ${from}->${to}`, e instanceof Error ? e.message : e);
       return null;
     }
   }
