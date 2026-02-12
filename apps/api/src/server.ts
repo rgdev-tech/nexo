@@ -4,6 +4,7 @@ import { CoreModule } from './core.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PORT_DEFAULT, HOST_DEFAULT } from './shared/constants';
+import { getConfigNumber } from './shared/config-utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(CoreModule);
@@ -34,7 +35,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = configService.get<number>('PORT') ?? PORT_DEFAULT;
+  const port = getConfigNumber(configService, 'PORT', PORT_DEFAULT);
   const host = configService.get<string>('HOST') ?? HOST_DEFAULT;
   await app.listen(port, host);
   console.log(`Application is running on: http://${host}:${port}`);

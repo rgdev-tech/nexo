@@ -19,6 +19,7 @@ import {
   THROTTLE_LIMIT,
   CACHE_TTL_DEFAULT,
 } from './shared/constants';
+import { getConfigNumber } from './shared/config-utils';
 
 @Module({
   imports: [
@@ -34,15 +35,15 @@ import {
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [{
-        ttl: config.get<number>('THROTTLE_TTL_MS') ?? THROTTLE_TTL_MS,
-        limit: config.get<number>('THROTTLE_LIMIT') ?? THROTTLE_LIMIT,
+        ttl: getConfigNumber(config, 'THROTTLE_TTL_MS', THROTTLE_TTL_MS),
+        limit: getConfigNumber(config, 'THROTTLE_LIMIT', THROTTLE_LIMIT),
       }],
     }),
     CacheModule.registerAsync({
       isGlobal: true,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        ttl: config.get<number>('CACHE_TTL_DEFAULT') ?? CACHE_TTL_DEFAULT,
+        ttl: getConfigNumber(config, 'CACHE_TTL_DEFAULT', CACHE_TTL_DEFAULT),
       }),
     }),
   ],

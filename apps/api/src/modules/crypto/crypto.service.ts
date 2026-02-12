@@ -11,6 +11,7 @@ import {
   CACHE_TTL_PRICE,
   CACHE_TTL_HISTORY_SHORT,
 } from '../../shared/constants';
+import { getConfigNumber } from '../../shared/config-utils';
 
 export type CryptoPrice = {
   symbol: string;
@@ -68,11 +69,11 @@ export class CryptoService {
   ) {
     this.coingeckoUrl = this.configService.get<string>('COINGECKO_URL') ?? COINGECKO_BASE_URL;
     this.binanceUrl = this.configService.get<string>('BINANCE_URL') ?? BINANCE_BASE_URL;
-    this.fetchTimeout = this.configService.get<number>('FETCH_TIMEOUT') ?? FETCH_TIMEOUT_DEFAULT;
-    this.coingeckoTimeoutShort = this.configService.get<number>('FETCH_TIMEOUT_COINGECKO_SHORT') ?? FETCH_TIMEOUT_COINGECKO_SHORT;
-    this.coingeckoTimeoutLong = this.configService.get<number>('FETCH_TIMEOUT_COINGECKO_LONG') ?? FETCH_TIMEOUT_COINGECKO_LONG;
-    this.cacheTtlPrice = this.configService.get<number>('CACHE_TTL_PRICE') ?? CACHE_TTL_PRICE;
-    this.cacheTtlHistory = this.configService.get<number>('CACHE_TTL_HISTORY_SHORT') ?? CACHE_TTL_HISTORY_SHORT;
+    this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
+    this.coingeckoTimeoutShort = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_SHORT', FETCH_TIMEOUT_COINGECKO_SHORT);
+    this.coingeckoTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_LONG', FETCH_TIMEOUT_COINGECKO_LONG);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_SHORT', CACHE_TTL_HISTORY_SHORT);
   }
 
   async getPrice(symbol: string, currency = 'USD'): Promise<CryptoPrice | null> {

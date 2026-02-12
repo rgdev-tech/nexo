@@ -12,6 +12,7 @@ import {
   CACHE_TTL_PRICE,
   VES_SNAPSHOT_INTERVAL_MS,
 } from '../../shared/constants';
+import { getConfigNumber } from '../../shared/config-utils';
 
 export type VesHistoryDay = {
   date: string;
@@ -50,10 +51,10 @@ export class VesService implements OnModuleInit {
   ) {
     this.dolarApiUrl = this.configService.get<string>('DOLARAPI_URL') ?? DOLARAPI_BASE_URL;
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
-    this.fetchTimeoutDolarApi = this.configService.get<number>('FETCH_TIMEOUT_DOLARAPI') ?? FETCH_TIMEOUT_DOLARAPI;
-    this.fetchTimeoutLong = this.configService.get<number>('FETCH_TIMEOUT_LONG') ?? FETCH_TIMEOUT_LONG;
-    this.cacheTtlPrice = this.configService.get<number>('CACHE_TTL_PRICE') ?? CACHE_TTL_PRICE;
-    this.snapshotInterval = this.configService.get<number>('VES_SNAPSHOT_INTERVAL_MS') ?? VES_SNAPSHOT_INTERVAL_MS;
+    this.fetchTimeoutDolarApi = getConfigNumber(this.configService, 'FETCH_TIMEOUT_DOLARAPI', FETCH_TIMEOUT_DOLARAPI);
+    this.fetchTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_LONG', FETCH_TIMEOUT_LONG);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.snapshotInterval = getConfigNumber(this.configService, 'VES_SNAPSHOT_INTERVAL_MS', VES_SNAPSHOT_INTERVAL_MS);
   }
 
   onModuleInit() {

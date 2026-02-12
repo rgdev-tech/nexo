@@ -9,6 +9,7 @@ import {
   CACHE_TTL_PRICE,
   CACHE_TTL_HISTORY_LONG,
 } from '../../shared/constants';
+import { getConfigNumber } from '../../shared/config-utils';
 
 export type ForexRate = {
   from: string;
@@ -36,10 +37,10 @@ export class ForexService {
     private readonly configService: ConfigService,
   ) {
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
-    this.fetchTimeout = this.configService.get<number>('FETCH_TIMEOUT') ?? FETCH_TIMEOUT_DEFAULT;
-    this.fetchTimeoutMedium = this.configService.get<number>('FETCH_TIMEOUT_MEDIUM') ?? FETCH_TIMEOUT_MEDIUM;
-    this.cacheTtlPrice = this.configService.get<number>('CACHE_TTL_PRICE') ?? CACHE_TTL_PRICE;
-    this.cacheTtlHistory = this.configService.get<number>('CACHE_TTL_HISTORY_LONG') ?? CACHE_TTL_HISTORY_LONG;
+    this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
+    this.fetchTimeoutMedium = getConfigNumber(this.configService, 'FETCH_TIMEOUT_MEDIUM', FETCH_TIMEOUT_MEDIUM);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_LONG', CACHE_TTL_HISTORY_LONG);
   }
 
   async getRate(from: string, to: string): Promise<ForexRate | null> {
