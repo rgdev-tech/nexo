@@ -9,6 +9,7 @@ module.exports = {
   moduleNameMapper: {
     '^shared/(.*)$': '<rootDir>/src/shared/$1',
   },
+  setupFiles: ['<rootDir>/test/jest.setup.ts'],
   testTimeout: 30000,
   forceExit: true,
 };

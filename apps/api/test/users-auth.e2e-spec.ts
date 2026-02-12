@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import supertest from 'supertest';
 import { CoreModule } from '../src/core.module';
+import { SupabaseService } from '../src/shared/supabase/supabase.service';
 
 /**
  * E2E tests de autenticación de usuarios – verifican que los endpoints
@@ -14,7 +15,19 @@ describe('Users Auth E2E', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [CoreModule],
-    }).compile();
+    })
+      .overrideProvider(SupabaseService)
+      .useValue({
+        getClient: () => ({
+          auth: {
+            getUser: jest.fn().mockResolvedValue({
+              data: { user: null },
+              error: new Error('Invalid token'),
+            }),
+          },
+        }),
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(

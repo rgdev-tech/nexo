@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import supertest from 'supertest';
 import { CoreModule } from '../src/core.module';
+import { SupabaseService } from '../src/shared/supabase/supabase.service';
 
 /**
  * E2E tests de health – verifican que los endpoints raíz y /api/health
@@ -13,7 +14,10 @@ describe('Health E2E', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [CoreModule],
-    }).compile();
+    })
+      .overrideProvider(SupabaseService)
+      .useValue({ getClient: jest.fn() })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
