@@ -12,6 +12,7 @@ import {
   CACHE_TTL_HISTORY_SHORT,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
+import { ExternalHttpService } from '../../shared/http.service';
 
 export type CryptoPrice = {
   symbol: string;
@@ -66,6 +67,7 @@ export class CryptoService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
+    private readonly http: ExternalHttpService,
   ) {
     this.coingeckoUrl = this.configService.get<string>('COINGECKO_URL') ?? COINGECKO_BASE_URL;
     this.binanceUrl = this.configService.get<string>('BINANCE_URL') ?? BINANCE_BASE_URL;
@@ -140,84 +142,53 @@ export class CryptoService {
     const url = `${this.coingeckoUrl}/coins/${id}/market_chart?vs_currency=${vs}&days=${daysValid}`;
     // 30/90 días devuelven muchos más puntos (hourly); dar más tiempo a CoinGecko
     const timeoutMs = daysValid >= 30 ? this.coingeckoTimeoutLong : this.coingeckoTimeoutShort;
-    const RETRYABLE_STATUSES = [408, 429, 502, 503, 504];
 
-    const fetchOnce = async (): Promise<CryptoHistoryDay[]> => {
-      const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
-      if (!res.ok) {
-        const body = await res.text();
-        this.logger.warn(
-          `CoinGecko history ${symbol} days=${daysValid}: ${res.status} ${body.slice(0, 200)}`
-        );
-        if (RETRYABLE_STATUSES.includes(res.status)) {
-          throw new Error(`CoinGecko ${res.status}`);
-        }
-        return [];
-      }
-      const data = (await res.json()) as { prices?: [number, number][] };
-      const prices = data.prices ?? [];
-      const byDay = new Map<string, number>();
-      for (const [ts, value] of prices) {
-        const date = new Date(ts).toISOString().slice(0, 10);
-        byDay.set(date, value);
-      }
-      return Array.from(byDay.entries())
-        .map(([date, price]) => ({ date, price }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-    };
+    const data = await this.http.fetchJson<{ prices?: [number, number][] }>(url, {
+      timeout: timeoutMs,
+      retries: daysValid >= 30 ? 1 : 0,
+      retryDelay: 2_000,
+      label: `CoinGecko history ${symbol} days=${daysValid}`,
+    });
+    if (!data) return [];
 
-    try {
-      const history = await fetchOnce();
-      if (history.length > 0) {
-        await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
-      }
-      return history;
-    } catch (e) {
-      if (daysValid >= 30) {
-        this.logger.log(`Retrying CoinGecko history ${symbol} days=${daysValid} after ${e instanceof Error ? e.message : "error"}`);
-        await new Promise((r) => setTimeout(r, 2000));
-        try {
-          const history = await fetchOnce();
-          if (history.length > 0) {
-            await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
-          }
-          return history;
-        } catch (e2) {
-          this.logger.error(`Error fetching history for ${symbol} days=${daysValid} (after retry)`, e2);
-          return [];
-        }
-      }
-      this.logger.error(`Error fetching history for ${symbol} days=${daysValid}`, e);
-      return [];
+    const prices = data.prices ?? [];
+    const byDay = new Map<string, number>();
+    for (const [ts, value] of prices) {
+      const date = new Date(ts).toISOString().slice(0, 10);
+      byDay.set(date, value);
     }
+    const history = Array.from(byDay.entries())
+      .map(([date, price]) => ({ date, price }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (history.length > 0) {
+      await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
+    }
+    return history;
   }
 
   private async fetchBinance(symbol: string, currency: string): Promise<CryptoPrice | null> {
     const quote = currency === "USD" ? "USDT" : currency;
     const pair = symbol + quote;
     const url = `${this.binanceUrl}/ticker/24hr?symbol=${pair}`;
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) {
-        this.logger.warn(`Binance responded with ${res.status} for ${pair}`);
-        return null;
-      }
-      const data = (await res.json()) as { lastPrice?: string; priceChangePercent?: string };
-      const price = parseFloat(data.lastPrice ?? "");
-      if (Number.isNaN(price)) return null;
-      const change24h = data.priceChangePercent != null ? parseFloat(data.priceChangePercent) : undefined;
-      return {
-        symbol,
-        price,
-        currency: currency === "USDT" ? "USD" : currency,
-        source: "binance",
-        timestamp: Date.now(),
-        ...(Number.isFinite(change24h) && { change24h }),
-      };
-    } catch (e) {
-      this.logger.warn(`Binance fetch failed for ${symbol}/${quote}`, e instanceof Error ? e.message : e);
-      return null;
-    }
+
+    const data = await this.http.fetchJson<{ lastPrice?: string; priceChangePercent?: string }>(url, {
+      timeout: this.fetchTimeout,
+      label: `Binance ${pair}`,
+    });
+    if (!data) return null;
+
+    const price = parseFloat(data.lastPrice ?? "");
+    if (Number.isNaN(price)) return null;
+    const change24h = data.priceChangePercent != null ? parseFloat(data.priceChangePercent) : undefined;
+    return {
+      symbol,
+      price,
+      currency: currency === "USDT" ? "USD" : currency,
+      source: "binance",
+      timestamp: Date.now(),
+      ...(Number.isFinite(change24h) && { change24h }),
+    };
   }
 
   private async fetchCoinGecko(symbol: string, currency: string): Promise<CryptoPrice | null> {
@@ -225,25 +196,21 @@ export class CryptoService {
     if (!id) return null;
     const vs = currency.toLowerCase();
     const url = `${this.coingeckoUrl}/simple/price?ids=${id}&vs_currencies=${vs}`;
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) {
-        this.logger.warn(`CoinGecko responded with ${res.status} for ${id}/${vs}`);
-        return null;
-      }
-      const data = (await res.json()) as Record<string, Record<string, number>>;
-      const price = data[id]?.[vs];
-      if (price == null || Number.isNaN(price)) return null;
-      return {
-        symbol,
-        price,
-        currency: currency.toUpperCase(),
-        source: "coingecko",
-        timestamp: Date.now(),
-      };
-    } catch (e) {
-      this.logger.warn(`CoinGecko fetch failed for ${symbol}/${vs}`, e instanceof Error ? e.message : e);
-      return null;
-    }
+
+    const data = await this.http.fetchJson<Record<string, Record<string, number>>>(url, {
+      timeout: this.fetchTimeout,
+      label: `CoinGecko ${id}/${vs}`,
+    });
+    if (!data) return null;
+
+    const price = data[id]?.[vs];
+    if (price == null || Number.isNaN(price)) return null;
+    return {
+      symbol,
+      price,
+      currency: currency.toUpperCase(),
+      source: "coingecko",
+      timestamp: Date.now(),
+    };
   }
 }

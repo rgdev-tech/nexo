@@ -1,6 +1,7 @@
 import { Injectable, Logger, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../../shared/supabase/supabase.service';
+import { ExternalHttpService } from '../../shared/http.service';
 import { ForexService } from '../forex/forex.service';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -46,6 +47,7 @@ export class VesService implements OnModuleInit {
   constructor(
     private supabaseService: SupabaseService,
     private forexService: ForexService,
+    private readonly http: ExternalHttpService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
   ) {
@@ -85,39 +87,32 @@ export class VesService implements OnModuleInit {
   }
 
   private async fetchDolarApi(): Promise<UsdToVes | null> {
-    try {
-      const res = await fetch(this.dolarApiUrl, { signal: AbortSignal.timeout(this.fetchTimeoutDolarApi) });
-      if (!res.ok) {
-        this.logger.warn(`DolarAPI responded with ${res.status} ${res.statusText}`);
-        return null;
-      }
-      const data = (await res.json()) as Array<{
-        nombre?: string;
-        promedio?: number;
-        fechaActualizacion?: string;
-      }>;
-      const oficial = data.find((d) => d.nombre?.toLowerCase() === "oficial");
-      const paralelo = data.find((d) => d.nombre?.toLowerCase() === "paralelo");
-      const rateOficial = oficial?.promedio;
-      const rateParalelo = paralelo?.promedio;
-      if (rateOficial == null && rateParalelo == null) return null;
-      const date =
-        oficial?.fechaActualizacion?.slice(0, 10) ??
-        paralelo?.fechaActualizacion?.slice(0, 10) ??
-        new Date().toISOString().slice(0, 10);
-      return {
-        from: "USD",
-        to: "VES",
-        oficial: rateOficial ?? 0,
-        paralelo: rateParalelo ?? 0,
-        date,
-        source: "dolarapi",
-        timestamp: Date.now(),
-      };
-    } catch (e) {
-      this.logger.error('Error fetching DolarAPI', e);
-      return null;
-    }
+    const data = await this.http.fetchJson<
+      Array<{ nombre?: string; promedio?: number; fechaActualizacion?: string }>
+    >(this.dolarApiUrl, {
+      timeout: this.fetchTimeoutDolarApi,
+      label: 'DolarAPI',
+    });
+    if (!data) return null;
+
+    const oficial = data.find((d) => d.nombre?.toLowerCase() === "oficial");
+    const paralelo = data.find((d) => d.nombre?.toLowerCase() === "paralelo");
+    const rateOficial = oficial?.promedio;
+    const rateParalelo = paralelo?.promedio;
+    if (rateOficial == null && rateParalelo == null) return null;
+    const date =
+      oficial?.fechaActualizacion?.slice(0, 10) ??
+      paralelo?.fechaActualizacion?.slice(0, 10) ??
+      new Date().toISOString().slice(0, 10);
+    return {
+      from: "USD",
+      to: "VES",
+      oficial: rateOficial ?? 0,
+      paralelo: rateParalelo ?? 0,
+      date,
+      source: "dolarapi",
+      timestamp: Date.now(),
+    };
   }
 
   async getHistory(days: number): Promise<VesHistoryDay[]> {
@@ -193,33 +188,29 @@ export class VesService implements OnModuleInit {
     startDate.setDate(startDate.getDate() - 90);
     const start = startDate.toISOString().slice(0, 10);
     const url = `${this.frankfurterUrl}/v1/${start}..?base=USD&symbols=EUR`;
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutLong) });
-      if (!res.ok) {
-        this.logger.warn(`Frankfurter backfill USD/EUR failed: ${res.status} ${res.statusText}`);
-        return;
-      }
-      const data = (await res.json()) as {
-        rates?: Record<string, { EUR?: number }>;
-      };
-      const rates = data.rates;
-      if (!rates || typeof rates !== "object") return;
+
+    const data = await this.http.fetchJson<{
+      rates?: Record<string, { EUR?: number }>;
+    }>(url, {
+      timeout: this.fetchTimeoutLong,
+      label: 'Frankfurter backfill USD/EUR',
+    });
+
+    const rates = data?.rates;
+    if (!rates || typeof rates !== "object") return;
+    
+    for (const [date, row] of Object.entries(rates)) {
+      const rate = row?.EUR;
+      if (rate == null || Number.isNaN(rate) || rate <= 0) continue;
       
-      for (const [date, row] of Object.entries(rates)) {
-        const rate = row?.EUR;
-        if (rate == null || Number.isNaN(rate) || rate <= 0) continue;
-        
-        try {
-          await this.supabaseService.getClient()
-            .from('ves_history')
-            .update({ usd_eur: rate })
-            .like('datetime', `${date}%`);
-        } catch (e) {
-          this.logger.warn(`Backfill usd_eur update failed for date ${date}`, e instanceof Error ? e.message : e);
-        }
+      try {
+        await this.supabaseService.getClient()
+          .from('ves_history')
+          .update({ usd_eur: rate })
+          .like('datetime', `${date}%`);
+      } catch (e) {
+        this.logger.warn(`Backfill usd_eur update failed for date ${date}`, e instanceof Error ? e.message : e);
       }
-    } catch (e) {
-      this.logger.error('Error backfilling USD/EUR', e);
     }
   }
 }
