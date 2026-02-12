@@ -10,6 +10,7 @@ import {
   CACHE_TTL_HISTORY_LONG,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
+import { ExternalHttpService } from '../../shared/http.service';
 
 export type ForexRate = {
   from: string;
@@ -35,6 +36,7 @@ export class ForexService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
+    private readonly http: ExternalHttpService,
   ) {
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
     this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
@@ -88,58 +90,48 @@ export class ForexService {
     const endStr = end.toISOString().slice(0, 10);
     const url = `${this.frankfurterUrl}/v1/${startStr}..${endStr}?base=${f}&symbols=${t}`;
 
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutMedium) });
-      if (!res.ok) {
-        this.logger.warn(`Frankfurter history responded with ${res.status} for ${f}->${t}`);
-        return [];
-      }
-      const data = (await res.json()) as { rates?: Record<string, Record<string, number>> };
-      const rates = data.rates;
-      if (!rates || typeof rates !== "object") return [];
-      
-      const history = Object.entries(rates)
-        .map(([date, row]) => {
-          const rate = row?.[t];
-          return rate != null && !Number.isNaN(rate) ? { date, rate } : null;
-        })
-        .filter((x): x is ForexHistoryDay => x != null)
-        .sort((a, b) => a.date.localeCompare(b.date));
+    const data = await this.http.fetchJson<{ rates?: Record<string, Record<string, number>> }>(url, {
+      timeout: this.fetchTimeoutMedium,
+      label: `Frankfurter history ${f}->${t}`,
+    });
 
-      await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
-      return history;
-    } catch (e) {
-      this.logger.error(`Error fetching forex history ${f}->${t}`, e);
-      return [];
-    }
+    const rates = data?.rates;
+    if (!rates || typeof rates !== "object") return [];
+    
+    const history = Object.entries(rates)
+      .map(([date, row]) => {
+        const rate = row?.[t];
+        return rate != null && !Number.isNaN(rate) ? { date, rate } : null;
+      })
+      .filter((x): x is ForexHistoryDay => x != null)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
+    return history;
   }
 
   private async fetchFrankfurter(from: string, to: string): Promise<ForexRate | null> {
     const url = `${this.frankfurterUrl}/v1/latest?base=${from}&symbols=${to}`;
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) {
-        this.logger.warn(`Frankfurter responded with ${res.status} for ${from}->${to}`);
-        return null;
-      }
-      const data = (await res.json()) as {
-        base?: string;
-        date?: string;
-        rates?: Record<string, number>;
-      };
-      const rate = data.rates?.[to];
-      if (rate == null || Number.isNaN(rate)) return null;
-      return {
-        from: (data.base ?? from).toUpperCase(),
-        to: to.toUpperCase(),
-        rate,
-        date: data.date ?? new Date().toISOString().slice(0, 10),
-        source: "frankfurter",
-        timestamp: Date.now(),
-      };
-    } catch (e) {
-      this.logger.warn(`Frankfurter fetch failed for ${from}->${to}`, e instanceof Error ? e.message : e);
-      return null;
-    }
+
+    const data = await this.http.fetchJson<{
+      base?: string;
+      date?: string;
+      rates?: Record<string, number>;
+    }>(url, {
+      timeout: this.fetchTimeout,
+      label: `Frankfurter ${from}->${to}`,
+    });
+    if (!data) return null;
+
+    const rate = data.rates?.[to];
+    if (rate == null || Number.isNaN(rate)) return null;
+    return {
+      from: (data.base ?? from).toUpperCase(),
+      to: to.toUpperCase(),
+      rate,
+      date: data.date ?? new Date().toISOString().slice(0, 10),
+      source: "frankfurter",
+      timestamp: Date.now(),
+    };
   }
 }
