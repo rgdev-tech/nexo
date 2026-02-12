@@ -6,7 +6,7 @@
     "dev": "bun run --hot src/server.ts",
     "start": "bun run src/server.ts",
     "build": "bun build src/server.ts --outdir=dist --target=bun --external @nestjs/microservices --external @nestjs/websockets --external class-transformer --external class-validator",
-    "test": "jest --config jest.config.ts",
+    "test": "jest --config jest.config.js",
     "lint": "bun run lint:check",
     "lint:check": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"

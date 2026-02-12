@@ -1,6 +1,5 @@
-import type { Config } from 'jest';
-
-const config: Config = {
+/** @type {import('jest').Config} */
+module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   rootDir: '.',
   testRegex: '.e2e-spec.ts$',
@@ -13,5 +12,3 @@ const config: Config = {
   testTimeout: 30000,
   forceExit: true,
 };
-
-export default config;
