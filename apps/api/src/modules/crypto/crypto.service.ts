@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -76,7 +76,20 @@ export class CryptoService {
     this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_SHORT', CACHE_TTL_HISTORY_SHORT);
   }
 
-  async getPrice(symbol: string, currency = 'USD'): Promise<CryptoPrice | null> {
+  parseSymbols(raw?: string): string[] {
+    if (!raw) return ['BTC', 'ETH'];
+    return raw.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  }
+
+  async getPrice(symbol: string, currency = 'USD'): Promise<CryptoPrice> {
+    const result = await this.findPrice(symbol, currency);
+    if (!result) {
+      throw new NotFoundException({ error: 'not_found', message: `No price for ${symbol}` });
+    }
+    return result;
+  }
+
+  async findPrice(symbol: string, currency = 'USD'): Promise<CryptoPrice | null> {
     const sym = symbol.toUpperCase();
     const cur = currency.toUpperCase();
     const cacheKey = `crypto:${sym}:${cur}`;
@@ -102,7 +115,7 @@ export class CryptoService {
     if (cached) return cached;
 
     const results = await Promise.all(
-      symbols.map((s) => this.getPrice(s.trim(), currency))
+      symbols.map((s) => this.findPrice(s.trim(), currency))
     );
     const filtered = results.filter((r): r is CryptoPrice => r != null);
     

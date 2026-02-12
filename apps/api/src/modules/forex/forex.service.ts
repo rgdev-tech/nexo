@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -43,7 +43,15 @@ export class ForexService {
     this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_LONG', CACHE_TTL_HISTORY_LONG);
   }
 
-  async getRate(from: string, to: string): Promise<ForexRate | null> {
+  async getRate(from: string, to: string): Promise<ForexRate> {
+    const result = await this.findRate(from, to);
+    if (!result) {
+      throw new NotFoundException({ error: 'not_found', message: `No rate for ${from} → ${to}` });
+    }
+    return result;
+  }
+
+  async findRate(from: string, to: string): Promise<ForexRate | null> {
     const f = from.toUpperCase();
     const t = to.toUpperCase();
     

@@ -15,7 +15,7 @@ export class GetForexHistoryQueryDto {
   @IsInt({ message: 'days must be an integer' })
   @Min(DAYS_MIN, { message: `days must be at least ${DAYS_MIN}` })
   @Max(DAYS_MAX_FOREX, { message: `days must be at most ${DAYS_MAX_FOREX}` })
-  days?: number = 30;
+  days: number = 30;
 
   @ApiPropertyOptional({
     description: 'Base currency',
@@ -25,7 +25,7 @@ export class GetForexHistoryQueryDto {
   @IsOptional()
   @IsIn(ALLOWED_CURRENCIES, { message: `from must be one of: ${ALLOWED_CURRENCIES.join(', ')}` })
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
-  from?: AllowedCurrency = 'USD';
+  from: AllowedCurrency = 'USD';
 
   @ApiPropertyOptional({
     description: 'Target currency',
@@ -35,5 +35,5 @@ export class GetForexHistoryQueryDto {
   @IsOptional()
   @IsIn(ALLOWED_CURRENCIES, { message: `to must be one of: ${ALLOWED_CURRENCIES.join(', ')}` })
   @Transform(({ value }) => (typeof value === 'string' ? value.toUpperCase() : value))
-  to?: AllowedCurrency = 'EUR';
+  to: AllowedCurrency = 'EUR';
 }
