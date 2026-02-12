@@ -1,6 +1,15 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  FRANKFURTER_BASE_URL,
+  FETCH_TIMEOUT_DEFAULT,
+  FETCH_TIMEOUT_MEDIUM,
+  CACHE_TTL_PRICE,
+  CACHE_TTL_HISTORY_LONG,
+} from '../../shared/constants';
+import { getConfigNumber } from '../../shared/config-utils';
 
 export type ForexRate = {
   from: string;
@@ -13,13 +22,26 @@ export type ForexRate = {
 
 export type ForexHistoryDay = { date: string; rate: number };
 
-const BASE = "https://api.frankfurter.dev";
-
 @Injectable()
 export class ForexService {
   private readonly logger = new Logger(ForexService.name);
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  private readonly frankfurterUrl: string;
+  private readonly fetchTimeout: number;
+  private readonly fetchTimeoutMedium: number;
+  private readonly cacheTtlPrice: number;
+  private readonly cacheTtlHistory: number;
+
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly configService: ConfigService,
+  ) {
+    this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
+    this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
+    this.fetchTimeoutMedium = getConfigNumber(this.configService, 'FETCH_TIMEOUT_MEDIUM', FETCH_TIMEOUT_MEDIUM);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_LONG', CACHE_TTL_HISTORY_LONG);
+  }
 
   async getRate(from: string, to: string): Promise<ForexRate | null> {
     const f = from.toUpperCase();
@@ -35,7 +57,7 @@ export class ForexService {
 
     const result = await this.fetchFrankfurter(f, t);
     if (result) {
-      await this.cacheManager.set(cacheKey, result, 60000); // 1 min
+      await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
     }
     return result;
   }
@@ -56,10 +78,10 @@ export class ForexService {
     start.setDate(start.getDate() - daysValid);
     const startStr = start.toISOString().slice(0, 10);
     const endStr = end.toISOString().slice(0, 10);
-    const url = `${BASE}/v1/${startStr}..${endStr}?base=${f}&symbols=${t}`;
+    const url = `${this.frankfurterUrl}/v1/${startStr}..${endStr}?base=${f}&symbols=${t}`;
 
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutMedium) });
       if (!res.ok) return [];
       const data = (await res.json()) as { rates?: Record<string, Record<string, number>> };
       const rates = data.rates;
@@ -73,7 +95,7 @@ export class ForexService {
         .filter((x): x is ForexHistoryDay => x != null)
         .sort((a, b) => a.date.localeCompare(b.date));
 
-      await this.cacheManager.set(cacheKey, { history }, 24 * 60 * 60 * 1000); // 24h
+      await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
       return history;
     } catch (e) {
       this.logger.error(`Error fetching forex history ${f}->${t}`, e);
@@ -82,9 +104,9 @@ export class ForexService {
   }
 
   private async fetchFrankfurter(from: string, to: string): Promise<ForexRate | null> {
-    const url = `${BASE}/v1/latest?base=${from}&symbols=${to}`;
+    const url = `${this.frankfurterUrl}/v1/latest?base=${from}&symbols=${to}`;
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
       if (!res.ok) return null;
       const data = (await res.json()) as {
         base?: string;

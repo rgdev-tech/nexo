@@ -1,6 +1,17 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  COINGECKO_BASE_URL,
+  BINANCE_BASE_URL,
+  FETCH_TIMEOUT_DEFAULT,
+  FETCH_TIMEOUT_COINGECKO_SHORT,
+  FETCH_TIMEOUT_COINGECKO_LONG,
+  CACHE_TTL_PRICE,
+  CACHE_TTL_HISTORY_SHORT,
+} from '../../shared/constants';
+import { getConfigNumber } from '../../shared/config-utils';
 
 export type CryptoPrice = {
   symbol: string;
@@ -44,7 +55,26 @@ const COINGECKO_IDS: Record<string, string> = {
 export class CryptoService {
   private readonly logger = new Logger(CryptoService.name);
 
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  private readonly coingeckoUrl: string;
+  private readonly binanceUrl: string;
+  private readonly fetchTimeout: number;
+  private readonly coingeckoTimeoutShort: number;
+  private readonly coingeckoTimeoutLong: number;
+  private readonly cacheTtlPrice: number;
+  private readonly cacheTtlHistory: number;
+
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly configService: ConfigService,
+  ) {
+    this.coingeckoUrl = this.configService.get<string>('COINGECKO_URL') ?? COINGECKO_BASE_URL;
+    this.binanceUrl = this.configService.get<string>('BINANCE_URL') ?? BINANCE_BASE_URL;
+    this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
+    this.coingeckoTimeoutShort = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_SHORT', FETCH_TIMEOUT_COINGECKO_SHORT);
+    this.coingeckoTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_LONG', FETCH_TIMEOUT_COINGECKO_LONG);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_SHORT', CACHE_TTL_HISTORY_SHORT);
+  }
 
   async getPrice(symbol: string, currency = 'USD'): Promise<CryptoPrice | null> {
     const sym = symbol.toUpperCase();
@@ -60,7 +90,7 @@ export class CryptoService {
     }
 
     if (result) {
-      await this.cacheManager.set(cacheKey, result, 60000); // 1 min
+      await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
     }
 
     return result;
@@ -77,7 +107,7 @@ export class CryptoService {
     const filtered = results.filter((r): r is CryptoPrice => r != null);
     
     if (filtered.length > 0) {
-      await this.cacheManager.set(cacheKey, filtered, 60000);
+      await this.cacheManager.set(cacheKey, filtered, this.cacheTtlPrice);
     }
     
     return filtered;
@@ -94,10 +124,10 @@ export class CryptoService {
     if (!id) return [];
     
     const vs = currency.toLowerCase();
-    const url = `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=${vs}&days=${daysValid}`;
+    const url = `${this.coingeckoUrl}/coins/${id}/market_chart?vs_currency=${vs}&days=${daysValid}`;
     // 30/90 días devuelven muchos más puntos (hourly); dar más tiempo a CoinGecko
-    const timeoutMs = daysValid >= 30 ? 25000 : 12000;
-    const RETRYABLE_STATUSES = [408, 429, 502, 503, 504]; // timeout, rate limit, gateway/server errors
+    const timeoutMs = daysValid >= 30 ? this.coingeckoTimeoutLong : this.coingeckoTimeoutShort;
+    const RETRYABLE_STATUSES = [408, 429, 502, 503, 504];
 
     const fetchOnce = async (): Promise<CryptoHistoryDay[]> => {
       const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
@@ -124,9 +154,9 @@ export class CryptoService {
     };
 
     try {
-      let history = await fetchOnce();
+      const history = await fetchOnce();
       if (history.length > 0) {
-        await this.cacheManager.set(cacheKey, { history }, 5 * 60 * 1000); // 5 min
+        await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
       }
       return history;
     } catch (e) {
@@ -136,7 +166,7 @@ export class CryptoService {
         try {
           const history = await fetchOnce();
           if (history.length > 0) {
-            await this.cacheManager.set(cacheKey, { history }, 5 * 60 * 1000);
+            await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
           }
           return history;
         } catch (e2) {
@@ -152,9 +182,9 @@ export class CryptoService {
   private async fetchBinance(symbol: string, currency: string): Promise<CryptoPrice | null> {
     const quote = currency === "USD" ? "USDT" : currency;
     const pair = symbol + quote;
-    const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`;
+    const url = `${this.binanceUrl}/ticker/24hr?symbol=${pair}`;
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
       if (!res.ok) return null;
       const data = (await res.json()) as { lastPrice?: string; priceChangePercent?: string };
       const price = parseFloat(data.lastPrice ?? "");
@@ -177,9 +207,9 @@ export class CryptoService {
     const id = COINGECKO_IDS[symbol.toUpperCase()];
     if (!id) return null;
     const vs = currency.toLowerCase();
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=${vs}`;
+    const url = `${this.coingeckoUrl}/simple/price?ids=${id}&vs_currencies=${vs}`;
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
       if (!res.ok) return null;
       const data = (await res.json()) as Record<string, Record<string, number>>;
       const price = data[id]?.[vs];
