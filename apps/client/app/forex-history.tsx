@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { DaysSelector } from "@/components/DaysSelector";
 import { HistoryChart } from "@/components/HistoryChart";
 import { HistoryList } from "@/components/HistoryList";
+import { SummaryCard } from "@/components/SummaryCard";
 import { useSettings } from "@/lib/settings";
-import { getColors, glass, glassCard, HORIZONTAL } from "@/lib/theme";
+import { getColors, HORIZONTAL } from "@/lib/theme";
 
 type HistoryDay = { date: string; rate: number };
 
@@ -56,19 +58,11 @@ export default function ForexHistoryScreen() {
         <Text style={[styles.subtitle, { color: colors.textMuted }]}>1 USD en EUR · Frankfurter · últimos {days} días</Text>
       </View>
 
-      <View style={styles.daysRow}>
-        {[7, 14, 30, 90].map((d) => (
-          <Pressable
-            key={d}
-            onPress={() => setDays(d)}
-            style={[styles.daysBtn, days === d && styles.daysBtnActive]}
-          >
-            <Text style={[styles.daysBtnText, days === d && styles.daysBtnTextActive]}>
-              {d} días
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <DaysSelector
+        options={[7, 14, 30, 90]}
+        value={days}
+        onValueChange={setDays}
+      />
 
       {error ? (
         <View style={styles.centered}>
@@ -85,10 +79,7 @@ export default function ForexHistoryScreen() {
           showsVerticalScrollIndicator={false}
         >
           {!loading && lastRate != null && (
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryLabel}>Último valor</Text>
-              <Text style={styles.summaryValue}>1 USD = {lastRate.toFixed(4)} EUR</Text>
-            </View>
+            <SummaryCard value={`1 USD = ${lastRate.toFixed(4)} EUR`} />
           )}
           <HistoryChart
             data={chartData}
@@ -142,30 +133,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#71717a",
   },
-  daysRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: HORIZONTAL,
-    marginBottom: 18,
-  },
-  daysBtn: {
-    ...glassCard,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-  },
-  daysBtnActive: {
-    backgroundColor: "#0FA226",
-    borderColor: "#0FA226",
-  },
-  daysBtnText: {
-    color: "#a1a1aa",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  daysBtnTextActive: {
-    color: "#fff",
-  },
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -187,22 +154,5 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 40,
-  },
-  summaryCard: {
-    ...glass,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    color: "#8e8e93",
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0FA226",
   },
 });

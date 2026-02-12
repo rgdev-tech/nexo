@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { DaysSelector } from "@/components/DaysSelector";
 import { HistoryChart } from "@/components/HistoryChart";
 import { HistoryList } from "@/components/HistoryList";
+import { SummaryCard } from "@/components/SummaryCard";
 import { useSettings } from "@/lib/settings";
-import { getColors, glass, glassCard, HORIZONTAL } from "@/lib/theme";
+import { getColors, HORIZONTAL } from "@/lib/theme";
 
 type HistoryDay = { date: string; price: number };
 
@@ -71,29 +73,15 @@ export default function CryptoHistoryScreen() {
         </Text>
       </View>
 
-      <View style={styles.daysRow}>
-        {[7, 14, 30, 90].map((d) => (
-          <Pressable
-            key={d}
-            onPress={() => setDays(d)}
-            style={[
-              styles.daysBtn,
-              { borderColor: colors.groupBorder },
-              days === d && [styles.daysBtnActive, { backgroundColor: colors.accent, borderColor: colors.accent }],
-            ]}
-          >
-            <Text
-              style={[
-                styles.daysBtnText,
-                { color: colors.textMuted },
-                days === d && [styles.daysBtnTextActive, { color: "#fff" }],
-              ]}
-            >
-              {d} días
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <DaysSelector
+        options={[7, 14, 30, 90]}
+        value={days}
+        onValueChange={setDays}
+        borderColor={colors.groupBorder}
+        activeColor={colors.accent}
+        textColor={colors.textMuted}
+        activeTextColor="#fff"
+      />
 
       {error ? (
         <View style={styles.centered}>
@@ -110,13 +98,16 @@ export default function CryptoHistoryScreen() {
           showsVerticalScrollIndicator={false}
         >
           {!loading && lastPrice != null && (
-            <View style={[styles.summaryCard, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
-              <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Último valor</Text>
-              <Text style={[styles.summaryValue, { color: colors.accent }]}>
-                1 {symbol} = {currencySymbol(currency)}
-                {lastPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}
-              </Text>
-            </View>
+            <SummaryCard
+              value={`1 ${symbol} = ${currencySymbol(currency)}${lastPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}`}
+              containerStyle={{
+                backgroundColor: colors.groupBg,
+                borderWidth: 1,
+                borderColor: colors.groupBorder,
+              }}
+              labelColor={colors.textMuted}
+              valueColor={colors.accent}
+            />
           )}
           <HistoryChart
             data={chartData}
@@ -176,24 +167,6 @@ const styles = StyleSheet.create({
     marginLeft: 36,
     fontSize: 14,
   },
-  daysRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: HORIZONTAL,
-    marginBottom: 18,
-  },
-  daysBtn: {
-    ...glassCard,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-  },
-  daysBtnActive: {},
-  daysBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  daysBtnTextActive: {},
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -213,21 +186,5 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 40,
-  },
-  summaryCard: {
-    ...glass,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  summaryLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 20,
-    fontWeight: "700",
   },
 });
