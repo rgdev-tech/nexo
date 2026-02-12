@@ -27,7 +27,11 @@ async function loadTransactions(): Promise<Transaction[]> {
 }
 
 async function saveTransactions(list: Transaction[]): Promise<void> {
-  await AsyncStorage.setItem(KEY_TRANSACTIONS, JSON.stringify(list));
+  try {
+    await AsyncStorage.setItem(KEY_TRANSACTIONS, JSON.stringify(list));
+  } catch (e) {
+    console.warn("[Balance] saveTransactions failed:", e);
+  }
 }
 
 async function loadInitialBalance(): Promise<number> {
@@ -42,7 +46,11 @@ async function loadInitialBalance(): Promise<number> {
 }
 
 async function saveInitialBalance(value: number): Promise<void> {
-  await AsyncStorage.setItem(KEY_INITIAL_BALANCE, String(value));
+  try {
+    await AsyncStorage.setItem(KEY_INITIAL_BALANCE, String(value));
+  } catch (e) {
+    console.warn("[Balance] saveInitialBalance failed:", e);
+  }
 }
 
 function generateId(): string {

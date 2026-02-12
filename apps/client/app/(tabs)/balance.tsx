@@ -14,7 +14,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Swipeable } from "react-native-gesture-handler";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Haptics from "expo-haptics";
+import { ImpactFeedbackStyle, NotificationFeedbackType } from "expo-haptics";
+import { safeImpact, safeNotification } from "@/lib/safeHaptic";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useFocusEffect } from "expo-router";
 import { useSettings } from "@/lib/settings";
@@ -81,7 +82,7 @@ export default function BalanceScreen() {
     if (result.success) {
       lastBalanceUnlockAt = Date.now();
       setUnlocked(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      safeNotification(NotificationFeedbackType.Success);
     }
   }, []);
 
@@ -111,7 +112,9 @@ export default function BalanceScreen() {
     fetch(`${settings.apiUrl}/api/prices/ves`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: UsdToVes | null) => d && setVes({ paralelo: d.paralelo }))
-      .catch(() => {});
+      .catch((e: unknown) => {
+        console.warn("[Balance] VES fetch failed:", e);
+      });
   }, [settings.apiUrl]);
 
   const openAdd = useCallback((t: TransactionType) => {
@@ -120,14 +123,14 @@ export default function BalanceScreen() {
     setTag(BALANCE_TAGS[0]);
     setNote("");
     setAddVisible(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    safeImpact(ImpactFeedbackStyle.Light);
   }, []);
 
   const saveAdd = useCallback(async () => {
     const num = parseFloat(amount.replace(",", ".")) || 0;
     if (num <= 0) return;
     await addTransaction(type, num, `${tag.id}|${tag.label}`, note.trim() || tag.label);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    safeNotification(NotificationFeedbackType.Success);
     setAddVisible(false);
   }, [amount, type, tag, note, addTransaction]);
 
@@ -140,7 +143,7 @@ export default function BalanceScreen() {
   const remove = useCallback(
     (id: string) => {
       deleteTransaction(id);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      safeImpact(ImpactFeedbackStyle.Medium);
     },
     [deleteTransaction]
   );
