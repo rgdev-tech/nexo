@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 
 import { SharedModule } from './shared/shared.module';
 
 import { VesModule } from './modules/ves/ves.module';
-
 import { CryptoModule } from './modules/crypto/crypto.module';
-
 import { ForexModule } from './modules/forex/forex.module';
 
 import { UsersModule } from './modules/users/users.module';
@@ -16,8 +14,15 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CronModule } from './modules/cron/cron.module';
 import { HealthModule } from './modules/health/health.module';
 
+import {
+  THROTTLE_TTL_MS,
+  THROTTLE_LIMIT,
+  CACHE_TTL_DEFAULT,
+} from './shared/constants';
+
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     HealthModule,
     SharedModule,
     VesModule,
@@ -26,17 +31,19 @@ import { HealthModule } from './modules/health/health.module';
     UsersModule,
     AuthModule,
     CronModule,
-    HealthModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [{
+        ttl: config.get<number>('THROTTLE_TTL_MS') ?? THROTTLE_TTL_MS,
+        limit: config.get<number>('THROTTLE_LIMIT') ?? THROTTLE_LIMIT,
+      }],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 60,
-    }]),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 60000, // 1 minute default
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        ttl: config.get<number>('CACHE_TTL_DEFAULT') ?? CACHE_TTL_DEFAULT,
+      }),
     }),
   ],
   controllers: [],

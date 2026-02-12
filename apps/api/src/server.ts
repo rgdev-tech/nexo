@@ -1,12 +1,16 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { CoreModule } from './core.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { PORT_DEFAULT, HOST_DEFAULT } from './shared/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(CoreModule);
+  const configService = app.get(ConfigService);
 
-  const corsOrigins = process.env.CORS_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean);
+  const corsRaw = configService.get<string>('CORS_ORIGINS');
+  const corsOrigins = corsRaw?.split(',').map((o) => o.trim()).filter(Boolean);
   app.enableCors({
     origin: corsOrigins?.length ? corsOrigins : '*',
     credentials: true,
@@ -17,7 +21,7 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Nexo API')
     .setDescription('API for tracking VES, Crypto and Forex prices')
     .setVersion('1.0')
@@ -27,11 +31,11 @@ async function bootstrap() {
     .addTag('Forex', 'Fiat currency exchange rates')
     .build();
   
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 3000;
-  const host = process.env.HOST || '0.0.0.0'; // 0.0.0.0 para que el móvil en la red local pueda conectarse
+  const port = configService.get<number>('PORT') ?? PORT_DEFAULT;
+  const host = configService.get<string>('HOST') ?? HOST_DEFAULT;
   await app.listen(port, host);
   console.log(`Application is running on: http://${host}:${port}`);
   console.log(`Swagger docs available at: ${await app.getUrl()}/api/docs`);

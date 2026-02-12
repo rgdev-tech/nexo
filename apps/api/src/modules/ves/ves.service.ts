@@ -1,8 +1,17 @@
 import { Injectable, Logger, Inject, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../../shared/supabase/supabase.service';
 import { ForexService } from '../forex/forex.service';
 import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  DOLARAPI_BASE_URL,
+  FRANKFURTER_BASE_URL,
+  FETCH_TIMEOUT_DOLARAPI,
+  FETCH_TIMEOUT_LONG,
+  CACHE_TTL_PRICE,
+  VES_SNAPSHOT_INTERVAL_MS,
+} from '../../shared/constants';
 
 export type VesHistoryDay = {
   date: string;
@@ -22,22 +31,33 @@ export type UsdToVes = {
   timestamp: number;
 };
 
-const DOLARAPI = "https://ve.dolarapi.com/v1/dolares";
-const FRANKFURTER_BASE = "https://api.frankfurter.dev";
-const VES_HOUR_MS = 60 * 60 * 1000;
-
 @Injectable()
 export class VesService implements OnModuleInit {
   private readonly logger = new Logger(VesService.name);
 
+  private readonly dolarApiUrl: string;
+  private readonly frankfurterUrl: string;
+  private readonly fetchTimeoutDolarApi: number;
+  private readonly fetchTimeoutLong: number;
+  private readonly cacheTtlPrice: number;
+  private readonly snapshotInterval: number;
+
   constructor(
     private supabaseService: SupabaseService,
     private forexService: ForexService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache
-  ) {}
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly configService: ConfigService,
+  ) {
+    this.dolarApiUrl = this.configService.get<string>('DOLARAPI_URL') ?? DOLARAPI_BASE_URL;
+    this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
+    this.fetchTimeoutDolarApi = this.configService.get<number>('FETCH_TIMEOUT_DOLARAPI') ?? FETCH_TIMEOUT_DOLARAPI;
+    this.fetchTimeoutLong = this.configService.get<number>('FETCH_TIMEOUT_LONG') ?? FETCH_TIMEOUT_LONG;
+    this.cacheTtlPrice = this.configService.get<number>('CACHE_TTL_PRICE') ?? CACHE_TTL_PRICE;
+    this.snapshotInterval = this.configService.get<number>('VES_SNAPSHOT_INTERVAL_MS') ?? VES_SNAPSHOT_INTERVAL_MS;
+  }
 
   onModuleInit() {
-    if (process.env.VERCEL === '1') {
+    if (this.configService.get<string>('VERCEL') === '1') {
       this.logger.log('Skipping VES background jobs (serverless); use /api/cron/ves-snapshot instead.');
       return;
     }
@@ -46,7 +66,7 @@ export class VesService implements OnModuleInit {
     this.backfillUsdEurFromFrankfurter().catch((err) => this.logger.error('Error in backfillUsdEurFromFrankfurter:', err));
     setInterval(() => {
       this.fetchAndSaveVes().catch((err) => this.logger.error('Error in interval fetchAndSaveVes:', err));
-    }, VES_HOUR_MS);
+    }, this.snapshotInterval);
   }
 
   async getPrice(): Promise<UsdToVes | null> {
@@ -58,14 +78,14 @@ export class VesService implements OnModuleInit {
 
     const result = await this.fetchDolarApi();
     if (result) {
-      await this.cacheManager.set(cacheKey, result, 60000); // 1 min
+      await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
     }
     return result;
   }
 
   private async fetchDolarApi(): Promise<UsdToVes | null> {
     try {
-      const res = await fetch(DOLARAPI, { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(this.dolarApiUrl, { signal: AbortSignal.timeout(this.fetchTimeoutDolarApi) });
       if (!res.ok) return null;
       const data = (await res.json()) as Array<{
         nombre?: string;
@@ -168,9 +188,9 @@ export class VesService implements OnModuleInit {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 90);
     const start = startDate.toISOString().slice(0, 10);
-    const url = `${FRANKFURTER_BASE}/v1/${start}..?base=USD&symbols=EUR`;
+    const url = `${this.frankfurterUrl}/v1/${start}..?base=USD&symbols=EUR`;
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutLong) });
       if (!res.ok) return;
       const data = (await res.json()) as {
         rates?: Record<string, { EUR?: number }>;
