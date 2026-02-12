@@ -123,19 +123,3 @@ export function getGlassCard(theme: ThemeMode): GlassStyle {
     borderRadius: 14,
   };
 }
-
-/** @deprecated Usar getGlass(theme). Mantenido por compatibilidad. */
-export const glass: GlassStyle = {
-  backgroundColor: "rgba(255, 255, 255, 0.06)",
-  borderWidth: 1,
-  borderColor: "rgba(255, 255, 255, 0.1)",
-  borderRadius: 16,
-};
-
-/** @deprecated Usar getGlassCard(theme). Mantenido por compatibilidad. */
-export const glassCard: GlassStyle = {
-  backgroundColor: "rgba(255, 255, 255, 0.05)",
-  borderWidth: 1,
-  borderColor: "rgba(255, 255, 255, 0.08)",
-  borderRadius: 14,
-};

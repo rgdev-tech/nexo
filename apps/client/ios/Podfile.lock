@@ -1,5 +1,10 @@
 PODS:
+  - EASClient (1.0.8):
+    - ExpoModulesCore
   - EXConstants (18.0.13):
+    - ExpoModulesCore
+  - EXJSONUtils (0.15.0)
+  - EXManifests (1.0.10):
     - ExpoModulesCore
   - Expo (54.0.33):
     - ExpoModulesCore
@@ -70,11 +75,44 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - ExpoSecureStore (15.0.8):
+    - ExpoModulesCore
   - ExpoSharing (14.0.8):
     - ExpoModulesCore
   - ExpoSQLite (16.0.10):
     - ExpoModulesCore
   - ExpoVideo (3.0.15):
+    - ExpoModulesCore
+  - EXStructuredHeaders (5.0.0)
+  - EXUpdates (29.0.16):
+    - EASClient
+    - EXManifests
+    - ExpoModulesCore
+    - EXStructuredHeaders
+    - EXUpdatesInterface
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - ReachabilitySwift
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - EXUpdatesInterface (2.0.0):
     - ExpoModulesCore
   - FBLazyVector (0.81.5)
   - hermes-engine (0.81.5):
@@ -86,6 +124,7 @@ PODS:
     - FBLazyVector (= 0.81.5)
     - RCTRequired (= 0.81.5)
     - React-Core (= 0.81.5)
+  - ReachabilitySwift (5.2.4)
   - React (0.81.5):
     - React-Core (= 0.81.5)
     - React-Core/DevSupport (= 0.81.5)
@@ -1913,7 +1952,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNSVG (15.15.2):
+  - RNSVG (15.12.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1934,9 +1973,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - RNSVG/common (= 15.15.2)
+    - RNSVG/common (= 15.12.1)
     - Yoga
-  - RNSVG/common (15.15.2):
+  - RNSVG/common (15.12.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1961,22 +2000,29 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - "EASClient (from `../../../node_modules/.bun/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios`)"
   - "EXConstants (from `../../../node_modules/.bun/expo-constants@18.0.13+6a513318ea7806fd/node_modules/expo-constants/ios`)"
+  - "EXJSONUtils (from `../../../node_modules/.bun/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios`)"
+  - "EXManifests (from `../../../node_modules/.bun/expo-manifests@1.0.10+6a513318ea7806fd/node_modules/expo-manifests/ios`)"
   - "Expo (from `../../../node_modules/.bun/expo@54.0.33+6a513318ea7806fd/node_modules/expo`)"
   - "ExpoAsset (from `../../../node_modules/.bun/expo-asset@12.0.12+6a513318ea7806fd/node_modules/expo-asset/ios`)"
   - "ExpoBlur (from `../../../node_modules/.bun/expo-blur@15.0.8+6a513318ea7806fd/node_modules/expo-blur/ios`)"
   - "ExpoClipboard (from `../../../node_modules/.bun/expo-clipboard@8.0.8+6a513318ea7806fd/node_modules/expo-clipboard/ios`)"
   - "ExpoFileSystem (from `../../../node_modules/.bun/expo-file-system@19.0.21+e4fd16ac8ffee978/node_modules/expo-file-system/ios`)"
-  - "ExpoFont (from `../../../node_modules/.bun/expo-font@14.0.11+e4fd16ac8ffee978/node_modules/expo-font/ios`)"
+  - "ExpoFont (from `../../../node_modules/.bun/expo-font@14.0.11+6a513318ea7806fd/node_modules/expo-font/ios`)"
   - "ExpoHaptics (from `../../../node_modules/.bun/expo-haptics@15.0.8+6a513318ea7806fd/node_modules/expo-haptics/ios`)"
   - "ExpoHead (from `../../../node_modules/.bun/expo-router@6.0.23+f8baf94712bd0d0a/node_modules/expo-router/ios`)"
   - "ExpoKeepAwake (from `../../../node_modules/.bun/expo-keep-awake@15.0.8+1b9f08083c0c1237/node_modules/expo-keep-awake/ios`)"
   - "ExpoLinking (from `../../../node_modules/.bun/expo-linking@8.0.11+6a513318ea7806fd/node_modules/expo-linking/ios`)"
   - "ExpoLocalAuthentication (from `../../../node_modules/.bun/expo-local-authentication@17.0.8+6a513318ea7806fd/node_modules/expo-local-authentication/ios`)"
   - "ExpoModulesCore (from `../../../node_modules/.bun/expo-modules-core@3.0.29+395f71ae3c4cac51/node_modules/expo-modules-core`)"
+  - "ExpoSecureStore (from `../../../node_modules/.bun/expo-secure-store@15.0.8+6a513318ea7806fd/node_modules/expo-secure-store/ios`)"
   - "ExpoSharing (from `../../../node_modules/.bun/expo-sharing@14.0.8+6a513318ea7806fd/node_modules/expo-sharing/ios`)"
   - "ExpoSQLite (from `../../../node_modules/.bun/expo-sqlite@16.0.10+6a513318ea7806fd/node_modules/expo-sqlite/ios`)"
   - "ExpoVideo (from `../../../node_modules/.bun/expo-video@3.0.15+6a513318ea7806fd/node_modules/expo-video/ios`)"
+  - "EXStructuredHeaders (from `../../../node_modules/.bun/expo-structured-headers@5.0.0/node_modules/expo-structured-headers/ios`)"
+  - "EXUpdates (from `../../../node_modules/.bun/expo-updates@29.0.16+6a513318ea7806fd/node_modules/expo-updates/ios`)"
+  - "EXUpdatesInterface (from `../../../node_modules/.bun/expo-updates-interface@2.0.0+6a513318ea7806fd/node_modules/expo-updates-interface/ios`)"
   - "FBLazyVector (from `../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/Libraries/FBLazyVector`)"
   - "hermes-engine (from `../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)"
   - "RCTDeprecation (from `../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)"
@@ -2050,12 +2096,22 @@ DEPENDENCIES:
   - "RNCPicker (from `../../../node_modules/.bun/@react-native-picker+picker@2.11.1+395f71ae3c4cac51/node_modules/@react-native-picker/picker`)"
   - "RNGestureHandler (from `../../../node_modules/.bun/react-native-gesture-handler@2.28.0+395f71ae3c4cac51/node_modules/react-native-gesture-handler`)"
   - "RNScreens (from `../../../node_modules/.bun/react-native-screens@4.16.0+395f71ae3c4cac51/node_modules/react-native-screens`)"
-  - "RNSVG (from `../../../node_modules/.bun/react-native-svg@15.15.2+395f71ae3c4cac51/node_modules/react-native-svg`)"
+  - "RNSVG (from `../../../node_modules/.bun/react-native-svg@15.12.1+395f71ae3c4cac51/node_modules/react-native-svg`)"
   - "Yoga (from `../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/ReactCommon/yoga`)"
 
+SPEC REPOS:
+  trunk:
+    - ReachabilitySwift
+
 EXTERNAL SOURCES:
+  EASClient:
+    :path: "../../../node_modules/.bun/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios"
   EXConstants:
     :path: "../../../node_modules/.bun/expo-constants@18.0.13+6a513318ea7806fd/node_modules/expo-constants/ios"
+  EXJSONUtils:
+    :path: "../../../node_modules/.bun/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios"
+  EXManifests:
+    :path: "../../../node_modules/.bun/expo-manifests@1.0.10+6a513318ea7806fd/node_modules/expo-manifests/ios"
   Expo:
     :path: "../../../node_modules/.bun/expo@54.0.33+6a513318ea7806fd/node_modules/expo"
   ExpoAsset:
@@ -2067,7 +2123,7 @@ EXTERNAL SOURCES:
   ExpoFileSystem:
     :path: "../../../node_modules/.bun/expo-file-system@19.0.21+e4fd16ac8ffee978/node_modules/expo-file-system/ios"
   ExpoFont:
-    :path: "../../../node_modules/.bun/expo-font@14.0.11+e4fd16ac8ffee978/node_modules/expo-font/ios"
+    :path: "../../../node_modules/.bun/expo-font@14.0.11+6a513318ea7806fd/node_modules/expo-font/ios"
   ExpoHaptics:
     :path: "../../../node_modules/.bun/expo-haptics@15.0.8+6a513318ea7806fd/node_modules/expo-haptics/ios"
   ExpoHead:
@@ -2080,12 +2136,20 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/.bun/expo-local-authentication@17.0.8+6a513318ea7806fd/node_modules/expo-local-authentication/ios"
   ExpoModulesCore:
     :path: "../../../node_modules/.bun/expo-modules-core@3.0.29+395f71ae3c4cac51/node_modules/expo-modules-core"
+  ExpoSecureStore:
+    :path: "../../../node_modules/.bun/expo-secure-store@15.0.8+6a513318ea7806fd/node_modules/expo-secure-store/ios"
   ExpoSharing:
     :path: "../../../node_modules/.bun/expo-sharing@14.0.8+6a513318ea7806fd/node_modules/expo-sharing/ios"
   ExpoSQLite:
     :path: "../../../node_modules/.bun/expo-sqlite@16.0.10+6a513318ea7806fd/node_modules/expo-sqlite/ios"
   ExpoVideo:
     :path: "../../../node_modules/.bun/expo-video@3.0.15+6a513318ea7806fd/node_modules/expo-video/ios"
+  EXStructuredHeaders:
+    :path: "../../../node_modules/.bun/expo-structured-headers@5.0.0/node_modules/expo-structured-headers/ios"
+  EXUpdates:
+    :path: "../../../node_modules/.bun/expo-updates@29.0.16+6a513318ea7806fd/node_modules/expo-updates/ios"
+  EXUpdatesInterface:
+    :path: "../../../node_modules/.bun/expo-updates-interface@2.0.0+6a513318ea7806fd/node_modules/expo-updates-interface/ios"
   FBLazyVector:
     :path: "../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/Libraries/FBLazyVector"
   hermes-engine:
@@ -2232,12 +2296,15 @@ EXTERNAL SOURCES:
   RNScreens:
     :path: "../../../node_modules/.bun/react-native-screens@4.16.0+395f71ae3c4cac51/node_modules/react-native-screens"
   RNSVG:
-    :path: "../../../node_modules/.bun/react-native-svg@15.15.2+395f71ae3c4cac51/node_modules/react-native-svg"
+    :path: "../../../node_modules/.bun/react-native-svg@15.12.1+395f71ae3c4cac51/node_modules/react-native-svg"
   Yoga:
     :path: "../../../node_modules/.bun/react-native@0.81.5+395f71ae3c4cac51/node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  EASClient: 40dd9e740684782610c49becab2643782ea1a20c
   EXConstants: fce59a631a06c4151602843667f7cfe35f81e271
+  EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
+  EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
   Expo: aadbcc8c6c14ff3105a9154f1683cb1424ff0d2a
   ExpoAsset: f867e55ceb428aab99e1e8c082b5aee7c159ea18
   ExpoBlur: b90747a3f22a8b6ceffd9cb0dc41a4184efdc656
@@ -2250,14 +2317,19 @@ SPEC CHECKSUMS:
   ExpoLinking: 8f0aaf69aa56f832913030503b6263dc6f647f37
   ExpoLocalAuthentication: 8a31808565da7af926dd9b595e98594d8b1553b6
   ExpoModulesCore: f3da4f1ab5a8375d0beafab763739dbee8446583
+  ExpoSecureStore: d32f751874a2ceb5aaeebeb3578e165c1ba2b24a
   ExpoSharing: 0d983394ed4a80334bab5a0d5384f75710feb7e8
   ExpoSQLite: 7eedbe476870a5f18d6b89c817c4ac6f299830ad
   ExpoVideo: d7d767743b54a4a301eda6460fcdf953d6163512
+  EXStructuredHeaders: c951e77f2d936f88637421e9588c976da5827368
+  EXUpdates: fd3ce349c439b18fd8ff05080499789cebbcab76
+  EXUpdatesInterface: 5adf50cb41e079c861da6d9b4b954c3db9a50734
   FBLazyVector: e95a291ad2dadb88e42b06e0c5fb8262de53ec12
   hermes-engine: 9f4dfe93326146a1c99eb535b1cb0b857a3cd172
   RCTDeprecation: 943572d4be82d480a48f4884f670135ae30bf990
   RCTRequired: 8f3cfc90cc25cf6e420ddb3e7caaaabc57df6043
   RCTTypeSafety: 16a4144ca3f959583ab019b57d5633df10b5e97c
+  ReachabilitySwift: 32793e867593cfc1177f5d16491e3a197d2fccda
   React: 914f8695f9bf38e6418228c2ffb70021e559f92f
   React-callinvoker: 1c0808402aee0c6d4a0d8e7220ce6547af9fba71
   React-Core: c61410ef0ca6055e204a963992e363227e0fd1c5
@@ -2325,7 +2397,7 @@ SPEC CHECKSUMS:
   RNCPicker: a7170edbcbf8288de8edb2502e08e7fc757fa755
   RNGestureHandler: 2914750df066d89bf9d8f48a10ad5f0051108ac3
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
-  RNSVG: 8b2d04487be3be413bd1e639188c88e278533425
+  RNSVG: 31d6639663c249b7d5abc9728dde2041eb2a3c34
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
 
 PODFILE CHECKSUM: 38cd55d8c3af7d9ef752026c8c49e8a22473cb92
