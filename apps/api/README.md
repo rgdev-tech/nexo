@@ -26,3 +26,27 @@ Headers útiles en respuesta: `X-Cache: HIT|MISS`, `X-RateLimit-Limit`, `X-RateL
 
 - `bun run dev` — servidor con hot reload
 - `bun run start` — producción
+- `bun run test` — ejecutar suite de tests E2E (Jest + Supertest)
+
+## Tests
+
+Suite E2E con **Jest** y **Supertest** sobre NestJS Testing. Cada archivo levanta la app completa y hace peticiones HTTP reales contra los endpoints.
+
+```bash
+# Ejecutar desde apps/api
+bun run test
+
+# Ejecutar desde la raíz del monorepo
+bun run --filter=api test
+```
+
+**Archivos de test:**
+
+| Archivo | Qué cubre |
+|---------|-----------|
+| `test/validation.e2e-spec.ts` | Validación de DTOs (400) y happy paths (200) para crypto, forex, ves y cron |
+| `test/health.e2e-spec.ts` | `GET /` y `GET /api/health` — respuestas y estructura del body |
+| `test/cron-auth.e2e-spec.ts` | Autenticación del cron: token incorrecto (401) y correcto (200) con VesService mockeado |
+| `test/users-auth.e2e-spec.ts` | Endpoints protegidos `/api/users/profile`: rechazo sin token y con token inválido (401) |
+
+**Variables de entorno necesarias:** `SUPABASE_URL`, `SUPABASE_KEY` (o `SUPABASE_SERVICE_ROLE_KEY`). Los tests de cron-auth mockean `ConfigService` y no necesitan `CRON_SECRET` real.
