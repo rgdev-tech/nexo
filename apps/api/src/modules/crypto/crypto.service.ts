@@ -95,10 +95,22 @@ export class CryptoService {
     
     const vs = currency.toLowerCase();
     const url = `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=${vs}&days=${daysValid}`;
-    
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
-      if (!res.ok) return [];
+    // 30/90 días devuelven muchos más puntos (hourly); dar más tiempo a CoinGecko
+    const timeoutMs = daysValid >= 30 ? 25000 : 12000;
+    const RETRYABLE_STATUSES = [408, 429, 502, 503, 504]; // timeout, rate limit, gateway/server errors
+
+    const fetchOnce = async (): Promise<CryptoHistoryDay[]> => {
+      const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+      if (!res.ok) {
+        const body = await res.text();
+        this.logger.warn(
+          `CoinGecko history ${symbol} days=${daysValid}: ${res.status} ${body.slice(0, 200)}`
+        );
+        if (RETRYABLE_STATUSES.includes(res.status)) {
+          throw new Error(`CoinGecko ${res.status}`);
+        }
+        return [];
+      }
       const data = (await res.json()) as { prices?: [number, number][] };
       const prices = data.prices ?? [];
       const byDay = new Map<string, number>();
@@ -106,14 +118,33 @@ export class CryptoService {
         const date = new Date(ts).toISOString().slice(0, 10);
         byDay.set(date, value);
       }
-      const history = Array.from(byDay.entries())
+      return Array.from(byDay.entries())
         .map(([date, price]) => ({ date, price }))
         .sort((a, b) => a.date.localeCompare(b.date));
+    };
 
-      await this.cacheManager.set(cacheKey, { history }, 5 * 60 * 1000); // 5 min
+    try {
+      let history = await fetchOnce();
+      if (history.length > 0) {
+        await this.cacheManager.set(cacheKey, { history }, 5 * 60 * 1000); // 5 min
+      }
       return history;
     } catch (e) {
-      this.logger.error(`Error fetching history for ${symbol}`, e);
+      if (daysValid >= 30) {
+        this.logger.log(`Retrying CoinGecko history ${symbol} days=${daysValid} after ${e instanceof Error ? e.message : "error"}`);
+        await new Promise((r) => setTimeout(r, 2000));
+        try {
+          const history = await fetchOnce();
+          if (history.length > 0) {
+            await this.cacheManager.set(cacheKey, { history }, 5 * 60 * 1000);
+          }
+          return history;
+        } catch (e2) {
+          this.logger.error(`Error fetching history for ${symbol} days=${daysValid} (after retry)`, e2);
+          return [];
+        }
+      }
+      this.logger.error(`Error fetching history for ${symbol} days=${daysValid}`, e);
       return [];
     }
   }
