@@ -21,8 +21,9 @@ import { useFocusEffect } from "expo-router";
 import { useSettings } from "@/lib/settings";
 import { useBalance, BALANCE_TAGS, type TransactionType } from "@/lib/balance";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
+import { formatMoney, formatBs, formatDate } from "@/lib/formatters";
+import { BALANCE_LOCK_AFTER_MS } from "@/lib/constants";
 
-const BALANCE_LOCK_AFTER_MS = 10 * 60 * 1000; // 10 min sin pedir Face ID de nuevo
 let lastBalanceUnlockAt = 0;
 
 function getTagIcon(tagStr: string): keyof typeof Ionicons.glyphMap {
@@ -32,22 +33,6 @@ function getTagIcon(tagStr: string): keyof typeof Ionicons.glyphMap {
 }
 
 type UsdToVes = { paralelo: number };
-
-function formatMoney(n: number): string {
-  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function formatBs(n: number): string {
-  return n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
-}
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  const today = new Date();
-  if (d.toDateString() === today.toDateString()) return "Hoy";
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (d.toDateString() === yesterday.toDateString()) return "Ayer";
-  return d.toLocaleDateString("es-VE", { day: "numeric", month: "short" });
-}
 
 export default function BalanceScreen() {
   const insets = useSafeAreaInsets();

@@ -19,20 +19,10 @@ import { ImpactFeedbackStyle } from "expo-haptics";
 import { safeImpact } from "@/lib/safeHaptic";
 import { useSettings } from "@/lib/settings";
 import { getColors, HORIZONTAL } from "@/lib/theme";
+import { formatBs, formatUsd, formatEur } from "@/lib/formatters";
+import { BS_THRESHOLD } from "@/lib/constants";
 
 type UsdToVes = { oficial: number; paralelo: number };
-
-const BS_THRESHOLD = 1000; // Montos >= esto se interpretan como BS para la ficha "BS → $"
-
-function formatBs(n: number): string {
-  return n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
-}
-function formatUsd(n: number): string {
-  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function formatEur(n: number): string {
-  return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 type FromCurrency = "USD" | "EUR";
 
