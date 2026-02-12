@@ -15,7 +15,8 @@ import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Clipboard from "expo-clipboard";
-import * as Haptics from "expo-haptics";
+import { ImpactFeedbackStyle } from "expo-haptics";
+import { safeImpact } from "@/lib/safeHaptic";
 import { useSettings } from "@/lib/settings";
 import { getColors, HORIZONTAL } from "@/lib/theme";
 
@@ -81,15 +82,11 @@ export default function ConvertidorScreen() {
 
   const copyAndHaptic = useCallback(async (text: string) => {
     await Clipboard.setStringAsync(text);
-    try {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    } catch {
-      // ignore if haptics not available
-    }
+    await safeImpact(ImpactFeedbackStyle.Light);
   }, []);
 
   const toggleCurrency = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    safeImpact(ImpactFeedbackStyle.Light);
     setFromCurrency((c) => (c === "USD" ? "EUR" : "USD"));
   }, []);
 

@@ -27,17 +27,24 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      Alert.alert("Error", error.message);
-    } else {
-      router.replace("/(tabs)");
+      if (error) {
+        console.warn("[Auth] login error:", error.message);
+        Alert.alert("Error", error.message);
+      } else {
+        router.replace("/(tabs)");
+      }
+    } catch (e) {
+      console.warn("[Auth] login failed:", e);
+      Alert.alert("Error", "No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

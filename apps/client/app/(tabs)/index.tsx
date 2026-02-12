@@ -202,7 +202,8 @@ export default function PreciosScreen() {
         })
       );
       setCryptoHistory(Object.fromEntries(cryptoHist));
-    } catch {
+    } catch (e) {
+      console.warn("[Precios] fetchHistory failed:", e);
       setVesHistory([]);
       setForexHistory([]);
       setCryptoHistory({});
@@ -239,8 +240,8 @@ export default function PreciosScreen() {
         dialogTitle: "Compartir",
       });
       closeShareModal();
-    } catch {
-      // ignored
+    } catch (e) {
+      console.warn("[Share] handleShare failed:", e);
     }
   }, [closeShareModal]);
 

@@ -30,23 +30,30 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      Alert.alert("Error", error.message);
-    } else {
-      Alert.alert("Éxito", "Registro exitoso. Revisa tu email para confirmar.");
-      router.replace("/login");
+      if (error) {
+        console.warn("[Auth] register error:", error.message);
+        Alert.alert("Error", error.message);
+      } else {
+        Alert.alert("Éxito", "Registro exitoso. Revisa tu email para confirmar.");
+        router.replace("/login");
+      }
+    } catch (e) {
+      console.warn("[Auth] register failed:", e);
+      Alert.alert("Error", "No se pudo conectar. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

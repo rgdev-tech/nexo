@@ -169,7 +169,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error("Failed to sync profile:", error);
+      console.warn("[Settings] syncWithCloud failed:", error);
     }
   };
 
@@ -191,7 +191,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         .eq('id', session.user.id);
         
     } catch (error) {
-      console.error("Failed to update cloud profile:", error);
+      console.warn("[Settings] updateCloudProfile failed:", error);
     }
   };
 
