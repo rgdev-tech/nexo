@@ -185,7 +185,10 @@ export class CryptoService {
     const url = `${this.binanceUrl}/ticker/24hr?symbol=${pair}`;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        this.logger.warn(`Binance responded with ${res.status} for ${pair}`);
+        return null;
+      }
       const data = (await res.json()) as { lastPrice?: string; priceChangePercent?: string };
       const price = parseFloat(data.lastPrice ?? "");
       if (Number.isNaN(price)) return null;
@@ -198,7 +201,8 @@ export class CryptoService {
         timestamp: Date.now(),
         ...(Number.isFinite(change24h) && { change24h }),
       };
-    } catch {
+    } catch (e) {
+      this.logger.warn(`Binance fetch failed for ${symbol}/${quote}`, e instanceof Error ? e.message : e);
       return null;
     }
   }
@@ -210,7 +214,10 @@ export class CryptoService {
     const url = `${this.coingeckoUrl}/simple/price?ids=${id}&vs_currencies=${vs}`;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeout) });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        this.logger.warn(`CoinGecko responded with ${res.status} for ${id}/${vs}`);
+        return null;
+      }
       const data = (await res.json()) as Record<string, Record<string, number>>;
       const price = data[id]?.[vs];
       if (price == null || Number.isNaN(price)) return null;
@@ -221,7 +228,8 @@ export class CryptoService {
         source: "coingecko",
         timestamp: Date.now(),
       };
-    } catch {
+    } catch (e) {
+      this.logger.warn(`CoinGecko fetch failed for ${symbol}/${vs}`, e instanceof Error ? e.message : e);
       return null;
     }
   }

@@ -87,7 +87,10 @@ export class VesService implements OnModuleInit {
   private async fetchDolarApi(): Promise<UsdToVes | null> {
     try {
       const res = await fetch(this.dolarApiUrl, { signal: AbortSignal.timeout(this.fetchTimeoutDolarApi) });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        this.logger.warn(`DolarAPI responded with ${res.status} ${res.statusText}`);
+        return null;
+      }
       const data = (await res.json()) as Array<{
         nombre?: string;
         promedio?: number;
@@ -192,7 +195,10 @@ export class VesService implements OnModuleInit {
     const url = `${this.frankfurterUrl}/v1/${start}..?base=USD&symbols=EUR`;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(this.fetchTimeoutLong) });
-      if (!res.ok) return;
+      if (!res.ok) {
+        this.logger.warn(`Frankfurter backfill USD/EUR failed: ${res.status} ${res.statusText}`);
+        return;
+      }
       const data = (await res.json()) as {
         rates?: Record<string, { EUR?: number }>;
       };
@@ -204,12 +210,12 @@ export class VesService implements OnModuleInit {
         if (rate == null || Number.isNaN(rate) || rate <= 0) continue;
         
         try {
-            await this.supabaseService.getClient()
-              .from('ves_history')
-              .update({ usd_eur: rate })
-              .like('datetime', `${date}%`);
-        } catch {
-          // ignore
+          await this.supabaseService.getClient()
+            .from('ves_history')
+            .update({ usd_eur: rate })
+            .like('datetime', `${date}%`);
+        } catch (e) {
+          this.logger.warn(`Backfill usd_eur update failed for date ${date}`, e instanceof Error ? e.message : e);
         }
       }
     } catch (e) {
