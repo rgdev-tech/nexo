@@ -57,3 +57,15 @@ export const HOST_DEFAULT = '0.0.0.0';
 // ─── VES background job ─────────────────────────────────────────────────────
 
 export const VES_SNAPSHOT_INTERVAL_MS = 60 * 60 * 1_000; // 1 h
+
+// ─── Validación ─────────────────────────────────────────────────────────────
+
+/** Monedas fiat permitidas en la API */
+export const ALLOWED_CURRENCIES = ['USD', 'EUR', 'GBP', 'VES'] as const;
+export type AllowedCurrency = (typeof ALLOWED_CURRENCIES)[number];
+
+/** Rangos de días para historial */
+export const DAYS_MIN = 1;
+export const DAYS_MAX_CRYPTO = 90;
+export const DAYS_MAX_FOREX = 365;
+export const DAYS_MAX_VES = 90;

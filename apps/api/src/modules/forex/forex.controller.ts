@@ -1,6 +1,8 @@
-import { Controller, Get, Query, NotFoundException, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query, NotFoundException } from '@nestjs/common';
 import { ForexService } from './forex.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { GetForexRateQueryDto } from './dto/get-forex-rate.query.dto';
+import { GetForexHistoryQueryDto } from './dto/get-forex-history.query.dto';
 
 @ApiTags('Forex')
 @Controller('api/prices/forex')
@@ -9,32 +11,22 @@ export class ForexController {
 
   @Get('history')
   @ApiOperation({ summary: 'Get forex rate history' })
-  @ApiQuery({ name: 'days', required: false, type: Number, description: 'Number of days (default: 30)' })
-  @ApiQuery({ name: 'from', required: false, description: 'Base currency (default: USD)', example: 'USD' })
-  @ApiQuery({ name: 'to', required: false, description: 'Target currency (default: EUR)', example: 'EUR' })
   @ApiResponse({ status: 200, description: 'Returns historical exchange rates.' })
-  async getHistory(
-    @Query('days', new DefaultValuePipe(30), ParseIntPipe) days: number,
-    @Query('from', new DefaultValuePipe('USD')) from: string,
-    @Query('to', new DefaultValuePipe('EUR')) to: string,
-  ) {
-    const history = await this.forexService.getHistory(from, to, days);
+  @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
+  async getHistory(@Query() dto: GetForexHistoryQueryDto) {
+    const history = await this.forexService.getHistory(dto.from!, dto.to!, dto.days!);
     return { history };
   }
 
   @Get()
   @ApiOperation({ summary: 'Get current forex rate' })
-  @ApiQuery({ name: 'from', required: false, description: 'Base currency (default: USD)', example: 'USD' })
-  @ApiQuery({ name: 'to', required: false, description: 'Target currency (default: EUR)', example: 'EUR' })
   @ApiResponse({ status: 200, description: 'Returns current exchange rate.' })
+  @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
   @ApiResponse({ status: 404, description: 'Rate not found.' })
-  async getRate(
-    @Query('from', new DefaultValuePipe('USD')) from: string,
-    @Query('to', new DefaultValuePipe('EUR')) to: string,
-  ) {
-    const result = await this.forexService.getRate(from, to);
+  async getRate(@Query() dto: GetForexRateQueryDto) {
+    const result = await this.forexService.getRate(dto.from!, dto.to!);
     if (!result) {
-      throw new NotFoundException({ error: "not_found", message: `No rate for ${from} → ${to}` });
+      throw new NotFoundException({ error: 'not_found', message: `No rate for ${dto.from} → ${dto.to}` });
     }
     return result;
   }
