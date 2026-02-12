@@ -1,6 +1,7 @@
-import { Controller, Get, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { VesService } from './ves.service';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { GetVesHistoryQueryDto } from './dto/get-ves-history.query.dto';
 
 @ApiTags('VES')
 @Controller('api/prices/ves')
@@ -16,13 +17,10 @@ export class VesController {
 
   @Get('history')
   @ApiOperation({ summary: 'Get VES price history' })
-  @ApiQuery({ name: 'days', required: false, type: Number, description: 'Number of days to retrieve (default: 7)' })
   @ApiResponse({ status: 200, description: 'Returns historical data for VES rates.' })
-  async getHistory(
-    @Query('days', new DefaultValuePipe(7), ParseIntPipe) days: number
-  ) {
-    const daysValid = Math.min(90, Math.max(1, days));
-    const history = await this.vesService.getHistory(daysValid);
+  @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
+  async getHistory(@Query() dto: GetVesHistoryQueryDto) {
+    const history = await this.vesService.getHistory(dto.days!);
     return { history };
   }
 }

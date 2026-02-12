@@ -6,14 +6,18 @@
     "dev": "bun run --hot src/server.ts",
     "start": "bun run src/server.ts",
     "build": "bun build src/server.ts --outdir=dist --target=bun --external @nestjs/microservices --external @nestjs/websockets --external class-transformer --external class-validator",
+    "test": "bun test",
     "lint": "bun run lint:check",
     "lint:check": "tsc --noEmit",
     "clean": "rm -rf dist node_modules"
   },
   "devDependencies": {
+    "@nestjs/testing": "^11.1.13",
     "@types/bun": "latest",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.2",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.2.2",
     "typescript": "~5.3.0"
   },
   "dependencies": {
