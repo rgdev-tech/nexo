@@ -21,13 +21,13 @@ export default function TabsLayout() {
         tabBarStyle: [
           styles.tabBar,
           {
-            backgroundColor: settings.theme === "light" ? "rgba(255,255,255,0.92)" : "transparent",
-            borderColor: settings.theme === "light" ? colors.groupBorder : "rgba(255,255,255,0.08)",
+            backgroundColor: colors.tabBarBg,
+            borderColor: colors.tabBarBorder,
           },
         ],
         tabBarBackground: () =>
           settings.theme === "light" ? (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(255,255,255,0.92)" }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBarBg }]} />
           ) : (
             <View style={StyleSheet.absoluteFill}>
               <BlurView
@@ -35,11 +35,11 @@ export default function TabsLayout() {
                 tint="dark"
                 style={StyleSheet.absoluteFill}
               />
-              <View style={styles.tabBarOverlay} pointerEvents="none" />
+              <View style={[styles.tabBarOverlay, { backgroundColor: colors.tabBarOverlay }]} pointerEvents="none" />
             </View>
           ),
         tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: settings.theme === "light" ? colors.textMuted : "rgba(255,255,255,0.5)",
+        tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarShowLabel: true,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarItemStyle: styles.tabBarItem,
@@ -96,17 +96,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: TAB_BAR_HEIGHT,
-    backgroundColor: "transparent",
     borderRadius: TAB_BAR_HEIGHT / 2,
     borderTopWidth: 0,
     overflow: "hidden",
     elevation: 0,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
   },
   tabBarOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.15)",
     borderRadius: TAB_BAR_HEIGHT / 2,
   },
   tabBarLabel: {

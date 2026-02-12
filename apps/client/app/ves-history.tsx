@@ -7,7 +7,7 @@ import { HistoryChart } from "@/components/HistoryChart";
 import { HistoryList } from "@/components/HistoryList";
 import { SummaryCard } from "@/components/SummaryCard";
 import { useSettings } from "@/lib/settings";
-import { getColors, glass, HORIZONTAL } from "@/lib/theme";
+import { getColors, HORIZONTAL } from "@/lib/theme";
 
 type HistoryDay = {
   date: string;
@@ -102,11 +102,11 @@ export default function VesHistoryScreen() {
 
       {error ? (
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         </View>
       ) : !loading && history.length === 0 ? (
         <View style={styles.centered}>
-          <Text style={styles.emptyText}>Aún no hay datos. La API guarda un valor cada hora.</Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>Aún no hay datos. La API guarda un valor cada hora.</Text>
         </View>
       ) : (
         <ScrollView
@@ -136,14 +136,6 @@ export default function VesHistoryScreen() {
                     : "—",
               };
             })}
-            containerStyle={{
-              backgroundColor: glass.backgroundColor,
-              borderWidth: glass.borderWidth,
-              borderColor: glass.borderColor,
-            }}
-            dateColor={colors.textSecondary}
-            valueColor="#0FA226"
-            borderBottomColor="rgba(255,255,255,0.08)"
           />
         </ScrollView>
       )}
@@ -154,13 +146,11 @@ export default function VesHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0C1117",
   },
   header: {
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 16,
-    backgroundColor: "#0C1117",
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
@@ -173,13 +163,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#fff",
   },
   subtitle: {
     width: "100%",
     marginLeft: 36,
     fontSize: 14,
-    color: "#71717a",
   },
   centered: {
     flex: 1,
@@ -188,11 +176,9 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   errorText: {
-    color: "#f87171",
     fontSize: 16,
   },
   emptyText: {
-    color: "#71717a",
     fontSize: 15,
     textAlign: "center",
   },

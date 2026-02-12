@@ -146,7 +146,7 @@ export default function ConvertidorScreen() {
         ) : (
           <>
             <View style={styles.spotlightWrap}>
-              <View style={[styles.glassRow, isLight && styles.glassRowLight]}>
+              <View style={[styles.glassRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
                 {!isLight && (
                   <BlurView intensity={48} tint={blurTint} style={StyleSheet.absoluteFill} />
                 )}
@@ -169,10 +169,7 @@ export default function ConvertidorScreen() {
                   onPress={toggleCurrency}
                   style={[
                     styles.currencyPill,
-                    {
-                      backgroundColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)",
-                      borderColor: isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.18)",
-                    },
+                    { backgroundColor: colors.groupBg, borderColor: colors.groupBorder },
                   ]}
                 >
                   <Text style={[styles.currencyPillText, { color: colors.accent }]}>
@@ -186,7 +183,7 @@ export default function ConvertidorScreen() {
               <View style={styles.fichas}>
                 {rateParalelo > 0 && (
                   <Pressable
-                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    style={[styles.fichaOuter, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}
                     onPress={() => copyAndHaptic(`${formatBs(ficha1Value)} BS`)}
                   >
                     {!isLight && (
@@ -204,7 +201,7 @@ export default function ConvertidorScreen() {
                 )}
                 {rateOficial > 0 && (
                   <Pressable
-                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    style={[styles.fichaOuter, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}
                     onPress={() => copyAndHaptic(`${formatBs(ficha2Value)} BS`)}
                   >
                     {!isLight && (
@@ -222,7 +219,7 @@ export default function ConvertidorScreen() {
                 )}
                 {isLikelyBs && (ves?.paralelo ?? 0) > 0 && (
                   <Pressable
-                    style={[styles.fichaOuter, isLight && styles.fichaOuterLight]}
+                    style={[styles.fichaOuter, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}
                     onPress={() => copyAndHaptic(`$${formatUsd(ficha3Value)} USD`)}
                   >
                     {!isLight && (
@@ -243,7 +240,7 @@ export default function ConvertidorScreen() {
                 )}
 
                 {rateParalelo > 0 && rateOficial > 0 && (
-                  <View style={[styles.diferenciaOuter, isLight && styles.fichaOuterLight]}>
+                  <View style={[styles.diferenciaOuter, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
                     {!isLight && (
                       <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
                     )}
@@ -318,12 +315,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
     overflow: "hidden",
-  },
-  glassRowLight: {
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderColor: "rgba(0,0,0,0.08)",
   },
   spotlightInput: {
     flex: 1,
@@ -352,11 +344,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  fichaOuterLight: {
-    backgroundColor: "rgba(255,255,255,0.6)",
-    borderColor: "rgba(0,0,0,0.06)",
   },
   ficha: {
     paddingVertical: 18,
@@ -371,7 +358,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
   },
   diferenciaInner: {
     paddingVertical: 18,

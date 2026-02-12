@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { DaysSelector } from "@/components/DaysSelector";
-import { HistoryChart } from "@/components/HistoryChart";
-import { HistoryList } from "@/components/HistoryList";
-import { SummaryCard } from "@/components/SummaryCard";
-import { useSettings } from "@/lib/settings";
-import { getColors, HORIZONTAL } from "@/lib/theme";
+import { DaysSelector } from "../components/DaysSelector";
+import { HistoryChart } from "../components/HistoryChart";
+import { HistoryList } from "../components/HistoryList";
+import { SummaryCard } from "../components/SummaryCard";
+import { useSettings } from "../lib/settings";
+import { getColors, HORIZONTAL } from "../lib/theme";
 
 type HistoryDay = { date: string; price: number };
 
@@ -80,7 +80,7 @@ export default function CryptoHistoryScreen() {
         borderColor={colors.groupBorder}
         activeColor={colors.accent}
         textColor={colors.textMuted}
-        activeTextColor="#fff"
+        activeTextColor={colors.accentOnAccent}
       />
 
       {error ? (

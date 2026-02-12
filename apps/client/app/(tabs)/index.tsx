@@ -284,9 +284,9 @@ export default function PreciosScreen() {
         animationType="fade"
         onRequestClose={closeShareModal}
       >
-        <Pressable style={styles.shareOverlay} onPress={closeShareModal}>
+        <Pressable style={[styles.shareOverlay, { backgroundColor: colors.modalOverlay }]} onPress={closeShareModal}>
           <View style={styles.shareModal} pointerEvents="box-none">
-            <Pressable onPress={(e) => e.stopPropagation()} style={styles.shareCardWrap}>
+            <Pressable onPress={(e) => e.stopPropagation()} style={[styles.shareCardWrap, { shadowColor: colors.shadow }]}>
               <View ref={storyRef} collapsable={false}>
                 <StoryCard
                   ves={ves}
@@ -301,8 +301,8 @@ export default function PreciosScreen() {
                 onPress={handleShare}
                 style={[styles.shareBtn, { backgroundColor: colors.accent }]}
               >
-                <Ionicons name="paper-plane-outline" size={20} color="#fff" />
-                <Text style={styles.shareBtnText}>Compartir</Text>
+                <Ionicons name="paper-plane-outline" size={20} color={colors.accentOnAccent} />
+                <Text style={[styles.shareBtnText, { color: colors.accentOnAccent }]}>Compartir</Text>
               </Pressable>
               <Pressable
                 onPress={closeShareModal}
@@ -337,8 +337,8 @@ export default function PreciosScreen() {
               style={[styles.errorRetryBtn, { backgroundColor: colors.accent }]}
               onPress={() => { setError(null); setLoading(true); fetchPrices(false); }}
             >
-              <Ionicons name="refresh" size={20} color="#fff" />
-              <Text style={styles.errorRetryText}>Reintentar</Text>
+              <Ionicons name="refresh" size={20} color={colors.accentOnAccent} />
+              <Text style={[styles.errorRetryText, { color: colors.accentOnAccent }]}>Reintentar</Text>
             </Pressable>
           </View>
         ) : (
@@ -387,7 +387,7 @@ export default function PreciosScreen() {
                   </Pressable>
                 );
               })}
-              <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{crypto[0]?.source ?? "—"}</Text>
+              <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{crypto[0]?.source ?? "—"}</Text>
             </View>
 
             {/* 1 USD → BS */}
@@ -452,7 +452,7 @@ export default function PreciosScreen() {
                       </View>
                     </>
                   )}
-                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{ves.source}</Text>
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{ves.source}</Text>
                 </View>
               </>
             ) : null}
@@ -493,7 +493,7 @@ export default function PreciosScreen() {
                       <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
                 </View>
               </>
             ) : null}
@@ -522,7 +522,7 @@ export default function PreciosScreen() {
                       <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={[styles.groupFooter, { color: colors.textMuted }]}>{forex.source} · Toca para ver historial</Text>
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{forex.source} · Toca para ver historial</Text>
                 </View>
               </>
             ) : null}
@@ -541,17 +541,14 @@ const ROW_PADDING_H = 16;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000",
     gap: 12,
   },
   loadingText: {
-    color: "#8e8e93",
     fontSize: 15,
   },
   header: {
@@ -561,7 +558,6 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 20,
-    backgroundColor: "#000",
   },
   headerLeft: {
     flex: 1,
@@ -569,12 +565,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: "700",
-    color: "#fff",
     letterSpacing: -0.4,
   },
   headerSubtext: {
     fontSize: 13,
-    color: "#8e8e93",
     marginTop: 6,
   },
   headerRight: {
@@ -587,7 +581,6 @@ const styles = StyleSheet.create({
   },
   shareOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -597,7 +590,6 @@ const styles = StyleSheet.create({
   },
   shareCardWrap: {
     marginBottom: 20,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -617,7 +609,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   shareBtnText: {
-    color: "#fff",
     fontSize: 17,
     fontWeight: "600",
   },
@@ -639,17 +630,14 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   errorGroup: {
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: GROUP_RADIUS,
     padding: ROW_PADDING_H,
   },
   errorText: {
-    color: "#ff453a",
     fontSize: 17,
     fontWeight: "500",
   },
   errorHint: {
-    color: "#8e8e93",
     fontSize: 15,
     marginTop: 6,
     lineHeight: 22,
@@ -667,12 +655,10 @@ const styles = StyleSheet.create({
   errorRetryText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
   },
   groupLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#8e8e93",
     letterSpacing: 0.2,
     marginBottom: 8,
     marginLeft: 4,
@@ -681,7 +667,6 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   group: {
-    backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: GROUP_RADIUS,
     overflow: "hidden",
   },
@@ -694,16 +679,13 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
   },
   rowLabel: {
     fontSize: 17,
-    color: "#fff",
     fontWeight: "400",
   },
   rowValue: {
     fontSize: 17,
-    color: "#0FA226",
     fontWeight: "600",
   },
   rowValueWithChevron: {
@@ -749,11 +731,9 @@ const styles = StyleSheet.create({
   },
   groupFooter: {
     fontSize: 12,
-    color: "#8e8e93",
     paddingHorizontal: ROW_PADDING_H,
     paddingTop: 10,
     paddingBottom: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.06)",
   },
 });

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Dimensions, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import Svg, { Circle, Line, Polygon, Polyline } from "react-native-svg";
-import { glass, HORIZONTAL } from "@/lib/theme";
+import { useSettings } from "@/lib/settings";
+import { getColors, getGlass, HORIZONTAL } from "@/lib/theme";
 
 export type HistoryChartPoint = { date: string; value: number };
 
@@ -17,17 +18,17 @@ export type HistoryChartProps = {
   formatYTick?: (value: number) => string;
   /** Sufijo opcional en cada etiqueta del eje Y (ej: " BS"). */
   yAxisSuffix?: string;
-  /** Color de la línea, área y punto final. Por defecto #0FA226. */
+  /** Color de la línea, área y punto final. Por defecto desde tema. */
   accentColor?: string;
   /** Color de fondo del SVG. Por defecto glass. */
   chartBackgroundColor?: string;
-  /** Color de las líneas de la cuadrícula. Por defecto rgba(255,255,255,0.06). */
+  /** Color de las líneas de la cuadrícula. Por defecto desde tema. */
   gridStroke?: string;
-  /** Color de los ejes. Por defecto rgba(255,255,255,0.2). */
+  /** Color de los ejes. Por defecto desde tema. */
   axisStroke?: string;
-  /** Color del texto de ejes. Por defecto #8e8e93. */
+  /** Color del texto de ejes. Por defecto desde tema. */
   textColor?: string;
-  /** Color del borde del punto final. Por defecto #000. */
+  /** Color del borde del punto final. Por defecto desde tema. */
   dotStroke?: string;
   /** Estilo adicional del contenedor del SVG. */
   chartSvgStyle?: ViewStyle;
@@ -42,15 +43,27 @@ export function HistoryChart({
   data,
   formatYTick = defaultFormatYTick,
   yAxisSuffix = "",
-  accentColor = "#0FA226",
+  accentColor,
   chartBackgroundColor,
-  gridStroke = "rgba(255,255,255,0.06)",
-  axisStroke = "rgba(255,255,255,0.2)",
-  textColor = "#8e8e93",
-  dotStroke = "#000",
+  gridStroke,
+  axisStroke,
+  textColor,
+  dotStroke,
   chartSvgStyle,
   loading = false,
 }: HistoryChartProps) {
+  const { settings } = useSettings();
+  const colors = getColors(settings.theme);
+  const glass = getGlass(settings.theme);
+  const resolvedAccentColor = accentColor ?? colors.accent;
+  const resolvedChartBg = chartBackgroundColor ?? glass.backgroundColor;
+  const resolvedGridStroke = gridStroke ?? colors.groupBg;
+  const resolvedAxisStroke =
+    axisStroke ??
+    (settings.theme === "dark" ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)");
+  const resolvedTextColor = textColor ?? colors.textMuted;
+  const resolvedDotStroke = dotStroke ?? colors.background;
+
   const values = useMemo(
     () => data.map((d) => d.value).filter((v) => v > 0),
     [data]
@@ -106,10 +119,9 @@ export function HistoryChart({
   const lastDate = data.length ? data[data.length - 1]?.date : null;
   const midIndex = Math.floor(data.length / 2);
   const midDate = data.length >= 3 ? data[midIndex]?.date : null;
-  const areaFill =
-    accentColor.startsWith("#") ? accentColor + "20" : "rgba(15,162,38,0.12)";
-
-  const resolvedBg = chartBackgroundColor ?? glass.backgroundColor;
+  const areaFill = resolvedAccentColor.startsWith("#")
+    ? resolvedAccentColor + "20"
+    : "rgba(15,162,38,0.12)";
   const lastValue = values.length ? values[values.length - 1] : null;
   const accessibilityLabel =
     "Gráfico de historial de precios" +
@@ -126,12 +138,13 @@ export function HistoryChart({
         <View
           style={[
             styles.chartSvg,
+            glass,
             styles.skeleton,
-            { backgroundColor: resolvedBg, width: CHART_WIDTH, height: CHART_HEIGHT },
+            { backgroundColor: resolvedChartBg, width: CHART_WIDTH, height: CHART_HEIGHT },
             chartSvgStyle,
           ]}
         >
-          <Text style={[styles.skeletonText, { color: textColor }]}>
+          <Text style={[styles.skeletonText, { color: resolvedTextColor }]}>
             Cargando…
           </Text>
         </View>
@@ -148,11 +161,12 @@ export function HistoryChart({
         <View
           style={[
             styles.chartSvg,
-            { backgroundColor: resolvedBg, width: CHART_WIDTH, height: CHART_HEIGHT },
+            glass,
+            { backgroundColor: resolvedChartBg, width: CHART_WIDTH, height: CHART_HEIGHT },
             chartSvgStyle,
           ]}
         >
-          <Text style={[styles.insufficientText, { color: textColor }]}>
+          <Text style={[styles.insufficientText, { color: resolvedTextColor }]}>
             Datos insuficientes para el gráfico
           </Text>
         </View>
@@ -168,7 +182,7 @@ export function HistoryChart({
     >
       <View style={styles.yAxisLabels}>
         {yTicks.map((tick, i) => (
-          <Text key={i} style={[styles.yAxisText, { color: textColor }]}>
+          <Text key={i} style={[styles.yAxisText, { color: resolvedTextColor }]}>
             {tick}
           </Text>
         ))}
@@ -178,7 +192,8 @@ export function HistoryChart({
         height={CHART_HEIGHT}
         style={[
           styles.chartSvg,
-          { backgroundColor: resolvedBg },
+          glass,
+          { backgroundColor: resolvedChartBg },
           chartSvgStyle,
         ]}
       >
@@ -191,7 +206,7 @@ export function HistoryChart({
               y1={y}
               x2={CHART_WIDTH - PADDING.right}
               y2={y}
-              stroke={gridStroke}
+              stroke={resolvedGridStroke}
               strokeWidth={1}
               strokeDasharray="4,4"
             />
@@ -202,7 +217,7 @@ export function HistoryChart({
           y1={PADDING.top}
           x2={PADDING.left}
           y2={CHART_HEIGHT - PADDING.bottom}
-          stroke={axisStroke}
+          stroke={resolvedAxisStroke}
           strokeWidth={1}
         />
         <Line
@@ -210,7 +225,7 @@ export function HistoryChart({
           y1={CHART_HEIGHT - PADDING.bottom}
           x2={CHART_WIDTH - PADDING.right}
           y2={CHART_HEIGHT - PADDING.bottom}
-          stroke={axisStroke}
+          stroke={resolvedAxisStroke}
           strokeWidth={1}
         />
         {areaPoints ? (
@@ -220,7 +235,7 @@ export function HistoryChart({
           <Polyline
             points={linePoints}
             fill="none"
-            stroke={accentColor}
+            stroke={resolvedAccentColor}
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -231,21 +246,21 @@ export function HistoryChart({
             cx={lastPoint.x}
             cy={lastPoint.y}
             r={5}
-            fill={accentColor}
-            stroke={dotStroke}
+            fill={resolvedAccentColor}
+            stroke={resolvedDotStroke}
             strokeWidth={1.5}
           />
         ) : null}
       </Svg>
       <View style={styles.xAxisLabels}>
         {firstDate ? (
-          <Text style={[styles.xAxisText, { color: textColor }]}>{firstDate}</Text>
+          <Text style={[styles.xAxisText, { color: resolvedTextColor }]}>{firstDate}</Text>
         ) : null}
         {midDate ? (
-          <Text style={[styles.xAxisTextMid, { color: textColor }]}>{midDate}</Text>
+          <Text style={[styles.xAxisTextMid, { color: resolvedTextColor }]}>{midDate}</Text>
         ) : null}
         {lastDate ? (
-          <Text style={[styles.xAxisText, { color: textColor }]}>{lastDate}</Text>
+          <Text style={[styles.xAxisText, { color: resolvedTextColor }]}>{lastDate}</Text>
         ) : null}
       </View>
     </View>
@@ -270,7 +285,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   chartSvg: {
-    ...glass,
     borderRadius: 16,
   },
   skeleton: {
