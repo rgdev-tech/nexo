@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Updates from "expo-updates";
 import { useAuth } from "./auth";
 import { supabase } from "./supabase";
+import type { ThemeMode, UserPreferences } from "@/types";
 
 const KEY_API_URL = "@precios_api_url";
 const KEY_DEFAULT_CURRENCY = "@precios_default_currency";
@@ -12,7 +13,7 @@ const KEY_FAVORITE_CRYPTOS = "@precios_favorite_cryptos";
 const KEY_THEME = "@precios_theme";
 const KEY_BALANCE_FACE_ID = "@nexo_balance_face_id";
 
-export type ThemeMode = "light" | "dark";
+export type { ThemeMode };
 
 function getDefaultApiUrl(): string {
   // 1. Si existe una variable de entorno explícita (definida en .env, .env.production, EAS Secrets), úsala.
@@ -146,7 +147,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (profile?.preferences) {
-        const cloudPrefs = profile.preferences as any;
+        const cloudPrefs = profile.preferences as UserPreferences;
         
         // Merge cloud prefs into local settings if they exist
         setSettings(prev => {

@@ -9,8 +9,7 @@ import { SummaryCard } from "../components/SummaryCard";
 import { useSettings } from "../lib/settings";
 import { getColors, HORIZONTAL } from "../lib/theme";
 import { currencySymbol } from "../lib/formatters";
-
-type HistoryDay = { date: string; price: number };
+import type { CryptoHistoryDay } from "@/types";
 
 export default function CryptoHistoryScreen() {
   const { symbol: paramSymbol } = useLocalSearchParams<{ symbol?: string }>();
@@ -18,7 +17,7 @@ export default function CryptoHistoryScreen() {
   const { settings } = useSettings();
   const colors = getColors(settings.theme);
   const currency = settings.defaultCurrency;
-  const [history, setHistory] = useState<HistoryDay[]>([]);
+  const [history, setHistory] = useState<CryptoHistoryDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(7);
@@ -32,7 +31,7 @@ export default function CryptoHistoryScreen() {
         `${settings.apiUrl}/api/prices/crypto/history?symbol=${symbol}&days=${days}&currency=${currency}`
       );
       if (!res.ok) throw new Error("No se pudo cargar el historial");
-      const data = (await res.json()) as { history: HistoryDay[] };
+      const data = (await res.json()) as { history: CryptoHistoryDay[] };
       setHistory(data.history ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");

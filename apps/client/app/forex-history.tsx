@@ -8,13 +8,12 @@ import { HistoryList } from "../components/HistoryList";
 import { SummaryCard } from "../components/SummaryCard";
 import { useSettings } from "../lib/settings";
 import { getColors, HORIZONTAL } from "../lib/theme";
-
-type HistoryDay = { date: string; rate: number };
+import type { ForexHistoryDay } from "@/types";
 
 export default function ForexHistoryScreen() {
   const { settings } = useSettings();
   const colors = getColors(settings.theme);
-  const [history, setHistory] = useState<HistoryDay[]>([]);
+  const [history, setHistory] = useState<ForexHistoryDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
@@ -28,7 +27,7 @@ export default function ForexHistoryScreen() {
         `${settings.apiUrl}/api/prices/forex/history?days=${days}&from=USD&to=EUR`
       );
       if (!res.ok) throw new Error("No se pudo cargar el historial");
-      const data = (await res.json()) as { history: HistoryDay[] };
+      const data = (await res.json()) as { history: ForexHistoryDay[] };
       setHistory(data.history ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
