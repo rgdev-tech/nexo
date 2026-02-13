@@ -10,7 +10,8 @@ import {
   FRANKFURTER_BASE_URL,
   FETCH_TIMEOUT_DOLARAPI,
   FETCH_TIMEOUT_LONG,
-  CACHE_TTL_PRICE,
+  CACHE_TTL_VES_PRICE,
+  CACHE_TTL_VES_HISTORY,
   VES_SNAPSHOT_INTERVAL_MS,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
@@ -27,6 +28,7 @@ export class VesService implements OnModuleInit {
   private readonly fetchTimeoutDolarApi: number;
   private readonly fetchTimeoutLong: number;
   private readonly cacheTtlPrice: number;
+  private readonly cacheTtlHistory: number;
   private readonly snapshotInterval: number;
 
   constructor(
@@ -40,7 +42,8 @@ export class VesService implements OnModuleInit {
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
     this.fetchTimeoutDolarApi = getConfigNumber(this.configService, 'FETCH_TIMEOUT_DOLARAPI', FETCH_TIMEOUT_DOLARAPI);
     this.fetchTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_LONG', FETCH_TIMEOUT_LONG);
-    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_VES_PRICE', CACHE_TTL_VES_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_VES_HISTORY', CACHE_TTL_VES_HISTORY);
     this.snapshotInterval = getConfigNumber(this.configService, 'VES_SNAPSHOT_INTERVAL_MS', VES_SNAPSHOT_INTERVAL_MS);
   }
 
@@ -101,6 +104,10 @@ export class VesService implements OnModuleInit {
   }
 
   async getHistory(days: number): Promise<VesHistoryDay[]> {
+    const cacheKey = `ves:history:${days}`;
+    const cached = await this.cacheManager.get<{ history: VesHistoryDay[] }>(cacheKey);
+    if (cached) return cached.history;
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     const startStr = startDate.toISOString();
@@ -130,7 +137,7 @@ export class VesService implements OnModuleInit {
       });
     }
     
-    return Array.from(byDay.entries())
+    const history = Array.from(byDay.entries())
       .map(([date, v]) => {
         const day: VesHistoryDay = { date, oficial: v.oficial, paralelo: v.paralelo };
         if (v.usd_eur != null && v.usd_eur > 0) {
@@ -140,6 +147,11 @@ export class VesService implements OnModuleInit {
         return day;
       })
       .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (history.length > 0) {
+      await this.cacheManager.set(cacheKey, { history }, this.cacheTtlHistory);
+    }
+    return history;
   }
 
   async saveVesSnapshot(oficial: number, paralelo: number, usd_eur: number | null = null): Promise<void> {

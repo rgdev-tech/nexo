@@ -6,8 +6,8 @@ import {
   FRANKFURTER_BASE_URL,
   FETCH_TIMEOUT_DEFAULT,
   FETCH_TIMEOUT_MEDIUM,
-  CACHE_TTL_PRICE,
-  CACHE_TTL_HISTORY_LONG,
+  CACHE_TTL_FOREX_PRICE,
+  CACHE_TTL_FOREX_HISTORY,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
 import { ExternalHttpService } from '../../shared/http.service';
@@ -33,8 +33,8 @@ export class ForexService {
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
     this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
     this.fetchTimeoutMedium = getConfigNumber(this.configService, 'FETCH_TIMEOUT_MEDIUM', FETCH_TIMEOUT_MEDIUM);
-    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
-    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_LONG', CACHE_TTL_HISTORY_LONG);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_FOREX_PRICE', CACHE_TTL_FOREX_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_FOREX_HISTORY', CACHE_TTL_FOREX_HISTORY);
   }
 
   async getRate(from: string, to: string): Promise<ForexRate> {
