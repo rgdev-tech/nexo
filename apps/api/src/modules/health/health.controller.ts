@@ -1,12 +1,13 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+import { HealthCheckResponseDto, RootResponseDto } from '../../shared/dto/responses';
 
 @ApiTags('Health')
 @Controller()
 export class HealthController {
   @Get()
   @ApiOperation({ summary: 'Root' })
-  @ApiResponse({ status: 200, description: 'API info.' })
+  @ApiOkResponse({ description: 'API info.', type: RootResponseDto })
   getRoot() {
     return {
       name: '🚀 Nexo API',
@@ -36,7 +37,7 @@ export class HealthController {
 
   @Get('api/health')
   @ApiOperation({ summary: 'Health check' })
-  @ApiResponse({ status: 200, description: 'API is healthy.' })
+  @ApiOkResponse({ description: 'API is healthy.', type: HealthCheckResponseDto })
   getHealth() {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }

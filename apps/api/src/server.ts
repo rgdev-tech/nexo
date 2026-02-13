@@ -32,6 +32,9 @@ async function bootstrap() {
     .addTag('VES', 'Bolívares prices and history')
     .addTag('Crypto', 'Cryptocurrency prices and history')
     .addTag('Forex', 'Fiat currency exchange rates')
+    .addTag('Health', 'API health check endpoints')
+    .addTag('Users', 'User profile management (requires authentication)')
+    .addTag('Cron', 'Scheduled task endpoints (protected by CRON_SECRET)')
     .build();
   
   const document = SwaggerModule.createDocument(app, swaggerConfig);

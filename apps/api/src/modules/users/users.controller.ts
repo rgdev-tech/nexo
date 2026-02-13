@@ -1,8 +1,10 @@
 import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { SupabaseGuard } from '../../shared/guards/supabase.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBearerAuth, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiBadRequestResponse } from '@nestjs/swagger';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UserProfileDto } from '../../shared/dto/responses';
+import { ErrorResponseDto } from '../../shared/dto/error-response.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -13,14 +15,19 @@ export class UsersController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
-  @ApiResponse({ status: 200, description: 'Returns the user profile.' })
+  @ApiOkResponse({ description: 'Returns the user profile.', type: UserProfileDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated.', type: ErrorResponseDto })
+  @ApiNotFoundResponse({ description: 'Profile not found.', type: ErrorResponseDto })
   async getProfile(@Request() req: { user: { id: string } }) {
     return this.usersService.getProfile(req.user.id);
   }
 
   @Patch('profile')
   @ApiOperation({ summary: 'Update user profile' })
-  @ApiResponse({ status: 200, description: 'Returns the updated user profile.' })
+  @ApiOkResponse({ description: 'Returns the updated user profile.', type: UserProfileDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated.', type: ErrorResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid body parameters.', type: ErrorResponseDto })
+  @ApiNotFoundResponse({ description: 'Profile not found.', type: ErrorResponseDto })
   async updateProfile(@Request() req: { user: { id: string } }, @Body() updates: UpdateProfileDto) {
     return this.usersService.updateProfile(req.user.id, updates);
   }
