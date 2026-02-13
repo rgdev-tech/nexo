@@ -13,6 +13,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CronModule } from './modules/cron/cron.module';
 import { HealthModule } from './modules/health/health.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
+import { PushTokensModule } from './modules/push-tokens/push-tokens.module';
 
 import {
   THROTTLE_TTL_MS,
@@ -31,6 +33,8 @@ import { getConfigNumber } from './shared/config-utils';
     ForexModule,
     UsersModule,
     AuthModule,
+    AlertsModule,
+    PushTokensModule,
     CronModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],

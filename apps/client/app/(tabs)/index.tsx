@@ -228,6 +228,9 @@ export default function PreciosScreen() {
           )}
         </View>
         <View style={styles.headerRight}>
+          <Pressable onPress={() => router.push("/alertas")} style={styles.headerIconBtn} hitSlop={8}>
+            <Ionicons name="notifications-outline" size={26} color={colors.accent} />
+          </Pressable>
           <Pressable onPress={openShareModal} style={styles.headerIconBtn} hitSlop={8}>
             <Ionicons name="paper-plane-outline" size={26} color={colors.accent} />
           </Pressable>

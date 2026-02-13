@@ -89,6 +89,19 @@ export default function ProfileScreen() {
               { borderBottomColor: colors.groupBorder },
               pressed && { opacity: 0.7 },
             ]}
+            onPress={() => router.push("/alertas")}
+            android_ripple={{ color: colors.ripple }}
+          >
+            <Ionicons name="notifications-outline" size={22} color={colors.text} />
+            <Text style={[styles.menuLabel, { color: colors.text }]}>Alertas de precio</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.menuRow,
+              { borderBottomWidth: 1, borderBottomColor: colors.groupBorder },
+              pressed && { opacity: 0.7 },
+            ]}
             onPress={() => router.push("/(tabs)/ajustes")}
             android_ripple={{ color: colors.ripple }}
           >

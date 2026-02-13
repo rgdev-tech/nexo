@@ -6,3 +6,4 @@ export type {
   VesHistoryDay,
   HistoryDay,
 } from './history';
+export type { Alert, AlertType, AlertDirection } from './alerts';
