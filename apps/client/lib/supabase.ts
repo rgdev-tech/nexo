@@ -1,7 +1,8 @@
-  import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import type { Database } from '@/types/database';
 
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
@@ -27,7 +28,7 @@ if (!url || !key) {
   );
 }
 
-export const supabase = createClient(url, key, {
+export const supabase = createClient<Database>(url, key, {
   auth: {
     storage: Platform.OS === 'web' ? AsyncStorage : ExpoSecureStoreAdapter,
     autoRefreshToken: true,

@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Crypto from "expo-crypto";
 
 const KEY_TRANSACTIONS = "@nexo_balance_transactions";
 const KEY_INITIAL_BALANCE = "@nexo_balance_initial";
 
 export type TransactionType = "income" | "expense";
 
+/**
+ * Estructura compatible con la tabla `transactions` de Supabase.
+ * TODO: Implementar sincronización bidireccional AsyncStorage <-> DB en un ticket futuro.
+ */
 export type Transaction = {
-  id: string;
+  id: string; // UUID (compatible con DB)
   type: TransactionType;
   amount: number;
+  currency: string; // Moneda asociada (default 'USD')
   tag: string;
   label: string;
-  date: string; // ISO
+  date: string; // ISO string
 };
 
 async function loadTransactions(): Promise<Transaction[]> {
@@ -54,7 +60,8 @@ async function saveInitialBalance(value: number): Promise<void> {
 }
 
 function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  // Usar UUID para compatibilidad con la tabla transactions de Supabase
+  return Crypto.randomUUID();
 }
 
 export function useBalance() {
@@ -87,11 +94,12 @@ export function useBalance() {
   }, []);
 
   const addTransaction = useCallback(
-    async (type: TransactionType, amount: number, tag: string, label: string) => {
+    async (type: TransactionType, amount: number, tag: string, label: string, currency = "USD") => {
       const tx: Transaction = {
         id: generateId(),
         type,
         amount,
+        currency,
         tag,
         label,
         date: new Date().toISOString(),

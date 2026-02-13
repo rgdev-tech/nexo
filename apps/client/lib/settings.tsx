@@ -25,7 +25,7 @@ function getDefaultApiUrl(): string {
   // 2. Si estamos en desarrollo (Running locally)
   if (__DEV__) {
     // Intentar obtener la IP de la máquina host (LAN) para que funcione en dispositivos físicos
-    const hostUri = Constants.expoConfig?.hostUri ?? Constants.manifest?.debuggerHost;
+    const hostUri = Constants.expoConfig?.hostUri ?? Constants.expoConfig?.extra?.debuggerHost;
     if (hostUri) {
       const host = hostUri.split(":")[0];
       return `http://${host}:3000`;
@@ -178,19 +178,28 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     if (!session?.user) return;
 
     try {
-      const updates = {
-        preferences: {
-          theme: newSettings.theme,
-          defaultCurrency: newSettings.defaultCurrency,
-          // Add other syncable settings
-        }
+      // Leer preferences actuales del cloud para hacer merge (no sobreescribir)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('preferences')
+        .eq('id', session.user.id)
+        .single();
+
+      const currentPrefs = (profile?.preferences as UserPreferences) ?? {};
+
+      const mergedPrefs: UserPreferences = {
+        ...currentPrefs,
+        theme: newSettings.theme ?? currentPrefs.theme,
+        defaultCurrency: newSettings.defaultCurrency ?? currentPrefs.defaultCurrency,
+        favoriteCryptos: newSettings.favoriteCryptos ?? currentPrefs.favoriteCryptos,
+        balanceFaceIdEnabled: newSettings.balanceFaceIdEnabled ?? currentPrefs.balanceFaceIdEnabled,
       };
 
       await supabase
         .from('profiles')
-        .update(updates)
+        .update({ preferences: mergedPrefs })
         .eq('id', session.user.id);
-        
+
     } catch (error) {
       console.warn("[Settings] updateCloudProfile failed:", error);
     }

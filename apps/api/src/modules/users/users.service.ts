@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadGatewayException } from '@nestjs/common';
 import { SupabaseService } from '../../shared/supabase/supabase.service';
-import type { UserPreferences } from '../../shared/types';
+import type { UserPreferences, ProfileRow } from '../../shared/types';
 
 const PGRST_NO_ROWS = 'PGRST116';
 
@@ -19,7 +19,7 @@ export class UsersService {
 
   constructor(private readonly supabaseService: SupabaseService) {}
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<ProfileRow> {
     const { data, error } = await this.supabaseService.getClient()
       .from('profiles')
       .select('*')
@@ -31,10 +31,10 @@ export class UsersService {
       toHttpException(error as { code?: string; message?: string; details?: string }, userId);
     }
 
-    return data;
+    return data!;
   }
 
-  async updateProfile(userId: string, updates: { first_name?: string; last_name?: string; avatar_url?: string; preferences?: UserPreferences }) {
+  async updateProfile(userId: string, updates: { first_name?: string; last_name?: string; avatar_url?: string; preferences?: UserPreferences }): Promise<ProfileRow> {
     const { data, error } = await this.supabaseService.getClient()
       .from('profiles')
       .update(updates)
@@ -47,6 +47,6 @@ export class UsersService {
       toHttpException(error as { code?: string; message?: string; details?: string }, userId);
     }
 
-    return data;
+    return data!;
   }
 }

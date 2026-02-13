@@ -129,11 +129,13 @@ export class VesService implements OnModuleInit {
     >();
     
     for (const r of rows) {
-      const day = r.datetime.slice(0, 10);
+      // datetime ahora es timestamptz; extraemos YYYY-MM-DD desde un Date nativo
+      const day = new Date(r.datetime).toISOString().slice(0, 10);
       byDay.set(day, {
-        oficial: r.oficial,
-        paralelo: r.paralelo,
-        usd_eur: r.usd_eur ?? null,
+        // numeric de Postgres llega como string vía PostgREST; convertir a number
+        oficial: Number(r.oficial),
+        paralelo: Number(r.paralelo),
+        usd_eur: r.usd_eur != null ? Number(r.usd_eur) : null,
       });
     }
     
@@ -155,7 +157,8 @@ export class VesService implements OnModuleInit {
   }
 
   async saveVesSnapshot(oficial: number, paralelo: number, usd_eur: number | null = null): Promise<void> {
-    const key = new Date().toISOString().slice(0, 13) + ":00:00";
+    // Truncar a la hora exacta para agrupar snapshots por hora (timestamptz nativo)
+    const key = new Date().toISOString().replace(/:\d{2}\.\d{3}Z$/, ':00:00Z');
     
     const { error } = await this.supabaseService.getClient()
       .from('ves_history')
@@ -201,10 +204,14 @@ export class VesService implements OnModuleInit {
       if (rate == null || Number.isNaN(rate) || rate <= 0) continue;
       
       try {
+        // Usar rangos de fecha nativos en vez de .like() sobre text
+        const dayStart = `${date}T00:00:00Z`;
+        const dayEnd = `${date}T23:59:59Z`;
         await this.supabaseService.getClient()
           .from('ves_history')
           .update({ usd_eur: rate })
-          .like('datetime', `${date}%`);
+          .gte('datetime', dayStart)
+          .lte('datetime', dayEnd);
       } catch (e) {
         this.logger.warn(`Backfill usd_eur update failed for date ${date}`, e instanceof Error ? e.message : e);
       }

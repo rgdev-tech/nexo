@@ -1,10 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '../types/database';
 
 @Injectable()
 export class SupabaseService implements OnModuleInit {
-  private supabase!: SupabaseClient;
+  private supabase!: SupabaseClient<Database>;
 
   constructor(private configService: ConfigService) {}
 
@@ -16,10 +17,10 @@ export class SupabaseService implements OnModuleInit {
       throw new Error('Missing required env: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)');
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
   }
 
-  getClient(): SupabaseClient {
+  getClient(): SupabaseClient<Database> {
     return this.supabase;
   }
 }
