@@ -7,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -16,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { useSettings } from "@/lib/settings";
 import { getColors, HORIZONTAL } from "@/lib/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -109,22 +109,12 @@ export default function LoginScreen() {
               autoComplete="password"
             />
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.primaryButton,
-                { backgroundColor: colors.accent },
-                pressed && { opacity: 0.9 },
-              ]}
+            <PrimaryButton
+              title="Entrar"
               onPress={handleLogin}
-              disabled={loading}
-              android_ripple={{ color: colors.ripple }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.accentOnAccent} />
-              ) : (
-                <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Entrar</Text>
-              )}
-            </Pressable>
+              loading={loading}
+              style={{ marginTop: 28 }}
+            />
 
             <Pressable
               style={styles.linkWrap}
@@ -182,17 +172,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 16,
-  },
-  primaryButton: {
-    height: 52,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 28,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
   },
   linkWrap: {
     flexDirection: "row",

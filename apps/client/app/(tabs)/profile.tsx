@@ -13,6 +13,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { getColors, BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
 import { LEGAL_URLS } from "@/lib/constants";
 import { openUrl } from "@/lib/openUrl";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -39,13 +40,11 @@ export default function ProfileScreen() {
           <Text style={[styles.emptyHint, { color: colors.textMuted }]}>
             Entra con tu cuenta para ver tu perfil y mantener tus preferencias sincronizadas.
           </Text>
-          <Pressable
-            style={[styles.primaryButton, { backgroundColor: colors.accent }]}
+          <PrimaryButton
+            title="Iniciar sesión"
             onPress={() => router.push("/login")}
-            android_ripple={{ color: colors.ripple }}
-          >
-            <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Iniciar sesión</Text>
-          </Pressable>
+            style={{ height: "auto" as any, paddingVertical: 14, paddingHorizontal: 28, minWidth: 180 }}
+          />
         </View>
       </View>
     );
@@ -194,17 +193,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
     marginBottom: 24,
-  },
-  primaryButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 14,
-    minWidth: 180,
-    alignItems: "center",
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
   },
   avatarCard: {
     borderRadius: 16,

@@ -7,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -18,6 +17,7 @@ import { getColors, HORIZONTAL } from "@/lib/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LEGAL_URLS } from "@/lib/constants";
 import { openUrl } from "@/lib/openUrl";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -149,22 +149,12 @@ export default function RegisterScreen() {
               .
             </Text>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.primaryButton,
-                { backgroundColor: colors.accent },
-                pressed && { opacity: 0.9 },
-              ]}
+            <PrimaryButton
+              title="Registrarse"
               onPress={handleRegister}
-              disabled={loading}
-              android_ripple={{ color: colors.ripple }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.accentOnAccent} />
-              ) : (
-                <Text style={[styles.primaryButtonText, { color: colors.accentOnAccent }]}>Registrarse</Text>
-              )}
-            </Pressable>
+              loading={loading}
+              style={{ marginTop: 28 }}
+            />
 
             <Pressable
               style={styles.linkWrap}
@@ -222,17 +212,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 16,
-  },
-  primaryButton: {
-    height: 52,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 28,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
   },
   linkWrap: {
     flexDirection: "row",
