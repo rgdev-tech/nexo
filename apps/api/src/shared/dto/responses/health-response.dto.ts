@@ -2,21 +2,21 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class HealthCheckResponseDto {
   @ApiProperty({ example: 'ok', description: 'Health status' })
-  status: string;
+  status!: string;
 
   @ApiProperty({ example: '2025-01-15T12:00:00.000Z', description: 'Current server timestamp' })
-  timestamp: string;
+  timestamp!: string;
 }
 
 export class RootResponseDto {
   @ApiProperty({ example: '🚀 Nexo API', description: 'API name' })
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'ok', description: 'API status' })
-  status: string;
+  status!: string;
 
   @ApiProperty({ example: '/api/docs', description: 'Swagger docs URL' })
-  docs: string;
+  docs!: string;
 
   @ApiProperty({
     description: 'Available API endpoints',
@@ -40,5 +40,5 @@ export class RootResponseDto {
       },
     },
   })
-  endpoints: Record<string, unknown>;
+  endpoints!: Record<string, unknown>;
 }

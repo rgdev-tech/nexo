@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ErrorResponseDto {
   @ApiProperty({ example: 400 })
-  statusCode: number;
+  statusCode!: number;
 
   @ApiProperty({ example: 'Bad Request' })
-  error: string;
+  error!: string;
 
   @ApiProperty({
     example: 'Invalid query parameters',
@@ -14,11 +14,11 @@ export class ErrorResponseDto {
       { type: 'array', items: { type: 'string' } },
     ],
   })
-  message: string | string[];
+  message!: string | string[];
 
   @ApiProperty({ example: '2025-01-01T00:00:00.000Z' })
-  timestamp: string;
+  timestamp!: string;
 
   @ApiProperty({ example: '/api/prices/crypto' })
-  path: string;
+  path!: string;
 }

@@ -16,7 +16,7 @@ export class UserPreferencesDto {
 
 export class UserProfileDto {
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', description: 'User ID' })
-  id: string;
+  id!: string;
 
   @ApiPropertyOptional({ example: 'John', description: 'First name' })
   first_name?: string;

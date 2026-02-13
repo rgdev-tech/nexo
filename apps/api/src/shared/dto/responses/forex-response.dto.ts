@@ -2,33 +2,33 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class ForexRateDto {
   @ApiProperty({ example: 'USD', description: 'Base currency' })
-  from: string;
+  from!: string;
 
   @ApiProperty({ example: 'EUR', description: 'Target currency' })
-  to: string;
+  to!: string;
 
   @ApiProperty({ example: 0.92, description: 'Exchange rate' })
-  rate: number;
+  rate!: number;
 
   @ApiProperty({ example: '2025-01-15', description: 'Rate date (YYYY-MM-DD)' })
-  date: string;
+  date!: string;
 
   @ApiProperty({ example: 'frankfurter', description: 'Data source' })
-  source: string;
+  source!: string;
 
   @ApiProperty({ example: 1700000000000, description: 'Unix timestamp in milliseconds' })
-  timestamp: number;
+  timestamp!: number;
 }
 
 export class ForexHistoryDayDto {
   @ApiProperty({ example: '2025-01-15', description: 'Date (YYYY-MM-DD)' })
-  date: string;
+  date!: string;
 
   @ApiProperty({ example: 0.92, description: 'Exchange rate on that date' })
-  rate: number;
+  rate!: number;
 }
 
 export class ForexHistoryResponseDto {
   @ApiProperty({ type: [ForexHistoryDayDto], description: 'Historical exchange rate data' })
-  history: ForexHistoryDayDto[];
+  history!: ForexHistoryDayDto[];
 }
