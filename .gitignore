@@ -31,3 +31,6 @@ bun.lockb
 
 # API data
 apps/api/ves.db
+
+# Supabase
+supabase/.temp/
