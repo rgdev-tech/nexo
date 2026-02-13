@@ -1,9 +1,11 @@
 import { Controller, Get, Query, Param } from '@nestjs/common';
 import { CryptoService } from './crypto.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiBadRequestResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { GetCryptoPricesQueryDto } from './dto/get-crypto-prices.query.dto';
 import { GetCryptoHistoryQueryDto } from './dto/get-crypto-history.query.dto';
 import { GetCryptoPriceParamDto } from './dto/get-crypto-price.param.dto';
+import { CryptoPriceDto, CryptoPricesResponseDto, CryptoHistoryResponseDto } from '../../shared/dto/responses';
+import { ErrorResponseDto } from '../../shared/dto/error-response.dto';
 
 @ApiTags('Crypto')
 @Controller('api/prices/crypto')
@@ -12,8 +14,8 @@ export class CryptoController {
 
   @Get('history')
   @ApiOperation({ summary: 'Get cryptocurrency price history' })
-  @ApiResponse({ status: 200, description: 'Returns historical price data.' })
-  @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
+  @ApiOkResponse({ description: 'Returns historical price data.', type: CryptoHistoryResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
   async getHistory(@Query() dto: GetCryptoHistoryQueryDto) {
     const history = await this.cryptoService.getHistory(dto.symbol, dto.currency, dto.days);
     return { history };
@@ -21,8 +23,8 @@ export class CryptoController {
 
   @Get()
   @ApiOperation({ summary: 'Get current prices for multiple cryptocurrencies' })
-  @ApiResponse({ status: 200, description: 'Returns list of current prices.' })
-  @ApiResponse({ status: 400, description: 'Invalid query parameters.' })
+  @ApiOkResponse({ description: 'Returns list of current prices.', type: CryptoPricesResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
   async getPrices(@Query() dto: GetCryptoPricesQueryDto) {
     const symbols = this.cryptoService.parseSymbols(dto.symbols);
     const prices = await this.cryptoService.getPrices(symbols, dto.currency);
@@ -31,9 +33,9 @@ export class CryptoController {
 
   @Get(':symbol')
   @ApiOperation({ summary: 'Get current price for a single cryptocurrency' })
-  @ApiResponse({ status: 200, description: 'Returns current price.' })
-  @ApiResponse({ status: 400, description: 'Invalid symbol.' })
-  @ApiResponse({ status: 404, description: 'Symbol not found.' })
+  @ApiOkResponse({ description: 'Returns current price.', type: CryptoPriceDto })
+  @ApiBadRequestResponse({ description: 'Invalid symbol.', type: ErrorResponseDto })
+  @ApiNotFoundResponse({ description: 'Symbol not found.', type: ErrorResponseDto })
   async getPrice(
     @Param() params: GetCryptoPriceParamDto,
     @Query() dto: GetCryptoPricesQueryDto,
