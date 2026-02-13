@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Get, Query, Param, Header } from '@nestjs/common';
 import { CryptoService } from './crypto.service';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBadRequestResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { GetCryptoPricesQueryDto } from './dto/get-crypto-prices.query.dto';
@@ -13,6 +13,7 @@ export class CryptoController {
   constructor(private readonly cryptoService: CryptoService) {}
 
   @Get('history')
+  @Header('Cache-Control', 'public, max-age=600')
   @ApiOperation({ summary: 'Get cryptocurrency price history' })
   @ApiOkResponse({ description: 'Returns historical price data.', type: CryptoHistoryResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
@@ -22,6 +23,7 @@ export class CryptoController {
   }
 
   @Get()
+  @Header('Cache-Control', 'public, max-age=60')
   @ApiOperation({ summary: 'Get current prices for multiple cryptocurrencies' })
   @ApiOkResponse({ description: 'Returns list of current prices.', type: CryptoPricesResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
@@ -32,6 +34,7 @@ export class CryptoController {
   }
 
   @Get(':symbol')
+  @Header('Cache-Control', 'public, max-age=60')
   @ApiOperation({ summary: 'Get current price for a single cryptocurrency' })
   @ApiOkResponse({ description: 'Returns current price.', type: CryptoPriceDto })
   @ApiBadRequestResponse({ description: 'Invalid symbol.', type: ErrorResponseDto })

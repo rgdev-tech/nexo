@@ -8,8 +8,8 @@ import {
   FETCH_TIMEOUT_DEFAULT,
   FETCH_TIMEOUT_COINGECKO_SHORT,
   FETCH_TIMEOUT_COINGECKO_LONG,
-  CACHE_TTL_PRICE,
-  CACHE_TTL_HISTORY_SHORT,
+  CACHE_TTL_CRYPTO_PRICE,
+  CACHE_TTL_CRYPTO_HISTORY,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
 import { ExternalHttpService } from '../../shared/http.service';
@@ -66,8 +66,8 @@ export class CryptoService {
     this.fetchTimeout = getConfigNumber(this.configService, 'FETCH_TIMEOUT', FETCH_TIMEOUT_DEFAULT);
     this.coingeckoTimeoutShort = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_SHORT', FETCH_TIMEOUT_COINGECKO_SHORT);
     this.coingeckoTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_COINGECKO_LONG', FETCH_TIMEOUT_COINGECKO_LONG);
-    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_PRICE', CACHE_TTL_PRICE);
-    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_HISTORY_SHORT', CACHE_TTL_HISTORY_SHORT);
+    this.cacheTtlPrice = getConfigNumber(this.configService, 'CACHE_TTL_CRYPTO_PRICE', CACHE_TTL_CRYPTO_PRICE);
+    this.cacheTtlHistory = getConfigNumber(this.configService, 'CACHE_TTL_CRYPTO_HISTORY', CACHE_TTL_CRYPTO_HISTORY);
   }
 
   parseSymbols(raw?: string): string[] {

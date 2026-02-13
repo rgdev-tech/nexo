@@ -35,14 +35,23 @@ export const FETCH_TIMEOUT_DOLARAPI = 8_000;
 /** TTL por defecto del CacheModule global */
 export const CACHE_TTL_DEFAULT = 60_000; // 1 min
 
-/** TTL para precios individuales (crypto, forex, ves) */
-export const CACHE_TTL_PRICE = 60_000; // 1 min
+/** TTL para precios crypto (datos altamente volátiles) — 1 min */
+export const CACHE_TTL_CRYPTO_PRICE = 60_000;
 
-/** TTL para historial de precios (crypto) — 5 min */
-export const CACHE_TTL_HISTORY_SHORT = 5 * 60 * 1_000;
+/** TTL para historial crypto — 10 min */
+export const CACHE_TTL_CRYPTO_HISTORY = 10 * 60_000;
 
-/** TTL para historial largo (forex) — 24 h */
-export const CACHE_TTL_HISTORY_LONG = 24 * 60 * 60 * 1_000;
+/** TTL para precios forex (fuentes actualizan cada ~15 min) — 5 min */
+export const CACHE_TTL_FOREX_PRICE = 5 * 60_000;
+
+/** TTL para historial forex — 24 h */
+export const CACHE_TTL_FOREX_HISTORY = 24 * 3600_000;
+
+/** TTL para precios VES (BCV publica 1x/día, paralelo pocas veces) — 15 min */
+export const CACHE_TTL_VES_PRICE = 15 * 60_000;
+
+/** TTL para historial VES — 30 min */
+export const CACHE_TTL_VES_HISTORY = 30 * 60_000;
 
 // ─── Throttler ──────────────────────────────────────────────────────────────
 

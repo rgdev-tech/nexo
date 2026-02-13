@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Header } from '@nestjs/common';
 import { ForexService } from './forex.service';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiBadRequestResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { GetForexRateQueryDto } from './dto/get-forex-rate.query.dto';
@@ -12,6 +12,7 @@ export class ForexController {
   constructor(private readonly forexService: ForexService) {}
 
   @Get('history')
+  @Header('Cache-Control', 'public, max-age=86400')
   @ApiOperation({ summary: 'Get forex rate history' })
   @ApiOkResponse({ description: 'Returns historical exchange rates.', type: ForexHistoryResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
@@ -21,6 +22,7 @@ export class ForexController {
   }
 
   @Get()
+  @Header('Cache-Control', 'public, max-age=300')
   @ApiOperation({ summary: 'Get current forex rate' })
   @ApiOkResponse({ description: 'Returns current exchange rate.', type: ForexRateDto })
   @ApiBadRequestResponse({ description: 'Invalid query parameters.', type: ErrorResponseDto })
