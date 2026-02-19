@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2E7E6FB214E9EA209F9B47E5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB47D3FCCB49F48D108F70E2 /* ExpoModulesProvider.swift */; };
+		3E2B478BCD096A486CF679CB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BFE52E75726CE23F3D70242C /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		9A9E4422938DE05FF5D6663A /* libPods-nexo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6FED7ACD0C13852ACBA53508 /* libPods-nexo.a */; };
-		A0DB5B44BD6C1404DF54E075 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 631D129396BEC48E68618A69 /* PrivacyInfo.xcprivacy */; };
+		AE5D9C8F20F9F3E534F7CC75 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67D864DCFA1FF3BE94F84B0 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		CE6412E86AC204AA504D56B3 /* libPods-nexo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C9574752B0CC1CE5C75586AE /* libPods-nexo.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* nexo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nexo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = nexo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = nexo/Info.plist; sourceTree = "<group>"; };
-		3B43DBAD8D5B698BB3BF653E /* Pods-nexo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexo.release.xcconfig"; path = "Target Support Files/Pods-nexo/Pods-nexo.release.xcconfig"; sourceTree = "<group>"; };
-		4448866C94B2EAEE4AEF66AD /* Pods-nexo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexo.debug.xcconfig"; path = "Target Support Files/Pods-nexo/Pods-nexo.debug.xcconfig"; sourceTree = "<group>"; };
-		631D129396BEC48E68618A69 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = nexo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		6FED7ACD0C13852ACBA53508 /* libPods-nexo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		71B24A7F0C78ACED82DC5810 /* Pods-nexo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexo.release.xcconfig"; path = "Target Support Files/Pods-nexo/Pods-nexo.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = nexo/SplashScreen.storyboard; sourceTree = "<group>"; };
+		B3CFE6F6C56A9284132DC8F3 /* Pods-nexo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-nexo.debug.xcconfig"; path = "Target Support Files/Pods-nexo/Pods-nexo.debug.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		BFE52E75726CE23F3D70242C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = nexo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C9574752B0CC1CE5C75586AE /* libPods-nexo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-nexo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = nexo/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* nexo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "nexo-Bridging-Header.h"; path = "nexo/nexo-Bridging-Header.h"; sourceTree = "<group>"; };
-		FB47D3FCCB49F48D108F70E2 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-nexo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		F67D864DCFA1FF3BE94F84B0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-nexo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9A9E4422938DE05FF5D6663A /* libPods-nexo.a in Frameworks */,
+				CE6412E86AC204AA504D56B3 /* libPods-nexo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,35 +53,35 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				631D129396BEC48E68618A69 /* PrivacyInfo.xcprivacy */,
+				BFE52E75726CE23F3D70242C /* PrivacyInfo.xcprivacy */,
 			);
 			name = nexo;
-			sourceTree = "<group>";
-		};
-		1A97F5E87FEE82D4E656BB46 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				4448866C94B2EAEE4AEF66AD /* Pods-nexo.debug.xcconfig */,
-				3B43DBAD8D5B698BB3BF653E /* Pods-nexo.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6FED7ACD0C13852ACBA53508 /* libPods-nexo.a */,
+				C9574752B0CC1CE5C75586AE /* libPods-nexo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		51BBFCE8BED61987B2CDF484 /* nexo */ = {
+		3E1F2977A122F346E9313B00 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FB47D3FCCB49F48D108F70E2 /* ExpoModulesProvider.swift */,
+				B3CFE6F6C56A9284132DC8F3 /* Pods-nexo.debug.xcconfig */,
+				71B24A7F0C78ACED82DC5810 /* Pods-nexo.release.xcconfig */,
 			);
-			name = nexo;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		64889AFEEA2019415C4A2BB2 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				EE0A31EDBB61F897F3681749 /* nexo */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -98,8 +98,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				1A97F5E87FEE82D4E656BB46 /* Pods */,
-				DA76B0897D126D39F44F27E8 /* ExpoModulesProviders */,
+				3E1F2977A122F346E9313B00 /* Pods */,
+				64889AFEEA2019415C4A2BB2 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -123,12 +123,12 @@
 			path = nexo/Supporting;
 			sourceTree = "<group>";
 		};
-		DA76B0897D126D39F44F27E8 /* ExpoModulesProviders */ = {
+		EE0A31EDBB61F897F3681749 /* nexo */ = {
 			isa = PBXGroup;
 			children = (
-				51BBFCE8BED61987B2CDF484 /* nexo */,
+				F67D864DCFA1FF3BE94F84B0 /* ExpoModulesProvider.swift */,
 			);
-			name = ExpoModulesProviders;
+			name = nexo;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "nexo" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				60C162A6DFA53AFE284D55B1 /* [Expo] Configure project */,
+				18D2D609B6A4A6F1F6ABA827 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				A745A309A2E122EEF864DDBE /* [CP] Embed Pods Frameworks */,
+				9E12CD1EBFB83D67A056F218 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -195,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A0DB5B44BD6C1404DF54E075 /* PrivacyInfo.xcprivacy in Resources */,
+				3E2B478BCD096A486CF679CB /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,7 +241,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		60C162A6DFA53AFE284D55B1 /* [Expo] Configure project */ = {
+		18D2D609B6A4A6F1F6ABA827 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -305,7 +305,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-nexo/Pods-nexo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A745A309A2E122EEF864DDBE /* [CP] Embed Pods Frameworks */ = {
+		9E12CD1EBFB83D67A056F218 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -335,7 +335,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				2E7E6FB214E9EA209F9B47E5 /* ExpoModulesProvider.swift in Sources */,
+				AE5D9C8F20F9F3E534F7CC75 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,7 +344,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4448866C94B2EAEE4AEF66AD /* Pods-nexo.debug.xcconfig */;
+			baseConfigurationReference = B3CFE6F6C56A9284132DC8F3 /* Pods-nexo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -381,7 +381,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B43DBAD8D5B698BB3BF653E /* Pods-nexo.release.xcconfig */;
+			baseConfigurationReference = 71B24A7F0C78ACED82DC5810 /* Pods-nexo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

@@ -4,18 +4,38 @@
 
 ---
 
-## Build standalone e instalar en tu iPhone (rápido)
+## Build standalone para Vercel (recomendado)
 
-Desde la raíz del monorepo o desde `apps/client`:
+Si tu API está en Vercel (`https://nexo-api.vercel.app`), usa este comando para que la app apunte a producción:
+
+```bash
+cd apps/client
+bun run build:standalone
+```
+
+(o `npm run build:standalone` / `pnpm build:standalone`)
+
+O manualmente:
+
+```bash
+EXPO_PUBLIC_API_URL=https://nexo-api.vercel.app npx expo run:ios --configuration Release --device
+```
+
+- Conecta el iPhone por cable.
+- La app se compila e instala con la API de Vercel embebida. No necesita WiFi local ni tu computadora.
+
+Si tu API de Vercel usa otra URL, cámbiala en el comando o en `apps/client/.env.production`.
+
+---
+
+## Build standalone e instalar en tu iPhone (genérico)
 
 ```bash
 cd apps/client
 npx expo run:ios --configuration Release --device
 ```
 
-- Conecta el iPhone por cable (solo para instalar).
-- El comando compila en **Release**, empaqueta el JS dentro de la app e instala en el dispositivo.
-- Cuando termine, **desconecta el iPhone**: la app funciona sola, sin PC ni Metro.
+⚠️ **Cuidado**: Si tu `.env` tiene una IP local (ej. `192.168.x.x`), la app usará esa URL y **no funcionará** fuera de tu WiFi. Para standalone que funcione en cualquier sitio, usa `build:standalone` o asegúrate de que `EXPO_PUBLIC_API_URL` apunte a Vercel.
 
 Si es la primera vez, antes puede hacer falta:
 
@@ -29,32 +49,56 @@ Y en Xcode (abre `ios/nexo.xcworkspace`) configurar **Signing & Capabilities** c
 
 ---
 
-## Build standalone desde Xcode (Archive / IPA)
+## Build para App Store (Xcode Archive)
 
-Para generar un .ipa que puedas instalar en otros dispositivos o subir a TestFlight:
+Para generar un **.ipa** listo para TestFlight o App Store:
 
-1. **Preparar proyecto** (si hace falta):
-   ```bash
-   cd apps/client
-   npx expo prebuild --platform ios
-   cd ios && pod install
-   ```
+### 1. Configurar API de Vercel
 
-2. **Abrir Xcode** (siempre el **workspace**):
-   ```bash
-   open apps/client/ios/nexo.xcworkspace
-   ```
+El archivo `ios/.xcode.env.local` ya está creado con la URL de producción (`https://nexo-api.vercel.app`). Si tu API usa otra URL, edítalo:
 
-3. **Signing:** proyecto **nexo** → target **nexo** → **Signing & Capabilities** → "Automatically manage signing" + tu **Team**.
+```bash
+# apps/client/ios/.xcode.env.local
+export EXPO_PUBLIC_API_URL=https://nexo-api.vercel.app
+export EXPO_PUBLIC_SUPABASE_URL=https://...
+export EXPO_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
-4. **Build standalone (Release):**
-   - Destino: **Any iOS Device (arm64)**.
-   - Menú **Product** → **Archive**.
-   - El Archive usa configuración **Release**: el JS va embebido, la app es standalone.
+Este archivo es **gitignored**; Xcode lo usa al hacer Archive para embeber la URL en el bundle.
 
-5. En el **Organizer**: **Distribute App** → elige Ad Hoc (para instalar en dispositivos concretos) o App Store Connect (TestFlight/App Store). O **Export** para obtener el .ipa.
+### 2. Preparar proyecto (si hace falta)
 
-Ese .ipa instalado en cualquier iPhone funciona **solo**, sin computadora.
+```bash
+cd apps/client
+npx expo prebuild --platform ios
+cd ios && pod install && cd ..
+```
+
+### 3. Abrir Xcode (siempre el workspace)
+
+```bash
+open apps/client/ios/nexo.xcworkspace
+```
+
+### 4. Signing
+
+Proyecto **nexo** → target **nexo** → **Signing & Capabilities** → "Automatically manage signing" + tu **Team** (Apple Developer).
+
+### 5. Archive (build tipo App Store)
+
+1. Destino: **Any iOS Device (arm64)** (no Simulator).
+2. Menú **Product** → **Archive**.
+3. Espera a que termine el build (incluye el bundle de JS).
+
+### 6. Distribuir
+
+En el **Organizer** (ventana que se abre al terminar):
+
+- **Distribute App** → **App Store Connect** (para TestFlight / App Store).
+- O **Ad Hoc** para instalar en dispositivos registrados.
+- O **Export** para obtener el .ipa.
+
+El .ipa resultante es un build **production**: JS embebido, sin Metro, apuntando a Vercel.
 
 ---
 
@@ -62,7 +106,8 @@ Ese .ipa instalado en cualquier iPhone funciona **solo**, sin computadora.
 
 | Objetivo | Comando / Acción |
 |---------|-------------------|
-| Instalar en mi iPhone y que funcione solo | `npx expo run:ios --configuration Release --device` |
+| Instalar en mi iPhone (Vercel) | `bun run build:standalone` desde `apps/client` |
+| **Build App Store (IPA)** | Xcode → Product → Archive → Distribute App |
 | Generar .ipa para instalar en otros iPhones | Xcode → Product → Archive → Distribute / Export |
 
 **Importante:** usa siempre **Release**, no Debug. En Release el bundle va dentro de la app; en Debug la app intentaría conectar con Metro en la PC.
