@@ -44,7 +44,7 @@ function getDefaultApiUrl(): string {
   }
 
   // 4. Fallback final a Producción
-  return "https://nexo-api.vercel.app"; // URL de Producción (Placeholder)
+  return "https://nexo-beryl-tau.vercel.app"; // URL de Producción
 }
 
 export type Settings = {

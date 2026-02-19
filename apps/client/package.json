@@ -7,7 +7,7 @@
     "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "build:standalone": "EXPO_PUBLIC_API_URL=https://nexo-api.vercel.app npx expo run:ios --configuration Release --device",
+    "build:standalone": "EXPO_PUBLIC_API_URL=https://nexo-beryl-tau.vercel.app npx expo run:ios --configuration Release --device",
     "web": "expo start --web",
     "build": "expo export",
     "lint": "expo lint",

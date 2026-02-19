@@ -16,7 +16,7 @@
       "distribution": "store",
       "channel": "production",
       "ios": { "simulator": false },
-      "env": { "EXPO_PUBLIC_API_URL": "https://nexo-api.vercel.app" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://nexo-beryl-tau.vercel.app" }
     }
   },
   "submit": {

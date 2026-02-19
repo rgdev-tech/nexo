@@ -6,7 +6,7 @@
 
 ## Build standalone para Vercel (recomendado)
 
-Si tu API está en Vercel (`https://nexo-api.vercel.app`), usa este comando para que la app apunte a producción:
+Si tu API está en Vercel (`https://nexo-beryl-tau.vercel.app`), usa este comando para que la app apunte a producción:
 
 ```bash
 cd apps/client
@@ -18,7 +18,7 @@ bun run build:standalone
 O manualmente:
 
 ```bash
-EXPO_PUBLIC_API_URL=https://nexo-api.vercel.app npx expo run:ios --configuration Release --device
+EXPO_PUBLIC_API_URL=https://nexo-beryl-tau.vercel.app npx expo run:ios --configuration Release --device
 ```
 
 - Conecta el iPhone por cable.
@@ -55,11 +55,11 @@ Para generar un **.ipa** listo para TestFlight o App Store:
 
 ### 1. Configurar API de Vercel
 
-El archivo `ios/.xcode.env.local` ya está creado con la URL de producción (`https://nexo-api.vercel.app`). Si tu API usa otra URL, edítalo:
+El archivo `ios/.xcode.env.local` ya está creado con la URL de producción (`https://nexo-beryl-tau.vercel.app`). Si tu API usa otra URL, edítalo:
 
 ```bash
 # apps/client/ios/.xcode.env.local
-export EXPO_PUBLIC_API_URL=https://nexo-api.vercel.app
+export EXPO_PUBLIC_API_URL=https://nexo-beryl-tau.vercel.app
 export EXPO_PUBLIC_SUPABASE_URL=https://...
 export EXPO_PUBLIC_SUPABASE_ANON_KEY=...
 ```
