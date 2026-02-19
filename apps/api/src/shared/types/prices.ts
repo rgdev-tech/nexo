@@ -21,6 +21,8 @@ export type UsdToVes = {
   to: string;
   oficial: number;
   paralelo: number;
+  oficial_eur?: number;
+  paralelo_eur?: number;
   date: string;
   source: string;
   timestamp: number;

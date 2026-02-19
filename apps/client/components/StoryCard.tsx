@@ -32,7 +32,7 @@ export function StoryCard({ ves, forex, crypto, theme }: Props) {
       ? ((ves.paralelo - ves.oficial) / ves.oficial) * 100
       : 0;
   const eurBs =
-    ves && forex && forex.rate > 0 ? ves.paralelo / forex.rate : null;
+    ves?.paralelo_eur ?? (ves && forex && forex.rate > 0 ? ves.paralelo / forex.rate : null);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.background }]}>

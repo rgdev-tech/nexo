@@ -424,7 +424,7 @@ export default function PreciosScreen() {
             ) : null}
 
             {/* 1 EUR → BS */}
-            {ves && forex && forex.rate > 0 ? (
+            {ves && (ves.oficial_eur || ves.paralelo_eur || (forex && forex.rate > 0)) ? (
               <>
                 <Text style={[styles.groupLabel, styles.groupLabelTop, { color: colors.textMuted }]}>BOLÍVARES · 1 EUR</Text>
                 <View style={[styles.group, { backgroundColor: colors.groupBg, borderWidth: 1, borderColor: colors.groupBorder }]}>
@@ -436,8 +436,8 @@ export default function PreciosScreen() {
                     <Text style={[styles.rowLabel, { color: colors.text }]}>Oficial (BCV)</Text>
                     <View style={styles.rowValueWithChevron}>
                       <Text style={[styles.rowValue, { color: colors.accent }]}>
-                        {ves.oficial > 0
-                          ? `${(ves.oficial / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
+                        {(ves.oficial_eur ?? (forex && forex.rate > 0 && ves.oficial > 0 ? ves.oficial / forex.rate : 0)) > 0
+                          ? `${(ves.oficial_eur ?? ves.oficial / forex!.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
                           : "—"}
                       </Text>
                       <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
@@ -452,14 +452,34 @@ export default function PreciosScreen() {
                     <Text style={[styles.rowLabel, { color: colors.text }]}>Paralelo</Text>
                     <View style={styles.rowValueWithChevron}>
                       <Text style={[styles.rowValue, { color: colors.accent }]}>
-                        {ves.paralelo > 0
-                          ? `${(ves.paralelo / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
+                        {(ves.paralelo_eur ?? (forex && forex.rate > 0 && ves.paralelo > 0 ? ves.paralelo / forex.rate : 0)) > 0
+                          ? `${(ves.paralelo_eur ?? ves.paralelo / forex!.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
                           : "—"}
                       </Text>
                       <Ionicons name="chevron-forward" size={18} color={colors.inputMuted} />
                     </View>
                   </Pressable>
-                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
+                  {(() => {
+                    const oEur = ves.oficial_eur ?? (forex && forex.rate > 0 && ves.oficial > 0 ? ves.oficial / forex.rate : 0);
+                    const pEur = ves.paralelo_eur ?? (forex && forex.rate > 0 && ves.paralelo > 0 ? ves.paralelo / forex.rate : 0);
+                    return oEur > 0 && pEur > 0 ? (
+                      <>
+                        <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                        <View style={styles.comparadorRow}>
+                          <Text style={[styles.comparadorRowLabel, { color: colors.textMuted }]}>Diferencia paralelo − oficial</Text>
+                          <Text style={[styles.comparadorRowValue, { color: colors.text }]}>
+                            +{(pEur - oEur).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS
+                            <Text style={[styles.comparadorRowPct, { color: colors.accent }]}>
+                              {" "}({(((pEur - oEur) / oEur) * 100).toFixed(1)}%)
+                            </Text>
+                          </Text>
+                        </View>
+                      </>
+                    ) : null;
+                  })()}
+                  {forex && forex.rate > 0 ? (
+                    <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
+                  ) : null}
                 </View>
               </>
             ) : null}

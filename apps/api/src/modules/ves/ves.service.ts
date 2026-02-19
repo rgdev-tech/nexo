@@ -68,9 +68,15 @@ export class VesService implements OnModuleInit {
     }
 
     const result = await this.fetchDolarApi();
-    if (result) {
-      await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
+    if (!result) return null;
+
+    const forex = await this.forexService.findRate("USD", "EUR");
+    if (forex?.rate != null && forex.rate > 0) {
+      if (result.oficial > 0) result.oficial_eur = result.oficial / forex.rate;
+      if (result.paralelo > 0) result.paralelo_eur = result.paralelo / forex.rate;
     }
+
+    await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
     return result;
   }
 
