@@ -13,6 +13,12 @@ export class UsdToVesDto {
   @ApiProperty({ example: 39.8, description: 'Parallel (market) exchange rate' })
   paralelo!: number;
 
+  @ApiPropertyOptional({ example: 33.2, description: 'Official rate in EUR (EUR→VES)' })
+  oficial_eur?: number;
+
+  @ApiPropertyOptional({ example: 36.1, description: 'Parallel rate in EUR (EUR→VES)' })
+  paralelo_eur?: number;
+
   @ApiProperty({ example: '2025-01-15', description: 'Rate date (YYYY-MM-DD)' })
   date!: string;
 
