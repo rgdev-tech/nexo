@@ -158,7 +158,7 @@ export class VesService implements OnModuleInit {
 
   async saveVesSnapshot(oficial: number, paralelo: number, usd_eur: number | null = null): Promise<void> {
     // Truncar a la hora exacta para agrupar snapshots por hora (timestamptz nativo)
-    const key = new Date().toISOString().replace(/:\d{2}\.\d{3}Z$/, ':00:00Z');
+    const key = new Date().toISOString().replace(/:\d{2}\.\d{3}Z$/, ':00.000Z');
     
     const { error } = await this.supabaseService.getClient()
       .from('ves_history')
