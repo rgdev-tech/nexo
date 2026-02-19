@@ -65,18 +65,21 @@ export default function AlertasScreen() {
   const swipeableRefs = useRef<Map<string, Swipeable>>(new Map());
 
   const renderRightActions = useCallback(
-    (alertId: string) => () => (
-      <Pressable
-        style={[styles.deleteAction, { backgroundColor: colors.error }]}
-        onPress={() => {
-          swipeableRefs.current.get(alertId)?.close();
-          deleteAlert(alertId);
-        }}
-      >
-        <Ionicons name="trash-outline" size={22} color="#fff" />
-        <Text style={styles.deleteActionText}>Eliminar</Text>
-      </Pressable>
-    ),
+    (alertId: string) => {
+      const RightAction = () => (
+        <Pressable
+          style={[styles.deleteAction, { backgroundColor: colors.error }]}
+          onPress={() => {
+            swipeableRefs.current.get(alertId)?.close();
+            deleteAlert(alertId);
+          }}
+        >
+          <Ionicons name="trash-outline" size={22} color="#fff" />
+          <Text style={styles.deleteActionText}>Eliminar</Text>
+        </Pressable>
+      );
+      return RightAction;
+    },
     [colors.error, deleteAlert],
   );
 
