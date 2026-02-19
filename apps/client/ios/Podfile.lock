@@ -1,10 +1,14 @@
 PODS:
   - EASClient (1.0.8):
     - ExpoModulesCore
+  - EXApplication (7.0.8):
+    - ExpoModulesCore
   - EXConstants (18.0.13):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (1.0.10):
+    - ExpoModulesCore
+  - EXNotifications (0.32.16):
     - ExpoModulesCore
   - Expo (54.0.33):
     - ExpoModulesCore
@@ -36,6 +40,10 @@ PODS:
   - ExpoBlur (15.0.8):
     - ExpoModulesCore
   - ExpoClipboard (8.0.8):
+    - ExpoModulesCore
+  - ExpoCrypto (15.0.8):
+    - ExpoModulesCore
+  - ExpoDevice (8.0.10):
     - ExpoModulesCore
   - ExpoFileSystem (19.0.21):
     - ExpoModulesCore
@@ -2001,13 +2009,17 @@ PODS:
 
 DEPENDENCIES:
   - "EASClient (from `../../../node_modules/.bun/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios`)"
+  - "EXApplication (from `../../../node_modules/.bun/expo-application@7.0.8+6a513318ea7806fd/node_modules/expo-application/ios`)"
   - "EXConstants (from `../../../node_modules/.bun/expo-constants@18.0.13+6a513318ea7806fd/node_modules/expo-constants/ios`)"
   - "EXJSONUtils (from `../../../node_modules/.bun/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios`)"
   - "EXManifests (from `../../../node_modules/.bun/expo-manifests@1.0.10+6a513318ea7806fd/node_modules/expo-manifests/ios`)"
+  - "EXNotifications (from `../../../node_modules/.bun/expo-notifications@0.32.16+6a513318ea7806fd/node_modules/expo-notifications/ios`)"
   - "Expo (from `../../../node_modules/.bun/expo@54.0.33+6a513318ea7806fd/node_modules/expo`)"
   - "ExpoAsset (from `../../../node_modules/.bun/expo-asset@12.0.12+6a513318ea7806fd/node_modules/expo-asset/ios`)"
   - "ExpoBlur (from `../../../node_modules/.bun/expo-blur@15.0.8+6a513318ea7806fd/node_modules/expo-blur/ios`)"
   - "ExpoClipboard (from `../../../node_modules/.bun/expo-clipboard@8.0.8+6a513318ea7806fd/node_modules/expo-clipboard/ios`)"
+  - "ExpoCrypto (from `../../../node_modules/.bun/expo-crypto@15.0.8+6a513318ea7806fd/node_modules/expo-crypto/ios`)"
+  - "ExpoDevice (from `../../../node_modules/.bun/expo-device@8.0.10+6a513318ea7806fd/node_modules/expo-device/ios`)"
   - "ExpoFileSystem (from `../../../node_modules/.bun/expo-file-system@19.0.21+e4fd16ac8ffee978/node_modules/expo-file-system/ios`)"
   - "ExpoFont (from `../../../node_modules/.bun/expo-font@14.0.11+6a513318ea7806fd/node_modules/expo-font/ios`)"
   - "ExpoHaptics (from `../../../node_modules/.bun/expo-haptics@15.0.8+6a513318ea7806fd/node_modules/expo-haptics/ios`)"
@@ -2106,12 +2118,16 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   EASClient:
     :path: "../../../node_modules/.bun/expo-eas-client@1.0.8/node_modules/expo-eas-client/ios"
+  EXApplication:
+    :path: "../../../node_modules/.bun/expo-application@7.0.8+6a513318ea7806fd/node_modules/expo-application/ios"
   EXConstants:
     :path: "../../../node_modules/.bun/expo-constants@18.0.13+6a513318ea7806fd/node_modules/expo-constants/ios"
   EXJSONUtils:
     :path: "../../../node_modules/.bun/expo-json-utils@0.15.0/node_modules/expo-json-utils/ios"
   EXManifests:
     :path: "../../../node_modules/.bun/expo-manifests@1.0.10+6a513318ea7806fd/node_modules/expo-manifests/ios"
+  EXNotifications:
+    :path: "../../../node_modules/.bun/expo-notifications@0.32.16+6a513318ea7806fd/node_modules/expo-notifications/ios"
   Expo:
     :path: "../../../node_modules/.bun/expo@54.0.33+6a513318ea7806fd/node_modules/expo"
   ExpoAsset:
@@ -2120,6 +2136,10 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/.bun/expo-blur@15.0.8+6a513318ea7806fd/node_modules/expo-blur/ios"
   ExpoClipboard:
     :path: "../../../node_modules/.bun/expo-clipboard@8.0.8+6a513318ea7806fd/node_modules/expo-clipboard/ios"
+  ExpoCrypto:
+    :path: "../../../node_modules/.bun/expo-crypto@15.0.8+6a513318ea7806fd/node_modules/expo-crypto/ios"
+  ExpoDevice:
+    :path: "../../../node_modules/.bun/expo-device@8.0.10+6a513318ea7806fd/node_modules/expo-device/ios"
   ExpoFileSystem:
     :path: "../../../node_modules/.bun/expo-file-system@19.0.21+e4fd16ac8ffee978/node_modules/expo-file-system/ios"
   ExpoFont:
@@ -2302,13 +2322,17 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   EASClient: 40dd9e740684782610c49becab2643782ea1a20c
+  EXApplication: 1e98d4b1dccdf30627f92917f4b2c5a53c330e5f
   EXConstants: fce59a631a06c4151602843667f7cfe35f81e271
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
+  EXNotifications: 9eec98712cc814ceff916d876cb53859003b0597
   Expo: aadbcc8c6c14ff3105a9154f1683cb1424ff0d2a
   ExpoAsset: f867e55ceb428aab99e1e8c082b5aee7c159ea18
   ExpoBlur: b90747a3f22a8b6ceffd9cb0dc41a4184efdc656
   ExpoClipboard: b36b287d8356887844bb08ed5c84b5979bb4dd1e
+  ExpoCrypto: b6105ebaa15d6b38a811e71e43b52cd934945322
+  ExpoDevice: 6327c3c200816795708885adf540d26ecab83d1a
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: f543ce20a228dd702813668b1a07b46f51878d47
   ExpoHaptics: d3a6375d8dcc3a1083d003bc2298ff654fafb536
