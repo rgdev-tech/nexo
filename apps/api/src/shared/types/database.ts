@@ -154,6 +154,85 @@ export type Database = {
           },
         ];
       };
+      alerts: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          symbol: string;
+          threshold: number;
+          direction: string;
+          enabled: boolean;
+          triggered_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          symbol: string;
+          threshold: number;
+          direction: string;
+          enabled?: boolean;
+          triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          symbol?: string;
+          threshold?: number;
+          direction?: string;
+          enabled?: boolean;
+          triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "alerts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      push_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token: string;
+          platform: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token: string;
+          platform: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          token?: string;
+          platform?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -175,3 +254,5 @@ export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 export type VesHistoryRow = Database["public"]["Tables"]["ves_history"]["Row"];
 export type TransactionRow = Database["public"]["Tables"]["transactions"]["Row"];
 export type UserBalanceRow = Database["public"]["Tables"]["user_balances"]["Row"];
+export type AlertRow = Database["public"]["Tables"]["alerts"]["Row"];
+export type PushTokenRow = Database["public"]["Tables"]["push_tokens"]["Row"];

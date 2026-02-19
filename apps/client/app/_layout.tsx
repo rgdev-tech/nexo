@@ -18,6 +18,8 @@ export default function RootLayout() {
             <Stack.Screen name="crypto-history" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="forex-history" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="ves-history" options={{ presentation: 'modal', headerShown: false }} />
+            <Stack.Screen name="alertas" options={{ presentation: 'modal', headerShown: false }} />
+            <Stack.Screen name="crear-alerta" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="login" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="register" options={{ presentation: 'modal', headerShown: false }} />
           </Stack>
