@@ -12,6 +12,10 @@ export type FetchJsonOptions = {
   retryableStatuses?: number[];
   /** Etiqueta para los logs (p. ej. "Binance BTCUSDT"). Default: la propia URL */
   label?: string;
+  /** HTTP method. Default: "GET" */
+  method?: 'GET' | 'POST';
+  /** JSON body for POST requests */
+  body?: unknown;
 };
 
 const DEFAULT_RETRYABLE_STATUSES = [408, 429, 502, 503, 504];
@@ -33,6 +37,8 @@ export class ExternalHttpService {
       retryDelay = 2_000,
       retryableStatuses = DEFAULT_RETRYABLE_STATUSES,
       label = url,
+      method = 'GET',
+      body,
     } = options ?? {};
 
     const maxAttempts = retries + 1;
@@ -46,9 +52,13 @@ export class ExternalHttpService {
           await new Promise((r) => setTimeout(r, retryDelay));
         }
 
-        const res = await fetch(url, {
-          signal: AbortSignal.timeout(timeout),
-        });
+        const init: RequestInit = { signal: AbortSignal.timeout(timeout), method };
+        if (body != null) {
+          init.body = JSON.stringify(body);
+          init.headers = { 'Content-Type': 'application/json' };
+        }
+
+        const res = await fetch(url, init);
 
         if (!res.ok) {
           this.logger.warn(`${label}: HTTP ${res.status}`);

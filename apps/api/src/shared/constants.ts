@@ -9,6 +9,8 @@ export const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3';
 export const BINANCE_BASE_URL = 'https://api.binance.com/api/v3';
 export const FRANKFURTER_BASE_URL = 'https://api.frankfurter.dev';
 export const DOLARAPI_BASE_URL = 'https://ve.dolarapi.com/v1/dolares';
+export const BINANCE_P2P_URL = 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search';
+export const PYDOLARVE_BASE_URL = 'https://pydolarve.org/api/v1/dollar';
 
 // ─── Timeouts de fetch (ms) ─────────────────────────────────────────────────
 

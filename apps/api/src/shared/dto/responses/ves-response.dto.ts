@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export class VesSourceDto {
+  @ApiProperty({ example: 'DolarAPI', description: 'Source name' })
+  nombre!: string;
+
+  @ApiProperty({ example: 39.8, description: 'Parallel rate reported by this source' })
+  valor!: number;
+
+  @ApiProperty({ example: 1700000000000, description: 'Unix timestamp in milliseconds' })
+  timestamp!: number;
+}
+
 export class UsdToVesDto {
   @ApiProperty({ example: 'USD', description: 'Base currency' })
   from!: string;
@@ -7,10 +18,10 @@ export class UsdToVesDto {
   @ApiProperty({ example: 'VES', description: 'Target currency' })
   to!: string;
 
-  @ApiProperty({ example: 36.5, description: 'Official exchange rate' })
+  @ApiProperty({ example: 36.5, description: 'Official exchange rate (BCV)' })
   oficial!: number;
 
-  @ApiProperty({ example: 39.8, description: 'Parallel (market) exchange rate' })
+  @ApiProperty({ example: 39.8, description: 'Parallel rate — weighted average across sources' })
   paralelo!: number;
 
   @ApiPropertyOptional({ example: 33.2, description: 'Official rate in EUR (EUR→VES)' })
@@ -22,11 +33,14 @@ export class UsdToVesDto {
   @ApiProperty({ example: '2025-01-15', description: 'Rate date (YYYY-MM-DD)' })
   date!: string;
 
-  @ApiProperty({ example: 'dolarapi', description: 'Data source' })
+  @ApiProperty({ example: 'promedio', description: 'Data source (promedio when multiple sources)' })
   source!: string;
 
   @ApiProperty({ example: 1700000000000, description: 'Unix timestamp in milliseconds' })
   timestamp!: number;
+
+  @ApiPropertyOptional({ type: [VesSourceDto], description: 'Breakdown of parallel rate by source' })
+  fuentes?: VesSourceDto[];
 }
 
 export class VesHistoryDayDto {
