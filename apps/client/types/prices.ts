@@ -16,6 +16,12 @@ export type ForexRate = {
   timestamp: number;
 };
 
+export type VesSource = {
+  nombre: string;
+  valor: number;
+  timestamp: number;
+};
+
 export type UsdToVes = {
   from: string;
   to: string;
@@ -26,4 +32,5 @@ export type UsdToVes = {
   date: string;
   source: string;
   timestamp: number;
+  fuentes?: VesSource[];
 };

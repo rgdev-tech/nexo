@@ -1,5 +1,5 @@
 export type { ThemeMode, UserPreferences } from './preferences';
-export type { CryptoPrice, ForexRate, UsdToVes } from './prices';
+export type { CryptoPrice, ForexRate, UsdToVes, VesSource } from './prices';
 export type {
   CryptoHistoryDay,
   ForexHistoryDay,

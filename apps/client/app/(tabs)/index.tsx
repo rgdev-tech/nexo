@@ -418,7 +418,23 @@ export default function PreciosScreen() {
                       </View>
                     </>
                   )}
-                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{ves.source}</Text>
+                  {ves.fuentes && ves.fuentes.length > 1 && (
+                    <>
+                      <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                      <View style={styles.fuentesWrap}>
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuentes paralelo</Text>
+                        {ves.fuentes.map((f) => (
+                          <View key={f.nombre} style={styles.fuenteRow}>
+                            <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>{f.nombre}</Text>
+                            <Text style={[styles.fuenteValor, { color: colors.text }]}>
+                              {f.valor.toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </>
+                  )}
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{ves.source}{ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ''}</Text>
                 </View>
               </>
             ) : null}
@@ -477,9 +493,26 @@ export default function PreciosScreen() {
                       </>
                     ) : null;
                   })()}
-                  {forex && forex.rate > 0 ? (
-                    <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>1 EUR = {(1 / forex.rate).toFixed(4)} USD</Text>
-                  ) : null}
+                  {ves.fuentes && ves.fuentes.length > 1 && forex && forex.rate > 0 && (
+                    <>
+                      <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                      <View style={styles.fuentesWrap}>
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuentes paralelo</Text>
+                        {ves.fuentes.map((f) => (
+                          <View key={f.nombre} style={styles.fuenteRow}>
+                            <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>{f.nombre}</Text>
+                            <Text style={[styles.fuenteValor, { color: colors.text }]}>
+                              {(f.valor / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </>
+                  )}
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>
+                    {forex && forex.rate > 0 ? `1 EUR = ${(1 / forex.rate).toFixed(4)} USD` : ves.source}
+                    {ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ''}
+                  </Text>
                 </View>
               </>
             ) : null}
@@ -721,5 +754,29 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  fuentesWrap: {
+    paddingHorizontal: ROW_PADDING_H,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  fuentesTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.2,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  fuenteRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  fuenteNombre: {
+    fontSize: 14,
+  },
+  fuenteValor: {
+    fontSize: 14,
+    fontWeight: "500",
   },
 });

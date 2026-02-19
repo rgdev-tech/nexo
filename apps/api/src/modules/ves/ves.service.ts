@@ -7,6 +7,8 @@ import type { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   DOLARAPI_BASE_URL,
+  BINANCE_P2P_URL,
+  PYDOLARVE_BASE_URL,
   FRANKFURTER_BASE_URL,
   FETCH_TIMEOUT_DOLARAPI,
   FETCH_TIMEOUT_LONG,
@@ -15,15 +17,19 @@ import {
   VES_SNAPSHOT_INTERVAL_MS,
 } from '../../shared/constants';
 import { getConfigNumber } from '../../shared/config-utils';
-import type { VesHistoryDay, UsdToVes } from '../../shared/types';
+import type { VesHistoryDay, UsdToVes, VesSource } from '../../shared/types';
 
 export type { VesHistoryDay, UsdToVes };
+
+type DolarApiRaw = { oficial: number; paralelo: number; date: string };
 
 @Injectable()
 export class VesService implements OnModuleInit {
   private readonly logger = new Logger(VesService.name);
 
   private readonly dolarApiUrl: string;
+  private readonly binanceP2pUrl: string;
+  private readonly pyDolarVeUrl: string;
   private readonly frankfurterUrl: string;
   private readonly fetchTimeoutDolarApi: number;
   private readonly fetchTimeoutLong: number;
@@ -39,6 +45,8 @@ export class VesService implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {
     this.dolarApiUrl = this.configService.get<string>('DOLARAPI_URL') ?? DOLARAPI_BASE_URL;
+    this.binanceP2pUrl = this.configService.get<string>('BINANCE_P2P_URL') ?? BINANCE_P2P_URL;
+    this.pyDolarVeUrl = this.configService.get<string>('PYDOLARVE_URL') ?? PYDOLARVE_BASE_URL;
     this.frankfurterUrl = this.configService.get<string>('FRANKFURTER_URL') ?? FRANKFURTER_BASE_URL;
     this.fetchTimeoutDolarApi = getConfigNumber(this.configService, 'FETCH_TIMEOUT_DOLARAPI', FETCH_TIMEOUT_DOLARAPI);
     this.fetchTimeoutLong = getConfigNumber(this.configService, 'FETCH_TIMEOUT_LONG', FETCH_TIMEOUT_LONG);
@@ -60,15 +68,48 @@ export class VesService implements OnModuleInit {
     }, this.snapshotInterval);
   }
 
+  // ─── Public ────────────────────────────────────────────────────────────────
+
   async getPrice(): Promise<UsdToVes | null> {
     const cacheKey = "ves:usd";
     const cached = await this.cacheManager.get<UsdToVes>(cacheKey);
-    if (cached) {
-      return cached;
+    if (cached) return cached;
+
+    const [dolarApi, binanceRate, enParaleloRate] = await Promise.all([
+      this.fetchDolarApi(),
+      this.fetchBinanceP2p(),
+      this.fetchEnParaleloVzla(),
+    ]);
+
+    if (!dolarApi) return null;
+
+    const fuentes: VesSource[] = [];
+    const now = Date.now();
+
+    if (dolarApi.paralelo > 0) {
+      fuentes.push({ nombre: 'DolarAPI', valor: dolarApi.paralelo, timestamp: now });
+    }
+    if (binanceRate != null && binanceRate > 0) {
+      fuentes.push({ nombre: 'Binance P2P', valor: binanceRate, timestamp: now });
+    }
+    if (enParaleloRate != null && enParaleloRate > 0) {
+      fuentes.push({ nombre: 'EnParaleloVzla', valor: enParaleloRate, timestamp: now });
     }
 
-    const result = await this.fetchDolarApi();
-    if (!result) return null;
+    const paralelo = fuentes.length > 0
+      ? fuentes.reduce((s, f) => s + f.valor, 0) / fuentes.length
+      : dolarApi.paralelo;
+
+    const result: UsdToVes = {
+      from: "USD",
+      to: "VES",
+      oficial: dolarApi.oficial,
+      paralelo,
+      date: dolarApi.date,
+      source: fuentes.length > 1 ? "promedio" : (fuentes[0]?.nombre ?? "dolarapi"),
+      timestamp: now,
+      fuentes,
+    };
 
     const forex = await this.forexService.findRate("USD", "EUR");
     if (forex?.rate != null && forex.rate > 0) {
@@ -77,10 +118,17 @@ export class VesService implements OnModuleInit {
     }
 
     await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
+    this.logger.log(`VES price assembled from ${fuentes.length} source(s): ${fuentes.map(f => f.nombre).join(', ')}`);
     return result;
   }
 
-  private async fetchDolarApi(): Promise<UsdToVes | null> {
+  // ─── Source fetchers (each tolerant to failures) ───────────────────────────
+
+  private async fetchDolarApi(): Promise<DolarApiRaw | null> {
+    const cacheKey = 'ves:src:dolarapi';
+    const cached = await this.cacheManager.get<DolarApiRaw>(cacheKey);
+    if (cached) return cached;
+
     const data = await this.http.fetchJson<
       Array<{ nombre?: string; promedio?: number; fechaActualizacion?: string }>
     >(this.dolarApiUrl, {
@@ -98,15 +146,80 @@ export class VesService implements OnModuleInit {
       oficial?.fechaActualizacion?.slice(0, 10) ??
       paralelo?.fechaActualizacion?.slice(0, 10) ??
       new Date().toISOString().slice(0, 10);
-    return {
-      from: "USD",
-      to: "VES",
-      oficial: rateOficial ?? 0,
-      paralelo: rateParalelo ?? 0,
-      date,
-      source: "dolarapi",
-      timestamp: Date.now(),
-    };
+
+    const result: DolarApiRaw = { oficial: rateOficial ?? 0, paralelo: rateParalelo ?? 0, date };
+    await this.cacheManager.set(cacheKey, result, this.cacheTtlPrice);
+    return result;
+  }
+
+  private async fetchBinanceP2p(): Promise<number | null> {
+    const cacheKey = 'ves:src:binance';
+    const cached = await this.cacheManager.get<number>(cacheKey);
+    if (cached != null) return cached;
+
+    try {
+      const data = await this.http.fetchJson<{
+        data?: Array<{ adv?: { price?: string } }>;
+      }>(this.binanceP2pUrl, {
+        timeout: this.fetchTimeoutDolarApi,
+        label: 'Binance P2P USDT/VES',
+        method: 'POST',
+        body: {
+          asset: 'USDT',
+          fiat: 'VES',
+          tradeType: 'SELL',
+          page: 1,
+          rows: 10,
+          merchantCheck: true,
+          payTypes: [],
+        },
+      });
+
+      const ads = data?.data;
+      if (!ads || ads.length === 0) return null;
+
+      const prices = ads
+        .map((a) => parseFloat(a.adv?.price ?? ''))
+        .filter((p) => p > 0);
+      if (prices.length === 0) return null;
+
+      const median = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)];
+      await this.cacheManager.set(cacheKey, median, this.cacheTtlPrice);
+      return median;
+    } catch (e) {
+      this.logger.warn('Binance P2P fetch failed', e instanceof Error ? e.message : e);
+      return null;
+    }
+  }
+
+  private async fetchEnParaleloVzla(): Promise<number | null> {
+    const cacheKey = 'ves:src:enparalelo';
+    const cached = await this.cacheManager.get<number>(cacheKey);
+    if (cached != null) return cached;
+
+    try {
+      const data = await this.http.fetchJson<{
+        monitors?: Record<string, { price?: number; title?: string }>;
+      }>(`${this.pyDolarVeUrl}?page=enparalelovzla`, {
+        timeout: this.fetchTimeoutDolarApi,
+        label: 'EnParaleloVzla',
+      });
+
+      const monitors = data?.monitors;
+      if (!monitors) return null;
+
+      const entry = Object.values(monitors).find(
+        (m) => m.title?.toLowerCase().includes('enparalelo') || m.price != null,
+      );
+      const price = entry?.price;
+      if (price == null || price <= 0) return null;
+
+      await this.cacheManager.set(cacheKey, price, this.cacheTtlPrice);
+      return price;
+    } catch (e) {
+      this.logger.warn('EnParaleloVzla fetch failed', e instanceof Error ? e.message : e);
+      return null;
+    }
   }
 
   async getHistory(days: number): Promise<VesHistoryDay[]> {
@@ -181,12 +294,12 @@ export class VesService implements OnModuleInit {
   }
 
   async fetchAndSaveVes(): Promise<void> {
-    const data = await this.fetchDolarApi();
-    if (!data || (data.oficial <= 0 && data.paralelo <= 0)) return;
-    
+    const price = await this.getPrice();
+    if (!price || (price.oficial <= 0 && price.paralelo <= 0)) return;
+
     const forex = await this.forexService.findRate("USD", "EUR");
     const usd_eur = forex?.rate != null && forex.rate > 0 ? forex.rate : null;
-    await this.saveVesSnapshot(data.oficial, data.paralelo, usd_eur);
+    await this.saveVesSnapshot(price.oficial, price.paralelo, usd_eur);
   }
 
   async backfillUsdEurFromFrankfurter(): Promise<void> {
