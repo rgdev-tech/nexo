@@ -66,9 +66,7 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="ajustes"
-        options={{
-          href: null,
-        }}
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="profile"

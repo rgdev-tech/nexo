@@ -5,6 +5,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -35,10 +37,15 @@ export default function ConvertidorScreen() {
   const [forexRate, setForexRate] = useState<number | null>(null); // 1 USD = forexRate EUR
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [copiedFeedback, setCopiedFeedback] = useState<string | null>(null);
 
-  const fetchRates = useCallback(async () => {
+  const PRESETS_USD = [10, 25, 50, 100, 500, 1000];
+  const PRESETS_BS = [50_000, 100_000, 500_000, 1_000_000, 5_000_000, 10_000_000];
+
+  const fetchRates = useCallback(async (isRefresh = false) => {
     if (!settings.apiUrl) return;
-    setLoading(true);
+    if (!isRefresh) setLoading(true);
     setError(null);
     try {
       const [vesRes, forexRes] = await Promise.all([
@@ -59,8 +66,14 @@ export default function ConvertidorScreen() {
       setForexRate(null);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [settings.apiUrl]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchRates(true);
+  }, [fetchRates]);
 
   useEffect(() => {
     if (isLoaded) fetchRates();
@@ -73,11 +86,18 @@ export default function ConvertidorScreen() {
   const copyAndHaptic = useCallback(async (text: string) => {
     await Clipboard.setStringAsync(text);
     await safeImpact(ImpactFeedbackStyle.Light);
+    setCopiedFeedback(text);
+    setTimeout(() => setCopiedFeedback(null), 1500);
   }, []);
 
   const toggleCurrency = useCallback(() => {
     safeImpact(ImpactFeedbackStyle.Light);
     setFromCurrency((c) => (c === "USD" ? "EUR" : "USD"));
+  }, []);
+
+  const applyPreset = useCallback((val: number) => {
+    safeImpact(ImpactFeedbackStyle.Light);
+    setInput(val.toString());
   }, []);
 
   // Tasas a BS (por 1 unidad de fromCurrency)
@@ -131,7 +151,19 @@ export default function ConvertidorScreen() {
             <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
           </View>
         ) : (
-          <>
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.accent}
+              />
+            }
+          >
             <View style={styles.spotlightWrap}>
               <View style={[styles.glassRow, { backgroundColor: colors.groupBg, borderColor: colors.groupBorder }]}>
                 {!isLight && (
@@ -159,12 +191,61 @@ export default function ConvertidorScreen() {
                     { backgroundColor: colors.groupBg, borderColor: colors.groupBorder },
                   ]}
                 >
-                  <Text style={[styles.currencyPillText, { color: colors.accent }]}>
-                    {fromLabel}
-                  </Text>
+                  <View style={styles.currencyPillContent}>
+                    <Ionicons
+                      name={fromCurrency === "USD" ? "logo-usd" : "logo-euro"}
+                      size={18}
+                      color={colors.accent}
+                    />
+                    <Text style={[styles.currencyPillText, { color: colors.accent }]}>
+                      {fromLabel}
+                    </Text>
+                  </View>
                 </Pressable>
               </View>
             </View>
+
+            {/* Botones de monto rápido */}
+            <View style={styles.presetsRow}>
+              {(isLikelyBs ? PRESETS_BS : PRESETS_USD).map((val) => (
+                <Pressable
+                  key={val}
+                  onPress={() => applyPreset(val)}
+                  style={[
+                    styles.presetBtn,
+                    { backgroundColor: colors.groupBg, borderColor: colors.groupBorder },
+                  ]}
+                >
+                  <Text style={[styles.presetText, { color: colors.text }]}>
+                    {val >= 1_000_000 ? `${val / 1_000_000}M` : val >= 1000 ? `${val / 1000}K` : val}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Tasas actuales */}
+            {(rateParalelo > 0 || rateOficial > 0) && (
+              <View style={[styles.ratesBar, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.ratesText, { color: colors.textMuted }]} numberOfLines={2}>
+                  {[
+                    rateParalelo > 0 && `1 ${fromLabel} = ${formatBs(rateParalelo)} BS paralelo`,
+                    rateOficial > 0 && `1 ${fromLabel} = ${formatBs(rateOficial)} BS BCV`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Text>
+                <Pressable onPress={onRefresh} style={styles.refreshRateBtn} hitSlop={8}>
+                  <Ionicons name="refresh" size={18} color={colors.accent} />
+                </Pressable>
+              </View>
+            )}
+
+            {copiedFeedback != null && (
+              <View style={[styles.toast, { backgroundColor: colors.surfaceSecondary }]}>
+                <Ionicons name="checkmark-circle" size={18} color={colors.accent} />
+                <Text style={[styles.toastText, { color: colors.text }]}>Copiado</Text>
+              </View>
+            )}
 
             {hasAmount && (rateParalelo > 0 || rateOficial > 0) && (
               <View style={styles.fichas}>
@@ -177,12 +258,16 @@ export default function ConvertidorScreen() {
                       <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
                     )}
                     <View style={[styles.ficha, isLight && styles.fichaLight]}>
-                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
-                        {fromLabel} → BS (Paralelo)
-                      </Text>
+                      <View style={styles.fichaHeader}>
+                        <Ionicons name="flash" size={18} color={colors.accent} />
+                        <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                          {fromLabel} → BS (Paralelo)
+                        </Text>
+                      </View>
                       <Text style={[styles.fichaValue, { color: colors.accent }]}>
                         {fromCurrency === "USD" ? formatUsd(amount) : formatEur(amount)} {fromLabel} = {formatBs(ficha1Value)} BS
                       </Text>
+                      <Text style={[styles.fichaHint, { color: colors.inputMuted }]}>Toca para copiar</Text>
                     </View>
                   </Pressable>
                 )}
@@ -195,12 +280,16 @@ export default function ConvertidorScreen() {
                       <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
                     )}
                     <View style={[styles.ficha, isLight && styles.fichaLight]}>
-                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
-                        {fromLabel} → BS (BCV)
-                      </Text>
+                      <View style={styles.fichaHeader}>
+                        <Ionicons name="business" size={18} color={colors.accent} />
+                        <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                          {fromLabel} → BS (BCV)
+                        </Text>
+                      </View>
                       <Text style={[styles.fichaValue, { color: colors.accent }]}>
                         {fromCurrency === "USD" ? formatUsd(amount) : formatEur(amount)} {fromLabel} = {formatBs(ficha2Value)} BS
                       </Text>
+                      <Text style={[styles.fichaHint, { color: colors.inputMuted }]}>Toca para copiar</Text>
                     </View>
                   </Pressable>
                 )}
@@ -213,7 +302,10 @@ export default function ConvertidorScreen() {
                       <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
                     )}
                     <View style={[styles.ficha, isLight && styles.fichaLight]}>
-                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>BS → $</Text>
+                      <View style={styles.fichaHeader}>
+                        <Ionicons name="swap-horizontal" size={18} color={colors.accent} />
+                        <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>BS → USD</Text>
+                      </View>
                       <Text style={[styles.fichaValue, { color: colors.accent }]}>
                         {formatBs(amount)} BS ≈ {formatUsd(ficha3Value)} USD
                         {forexRate != null && (
@@ -222,6 +314,7 @@ export default function ConvertidorScreen() {
                           </Text>
                         )}
                       </Text>
+                      <Text style={[styles.fichaHint, { color: colors.inputMuted }]}>Toca para copiar</Text>
                     </View>
                   </Pressable>
                 )}
@@ -232,9 +325,12 @@ export default function ConvertidorScreen() {
                       <BlurView intensity={40} tint={blurTint} style={StyleSheet.absoluteFill} />
                     )}
                     <View style={[styles.diferenciaInner, isLight && styles.fichaLight]}>
-                      <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
-                        Diferencia Paralelo − BCV
-                      </Text>
+                      <View style={styles.fichaHeader}>
+                        <Ionicons name="analytics" size={18} color={colors.accent} />
+                        <Text style={[styles.fichaLabel, { color: colors.textMuted }]}>
+                          Diferencia Paralelo − BCV
+                        </Text>
+                      </View>
                       <Text style={[styles.fichaValue, { color: colors.accent }]}>
                         +{formatBs(ficha1Value - ficha2Value)} BS
                         <Text style={[styles.diferenciaPct, { color: colors.textMuted }]}>
@@ -252,7 +348,7 @@ export default function ConvertidorScreen() {
                 No hay tasas de cambio. Revisa la API en Ajustes.
               </Text>
             )}
-          </>
+          </ScrollView>
         )}
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
@@ -262,6 +358,12 @@ export default function ConvertidorScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
   },
   header: {
     flexDirection: "row",
@@ -319,9 +421,72 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
+  currencyPillContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   currencyPillText: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  presetsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: HORIZONTAL,
+    paddingBottom: 20,
+    gap: 10,
+  },
+  presetBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  presetText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  ratesBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: HORIZONTAL,
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  ratesText: {
+    fontSize: 13,
+    flex: 1,
+  },
+  refreshRateBtn: {
+    padding: 4,
+  },
+  toast: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    marginBottom: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    gap: 8,
+  },
+  toastText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  fichaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  fichaHint: {
+    fontSize: 12,
+    marginTop: 6,
   },
   fichas: {
     paddingHorizontal: HORIZONTAL,
@@ -359,7 +524,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     letterSpacing: 0.2,
-    marginBottom: 6,
   },
   fichaValue: {
     fontSize: 20,

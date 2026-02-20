@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Keyboard,
   Pressable,
@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { router, useNavigation } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSettings } from "@/lib/settings";
 import { getColors, BOTTOM_SPACER, HORIZONTAL } from "@/lib/theme";
@@ -20,9 +21,22 @@ const CURRENCIES = ["USD", "EUR", "GBP"];
 const CRYPTO_SUGGESTIONS = ["BTC", "ETH", "SOL", "AVAX", "XRP", "DOGE", "LINK", "DOT"];
 
 export default function AjustesScreen() {
+  const navigation = useNavigation();
   const { settings, setDefaultCurrency, setFavoriteCryptos, setTheme, setBalanceFaceIdEnabled } = useSettings();
   const [cryptoInput, setCryptoInput] = useState("");
   const colors = getColors(settings.theme);
+
+  // Gesto o back nativo → Perfil
+  const goToProfile = useCallback(() => {
+    router.replace("/(tabs)/profile");
+  }, []);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      e.preventDefault();
+      router.replace("/(tabs)/profile");
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const addCrypto = useCallback(() => {
     const sym = cryptoInput.trim().toUpperCase();
@@ -43,8 +57,13 @@ export default function AjustesScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>Ajustes</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Divisa, cryptos y apariencia</Text>
+          <Pressable onPress={goToProfile} hitSlop={12} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={24} color={colors.textSecondary} />
+          </Pressable>
+          <View style={styles.headerCenter}>
+            <Text style={[styles.title, { color: colors.text }]}>Ajustes</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Divisa, cryptos y apariencia</Text>
+          </View>
         </View>
 
       <ScrollView
@@ -189,9 +208,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingTop: 56,
     paddingHorizontal: HORIZONTAL,
     paddingBottom: 16,
+  },
+  backBtn: {
+    marginRight: 12,
+    padding: 4,
+  },
+  headerCenter: {
+    flex: 1,
   },
   title: {
     fontSize: 34,

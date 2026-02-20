@@ -38,15 +38,13 @@ export default function BalanceScreen() {
   const insets = useSafeAreaInsets();
   const { settings } = useSettings();
   const colors = getColors(settings.theme);
-  const { transactions, initialBalance, balance, loaded, setInitialBalance, addTransaction, deleteTransaction } = useBalance();
+  const { transactions, balance, loaded, addTransaction, deleteTransaction } = useBalance();
   const [ves, setVes] = useState<UsdToVes | null>(null);
   const [addVisible, setAddVisible] = useState(false);
-  const [initialVisible, setInitialVisible] = useState(false);
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [tag, setTag] = useState<typeof BALANCE_TAGS[number]>(BALANCE_TAGS[0]);
   const [note, setNote] = useState("");
-  const [initialInput, setInitialInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
 
   const promptAuth = useCallback(async () => {
@@ -119,12 +117,6 @@ export default function BalanceScreen() {
     setAddVisible(false);
   }, [amount, type, tag, note, addTransaction]);
 
-  const saveInitial = useCallback(() => {
-    const num = parseFloat(initialInput.replace(",", ".")) || 0;
-    setInitialBalance(num);
-    setInitialVisible(false);
-  }, [initialInput, setInitialBalance]);
-
   const remove = useCallback(
     (id: string) => {
       deleteTransaction(id);
@@ -180,12 +172,6 @@ export default function BalanceScreen() {
           {balanceBs != null && (
             <Text style={[styles.sub, { color: colors.textMuted }]}>≈ {formatBs(balanceBs)} BS</Text>
           )}
-
-          <Pressable style={[styles.row, { borderBottomColor: colors.rowBorder }]} onPress={() => { setInitialInput(String(initialBalance)); setInitialVisible(true); }}>
-            <Text style={[styles.rowLabel, { color: colors.text }]}>Saldo inicial</Text>
-            <Text style={[styles.rowValue, { color: colors.textMuted }]}>${formatMoney(initialBalance)}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-          </Pressable>
 
           <View style={styles.buttons}>
             <Pressable style={[styles.btn, { backgroundColor: colors.accent }]} onPress={() => openAdd("income")}>
@@ -284,25 +270,6 @@ export default function BalanceScreen() {
         </Pressable>
       </Modal>
 
-      <Modal visible={initialVisible} transparent animationType="fade">
-        <Pressable style={[styles.modalBg, { backgroundColor: colors.modalOverlay }]} onPress={() => setInitialVisible(false)}>
-          <Pressable style={[styles.modalBox, styles.alertBox, { backgroundColor: colors.background }]} onPress={() => {}}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Saldo inicial</Text>
-            <TextInput
-              style={[styles.input, { color: colors.text, borderColor: colors.groupBorder }]}
-              value={initialInput}
-              onChangeText={setInitialInput}
-              placeholder="0,00"
-              placeholderTextColor={colors.inputMuted}
-              keyboardType="decimal-pad"
-            />
-            <View style={styles.alertActions}>
-              <Pressable onPress={() => setInitialVisible(false)}><Text style={[styles.alertBtn, { color: colors.accent }]}>Cancelar</Text></Pressable>
-              <Pressable onPress={saveInitial}><Text style={[styles.alertBtn, { color: colors.accent }]}>Guardar</Text></Pressable>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </>
   );
 }

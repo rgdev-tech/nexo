@@ -11,10 +11,28 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
+              gestureEnabled: false,
             }}
           >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="convertidor" options={{ presentation: 'modal', headerTitle: 'Convertidor' }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen
+              name="ajustes"
+              options={{
+                headerShown: false,
+                gestureEnabled: true,
+                fullScreenGestureEnabled: true,
+              }}
+            />
+            <Stack.Screen
+              name="convertidor"
+              options={{
+                presentation: "modal",
+                headerTitle: "Convertidor",
+                headerShown: false,
+                gestureEnabled: true,
+                fullScreenGestureEnabled: true,
+              }}
+            />
             <Stack.Screen name="crypto-history" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="forex-history" options={{ presentation: 'modal', headerShown: false }} />
             <Stack.Screen name="ves-history" options={{ presentation: 'modal', headerShown: false }} />

@@ -102,7 +102,7 @@ export default function ProfileScreen() {
               { borderBottomWidth: 1, borderBottomColor: colors.groupBorder },
               pressed && { opacity: 0.7 },
             ]}
-            onPress={() => router.push("/(tabs)/ajustes")}
+            onPress={() => router.push("/ajustes")}
             android_ripple={{ color: colors.ripple }}
           >
             <Ionicons name="settings-outline" size={22} color={colors.text} />
