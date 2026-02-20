@@ -418,12 +418,14 @@ export default function PreciosScreen() {
                       </View>
                     </>
                   )}
-                  {ves.fuentes && ves.fuentes.length > 1 && (
+                  {(ves.fuentes?.length ?? 0) > 0 && (
                     <>
                       <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
                       <View style={styles.fuentesWrap}>
-                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuentes paralelo</Text>
-                        {ves.fuentes.map((f) => (
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>
+                          Fuentes paralelo{ves.fuentes!.length > 1 ? ` (${ves.fuentes!.length})` : ""}
+                        </Text>
+                        {ves.fuentes!.map((f) => (
                           <View key={f.nombre} style={styles.fuenteRow}>
                             <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>{f.nombre}</Text>
                             <Text style={[styles.fuenteValor, { color: colors.text }]}>
@@ -434,7 +436,26 @@ export default function PreciosScreen() {
                       </View>
                     </>
                   )}
-                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>{ves.source}{ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ''}</Text>
+                  {(!ves.fuentes || ves.fuentes.length === 0) && ves.source && (
+                    <>
+                      <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                      <View style={styles.fuentesWrap}>
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuente paralelo</Text>
+                        <View style={styles.fuenteRow}>
+                          <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>
+                            {ves.source === "dolarapi" ? "DolarAPI" : ves.source}
+                          </Text>
+                          <Text style={[styles.fuenteValor, { color: colors.text }]}>
+                            {ves.paralelo > 0 ? `${ves.paralelo.toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS` : "—"}
+                          </Text>
+                        </View>
+                      </View>
+                    </>
+                  )}
+                  <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>
+                    {ves.source}
+                    {ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ""}
+                  </Text>
                 </View>
               </>
             ) : null}
@@ -493,12 +514,14 @@ export default function PreciosScreen() {
                       </>
                     ) : null;
                   })()}
-                  {ves.fuentes && ves.fuentes.length > 1 && forex && forex.rate > 0 && (
+                  {(ves.fuentes?.length ?? 0) > 0 && forex && forex.rate > 0 && (
                     <>
                       <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
                       <View style={styles.fuentesWrap}>
-                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuentes paralelo</Text>
-                        {ves.fuentes.map((f) => (
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>
+                          Fuentes paralelo{ves.fuentes!.length > 1 ? ` (${ves.fuentes!.length})` : ""}
+                        </Text>
+                        {ves.fuentes!.map((f) => (
                           <View key={f.nombre} style={styles.fuenteRow}>
                             <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>{f.nombre}</Text>
                             <Text style={[styles.fuenteValor, { color: colors.text }]}>
@@ -509,9 +532,27 @@ export default function PreciosScreen() {
                       </View>
                     </>
                   )}
+                  {(!ves.fuentes || ves.fuentes.length === 0) && ves.source && forex && forex.rate > 0 && (
+                    <>
+                      <View style={[styles.rowBorder, { borderTopColor: colors.rowBorder }]} />
+                      <View style={styles.fuentesWrap}>
+                        <Text style={[styles.fuentesTitle, { color: colors.textMuted }]}>Fuente paralelo</Text>
+                        <View style={styles.fuenteRow}>
+                          <Text style={[styles.fuenteNombre, { color: colors.textSecondary }]}>
+                            {ves.source === "dolarapi" ? "DolarAPI" : ves.source}
+                          </Text>
+                          <Text style={[styles.fuenteValor, { color: colors.text }]}>
+                            {(ves.paralelo_eur ?? (ves.paralelo > 0 ? ves.paralelo / forex.rate : 0)) > 0
+                              ? `${(ves.paralelo_eur ?? ves.paralelo / forex.rate).toLocaleString("es-VE", { maximumFractionDigits: 2 })} BS`
+                              : "—"}
+                          </Text>
+                        </View>
+                      </View>
+                    </>
+                  )}
                   <Text style={[styles.groupFooter, { color: colors.textMuted, borderTopColor: colors.groupBorder }]}>
                     {forex && forex.rate > 0 ? `1 EUR = ${(1 / forex.rate).toFixed(4)} USD` : ves.source}
-                    {ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ''}
+                    {ves.fuentes && ves.fuentes.length > 1 ? ` · ${ves.fuentes.length} fuentes` : ""}
                   </Text>
                 </View>
               </>
