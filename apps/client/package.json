@@ -57,7 +57,10 @@
       "searchPaths": [
         "../../node_modules",
         "node_modules"
-      ]
+      ],
+      "ios": {
+        "exclude": ["expo-widgets", "@expo/ui"]
+      }
     }
   }
 }
