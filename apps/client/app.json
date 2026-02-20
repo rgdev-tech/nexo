@@ -22,7 +22,8 @@
         },
         "NSFaceIDUsageDescription": "Nexo usa Face ID para proteger tu balance."
       },
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "appleTeamId": "KXT5H89TYR"
     },
     "android": {
       "adaptiveIcon": {

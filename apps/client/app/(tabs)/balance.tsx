@@ -22,7 +22,6 @@ import { useSettings } from "@/lib/settings";
 import { useBalance, BALANCE_TAGS, type TransactionType } from "@/lib/balance";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
 import { formatMoney, formatBs, formatDate } from "@/lib/formatters";
-import { updateNexoParaleloWidget } from "@/lib/updateWidget";
 import { BALANCE_LOCK_AFTER_MS } from "@/lib/constants";
 
 let lastBalanceUnlockAt = 0;
@@ -97,12 +96,7 @@ export default function BalanceScreen() {
     fetch(`${settings.apiUrl}/api/prices/ves`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: UsdToVes | null) => {
-        if (d) {
-          setVes({ paralelo: d.paralelo });
-          if (d.paralelo > 0) {
-            updateNexoParaleloWidget(d.paralelo, (d as { date?: string }).date).catch(() => {});
-          }
-        }
+        if (d) setVes({ paralelo: d.paralelo });
       })
       .catch((e: unknown) => {
         console.warn("[Balance] VES fetch failed:", e);

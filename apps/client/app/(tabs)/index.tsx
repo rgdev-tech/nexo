@@ -19,7 +19,6 @@ import { currencySymbol } from "@/lib/formatters";
 import { REFRESH_INTERVAL_MS, FETCH_TIMEOUT_MS } from "@/lib/constants";
 import { Sparkline } from "@/components/Sparkline";
 import { StoryCard } from "@/components/StoryCard";
-import { updateNexoParaleloWidget } from "@/lib/updateWidget";
 import type { CryptoPrice, ForexRate, UsdToVes, VesHistoryDay, ForexHistoryDay } from "@/types";
 
 function formatUpdatedAt(ts: number): string {
@@ -99,9 +98,6 @@ export default function PreciosScreen() {
       if (vesRes.ok) {
         const vesData = (await vesRes.json()) as UsdToVes;
         setVes(vesData);
-        if (vesData.paralelo > 0) {
-          updateNexoParaleloWidget(vesData.paralelo, vesData.date).catch(() => {});
-        }
       } else {
         setVes(null);
       }
