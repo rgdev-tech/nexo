@@ -89,8 +89,13 @@ PODS:
     - ExpoModulesCore
   - ExpoSQLite (16.0.10):
     - ExpoModulesCore
+  - ExpoUI (0.2.0-beta.9):
+    - ExpoModulesCore
   - ExpoVideo (3.0.15):
     - ExpoModulesCore
+  - ExpoWidgets (55.0.0-alpha.7):
+    - ExpoModulesCore
+    - ExpoUI
   - EXStructuredHeaders (5.0.0)
   - EXUpdates (29.0.16):
     - EASClient
@@ -2031,7 +2036,9 @@ DEPENDENCIES:
   - "ExpoSecureStore (from `../../../node_modules/.bun/expo-secure-store@15.0.8+6a513318ea7806fd/node_modules/expo-secure-store/ios`)"
   - "ExpoSharing (from `../../../node_modules/.bun/expo-sharing@14.0.8+6a513318ea7806fd/node_modules/expo-sharing/ios`)"
   - "ExpoSQLite (from `../../../node_modules/.bun/expo-sqlite@16.0.10+6a513318ea7806fd/node_modules/expo-sqlite/ios`)"
+  - "ExpoUI (from `../../../node_modules/.bun/@expo+ui@0.2.0-beta.9+6a513318ea7806fd/node_modules/@expo/ui/ios`)"
   - "ExpoVideo (from `../../../node_modules/.bun/expo-video@3.0.15+6a513318ea7806fd/node_modules/expo-video/ios`)"
+  - "ExpoWidgets (from `../../../node_modules/.bun/expo-widgets@55.0.0-alpha.7+6a513318ea7806fd/node_modules/expo-widgets/ios`)"
   - "EXStructuredHeaders (from `../../../node_modules/.bun/expo-structured-headers@5.0.0/node_modules/expo-structured-headers/ios`)"
   - "EXUpdates (from `../../../node_modules/.bun/expo-updates@29.0.16+6a513318ea7806fd/node_modules/expo-updates/ios`)"
   - "EXUpdatesInterface (from `../../../node_modules/.bun/expo-updates-interface@2.0.0+6a513318ea7806fd/node_modules/expo-updates-interface/ios`)"
@@ -2162,8 +2169,12 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/.bun/expo-sharing@14.0.8+6a513318ea7806fd/node_modules/expo-sharing/ios"
   ExpoSQLite:
     :path: "../../../node_modules/.bun/expo-sqlite@16.0.10+6a513318ea7806fd/node_modules/expo-sqlite/ios"
+  ExpoUI:
+    :path: "../../../node_modules/.bun/@expo+ui@0.2.0-beta.9+6a513318ea7806fd/node_modules/@expo/ui/ios"
   ExpoVideo:
     :path: "../../../node_modules/.bun/expo-video@3.0.15+6a513318ea7806fd/node_modules/expo-video/ios"
+  ExpoWidgets:
+    :path: "../../../node_modules/.bun/expo-widgets@55.0.0-alpha.7+6a513318ea7806fd/node_modules/expo-widgets/ios"
   EXStructuredHeaders:
     :path: "../../../node_modules/.bun/expo-structured-headers@5.0.0/node_modules/expo-structured-headers/ios"
   EXUpdates:
@@ -2344,7 +2355,9 @@ SPEC CHECKSUMS:
   ExpoSecureStore: d32f751874a2ceb5aaeebeb3578e165c1ba2b24a
   ExpoSharing: 0d983394ed4a80334bab5a0d5384f75710feb7e8
   ExpoSQLite: 7eedbe476870a5f18d6b89c817c4ac6f299830ad
+  ExpoUI: b75e5ed95b5966b273f1305346f4b5fd911360be
   ExpoVideo: d7d767743b54a4a301eda6460fcdf953d6163512
+  ExpoWidgets: 0ce4318a2524b561a37e5d84f424ed1f50fcc480
   EXStructuredHeaders: c951e77f2d936f88637421e9588c976da5827368
   EXUpdates: fd3ce349c439b18fd8ff05080499789cebbcab76
   EXUpdatesInterface: 5adf50cb41e079c861da6d9b4b954c3db9a50734

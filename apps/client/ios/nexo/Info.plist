@@ -34,10 +34,6 @@
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
-    <key>ExpoWidgetsAppGroupIdentifier</key>
-    <string>group.dev.rgtech.nexo</string>
-    <key>ExpoWidgets_EnablePushNotifications</key>
-    <false/>
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
@@ -49,10 +45,6 @@
     </dict>
     <key>NSFaceIDUsageDescription</key>
     <string>Nexo usa Face ID para proteger tu balance.</string>
-    <key>NSSupportsLiveActivities</key>
-    <true/>
-    <key>NSSupportsLiveActivitiesFrequentUpdates</key>
-    <false/>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
