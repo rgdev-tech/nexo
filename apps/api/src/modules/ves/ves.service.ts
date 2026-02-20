@@ -75,11 +75,14 @@ export class VesService implements OnModuleInit {
     const cached = await this.cacheManager.get<UsdToVes>(cacheKey);
     if (cached) return cached;
 
-    const [dolarApi, binanceRate, enParaleloRate] = await Promise.all([
+    const results = await Promise.allSettled([
       this.fetchDolarApi(),
       this.fetchBinanceP2p(),
       this.fetchEnParaleloVzla(),
     ]);
+    const dolarApi = results[0].status === 'fulfilled' ? results[0].value : null;
+    const binanceRate = results[1].status === 'fulfilled' ? results[1].value : null;
+    const enParaleloRate = results[2].status === 'fulfilled' ? results[2].value : null;
 
     if (!dolarApi) return null;
 

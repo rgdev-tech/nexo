@@ -64,6 +64,20 @@
           "icon": "./assets/images/icon.png",
           "color": "#0f0f12"
         }
+      ],
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.dev.rgtech.nexo",
+          "widgets": [
+            {
+              "name": "NexoParalelo",
+              "displayName": "Dólar Paralelo",
+              "description": "1 USD en bolívares (paralelo)",
+              "supportedFamilies": ["systemSmall", "accessoryRectangular", "accessoryInline"]
+            }
+          ]
+        }
       ]
     ],
     "experiments": {

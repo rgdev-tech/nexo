@@ -22,6 +22,7 @@ import { useSettings } from "@/lib/settings";
 import { useBalance, BALANCE_TAGS, type TransactionType } from "@/lib/balance";
 import { BOTTOM_SPACER, getColors, HORIZONTAL } from "@/lib/theme";
 import { formatMoney, formatBs, formatDate } from "@/lib/formatters";
+import { updateNexoParaleloWidget } from "@/lib/updateWidget";
 import { BALANCE_LOCK_AFTER_MS } from "@/lib/constants";
 
 let lastBalanceUnlockAt = 0;
@@ -46,6 +47,7 @@ export default function BalanceScreen() {
   const [tag, setTag] = useState<typeof BALANCE_TAGS[number]>(BALANCE_TAGS[0]);
   const [note, setNote] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const promptAuth = useCallback(async () => {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -94,7 +96,14 @@ export default function BalanceScreen() {
     if (!settings.apiUrl) return;
     fetch(`${settings.apiUrl}/api/prices/ves`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: UsdToVes | null) => d && setVes({ paralelo: d.paralelo }))
+      .then((d: UsdToVes | null) => {
+        if (d) {
+          setVes({ paralelo: d.paralelo });
+          if (d.paralelo > 0) {
+            updateNexoParaleloWidget(d.paralelo, (d as { date?: string }).date).catch(() => {});
+          }
+        }
+      })
       .catch((e: unknown) => {
         console.warn("[Balance] VES fetch failed:", e);
       });
@@ -115,12 +124,16 @@ export default function BalanceScreen() {
     await addTransaction(type, num, `${tag.id}|${tag.label}`, note.trim() || tag.label);
     safeNotification(NotificationFeedbackType.Success);
     setAddVisible(false);
+    setToastMessage("Transacción agregada");
+    setTimeout(() => setToastMessage(null), 1500);
   }, [amount, type, tag, note, addTransaction]);
 
   const remove = useCallback(
     (id: string) => {
       deleteTransaction(id);
       safeImpact(ImpactFeedbackStyle.Medium);
+      setToastMessage("Movimiento eliminado");
+      setTimeout(() => setToastMessage(null), 1500);
     },
     [deleteTransaction]
   );
@@ -138,22 +151,12 @@ export default function BalanceScreen() {
 
   if (settings.balanceFaceIdEnabled && !unlocked) {
     return (
-      <View style={[styles.screen, styles.centered, { backgroundColor: colors.background }]}>
-        <View style={[styles.lockCard, { backgroundColor: colors.groupBg }]}>
-          <Ionicons name="lock-closed" size={48} color={colors.textMuted} />
-          <Text style={[styles.lockTitle, { color: colors.text }]}>Balance protegido</Text>
-          <Text style={[styles.lockSub, { color: colors.textMuted }]}>
-            Usa Face ID para ver tu balance y movimientos.
-          </Text>
-          <Pressable
-            style={[styles.lockBtn, { backgroundColor: colors.accent }]}
-            onPress={() => promptAuth()}
-          >
-            <Ionicons name="scan-outline" size={22} color={colors.accentOnAccent} />
-            <Text style={[styles.lockBtnText, { color: colors.accentOnAccent }]}>Desbloquear con Face ID</Text>
-          </Pressable>
-        </View>
-      </View>
+      <Pressable
+        style={[styles.screen, styles.centered, { backgroundColor: colors.background }]}
+        onPress={() => promptAuth()}
+      >
+        <Text style={[styles.lockRetryHint, { color: colors.textMuted }]}>Toca para reintentar</Text>
+      </Pressable>
     );
   }
 
@@ -215,6 +218,13 @@ export default function BalanceScreen() {
             )}
           </View>
         </ScrollView>
+
+        {toastMessage != null && (
+          <View style={[styles.toast, { backgroundColor: colors.surfaceSecondary }]}>
+            <Ionicons name="checkmark-circle" size={18} color={colors.accent} />
+            <Text style={[styles.toastText, { color: colors.text }]}>{toastMessage}</Text>
+          </View>
+        )}
       </View>
 
       <Modal visible={addVisible} transparent animationType="slide">
@@ -277,18 +287,21 @@ export default function BalanceScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  lockCard: {
+  lockRetryHint: { fontSize: 15 },
+  toast: {
+    position: "absolute",
+    bottom: BOTTOM_SPACER + 16,
+    left: HORIZONTAL,
+    right: HORIZONTAL,
+    flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 32,
-    paddingVertical: 40,
+    alignSelf: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    marginHorizontal: 24,
-    maxWidth: 320,
+    gap: 8,
   },
-  lockTitle: { fontSize: 22, fontWeight: "700", marginTop: 16, marginBottom: 8 },
-  lockSub: { fontSize: 15, textAlign: "center", lineHeight: 22, marginBottom: 24 },
-  lockBtn: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14 },
-  lockBtnText: { fontSize: 17, fontWeight: "600" },
+  toastText: { fontSize: 15, fontWeight: "600" },
   scroll: { paddingHorizontal: HORIZONTAL },
   title: { fontSize: 28, fontWeight: "700", marginBottom: 8 },
   total: { fontSize: 40, fontWeight: "700", marginBottom: 4 },
